@@ -1,0 +1,13 @@
+# 1. Ignore all data files and large directories by default
+*
+
+!.gitignore
+!pyproject.toml
+!README.md
+
+!prg_toolbox/
+!tests/
+
+# EXCEPTION: Force Git to ignore all python bytecode caches
+**/__pycache__/
+*.pyc

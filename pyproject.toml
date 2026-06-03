@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prg_toolbox"
+version = "0.1.0"
+description = "Toolbox for Phenomenological Renormalization Group Analysis of brain data"
+
+# Tell setuptools exactly which folder is the Python package
+[tool.setuptools]
+packages = ["prg_toolbox"]
