@@ -15,7 +15,7 @@ from .observables import (
     autocorrelation_function, 
     decay_time,
     activity_distribution,
-    avalanche_covariance_eigenvalue
+    _avalanche_covariance_eigenvalue
 )
 
 # 2. Plotting Functions
@@ -31,6 +31,8 @@ from .plot_avalanche_covariance_eigenvalue import plot_avalanche_covariance_eige
 # 3. Helper/Utility Functions (Optional - sometimes used in notebooks)
 from .utils import get_scaling_exponent
 from . import analysis_tools as tools
+from . import config as config
+from .pipelines import *
 
 # Define what is accessible when someone does 'from prg_toolbox import *'
 __all__ = [
@@ -51,5 +53,7 @@ __all__ = [
     "plot_decay_time",
     "plot_activity_distribution"
     "plot_avalanche_covariance_eigenvalue",
-    "analysis_tools"
+    "analysis_tools",
+    "config_params",
+    "pipelines"
 ]

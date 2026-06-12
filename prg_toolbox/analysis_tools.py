@@ -5,12 +5,14 @@ import json
 from datetime import datetime
 import pickle
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor
+import pandas as pd
+import dataclasses
+import matplotlib.pyplot as plt
 
 import prg_toolbox as prg
 from .utils import get_scaling_exponent
+from .config import *
 
 def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
@@ -19,35 +21,41 @@ def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\
 
     The output array is guaranteed to be sorted chronologically by timestamp.
 
-    Parameters
-    ----------
-    file_path : str
-        The absolute path to the data file.
-    format : {'tabular', 'numpy_2d', 'phy'}, optional
-        The format of the input data. 
-        - 'tabular': Text-based formats like .csv, .tsv, .txt, or .gdf.
-        - 'numpy_2d': A single .npy file containing a 2D array.
-        - 'phy': A directory containing split 1D arrays (`spike_times.npy` 
-          and `spike_clusters.npy`).
-        Default is 'tabular'.
-    time_col : int, optional
-        The column index containing the timestamp data (0-indexed). Only 
-        used if format is 'tabular' or 'numpy_2d'. Default is 1.
-    unit_col : int, optional
-        The column index containing the neuron/unit ID data (0-indexed). Only 
-        used if format is 'tabular' or 'numpy_2d'. Default is 0.
-    sep : str, optional
-        The delimiter string used to separate values in text files. Use r"\s+" 
-        for space-separated files (like .gdf). Only used if format is 'tabular'. 
-        Default is ','.
-    header : int or None, optional
-        Row number to use as the column names in text files. Use None if there 
-        is no header row. Only used if format is 'tabular'. Default is None.
-    scale_factor : float, optional
-        A multiplier applied to the raw timestamps to convert them into your 
-        desired unit (e.g., converting sample counts to seconds). For example, 
-        if data is sampled at 30kHz, use `scale_factor=1/30000`. Default is 1.0.
-    """
+    Args:
+        file_path : str
+            The absolute path to the data file.
+        format : {'tabular', 'numpy_2d', 'phy'}, optional
+            The format of the input data. 
+            - 'tabular': Text-based formats like .csv, .tsv, .txt, or .gdf.
+            - 'numpy_2d': A single .npy file containing a 2D array.
+            - 'phy': A directory containing split 1D arrays (`spike_times.npy` 
+            and `spike_clusters.npy`).
+            Default is 'tabular'.
+        time_col : int, optional
+            The column index containing the timestamp data (0-indexed). Only 
+            used if format is 'tabular' or 'numpy_2d'. Default is 1.
+        unit_col : int, optional
+            The column index containing the neuron/unit ID data (0-indexed). Only 
+            used if format is 'tabular' or 'numpy_2d'. Default is 0.
+        sep : str, optional
+            The delimiter string used to separate values in text files. Use r"\s+" 
+            for space-separated files (like .gdf). Only used if format is 'tabular'. 
+            Default is ','.
+        header : int or None, optional
+            Row number to use as the column names in text files. Use None if there 
+            is no header row. Only used if format is 'tabular'. Default is None.
+        scale_factor : float, optional
+            A multiplier applied to the raw timestamps to convert them into your 
+            desired unit (e.g., converting sample counts to seconds). For example, 
+            if data is sampled at 30kHz, use `scale_factor=1/30000`. Default is 1.0.
+    Returns:
+        timestamps : numpy.ndarray
+            An N x 2 array where column 0 contains spike times and column 1 contains 
+            corresponding neuron/unit IDs. The array is sorted in ascending order by 
+            spike time. Choosing ms as the time unit is recommended for consistency 
+            with other functions.
+        """
+    
     if format == "tabular":
         # Handles CSV, TSV, TXT, GDF uniformly
         df = pd.read_csv(file_path, sep=sep, header=header)
@@ -74,10 +82,31 @@ def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\
     
     return timestamps
 
-def discard_transient(binary_time_series, binsize, dt_ms, transient_time_ms):
-    binsize_ms = binsize*dt_ms 
-    transient_bins = int(transient_time_ms // binsize_ms)
-    return binary_time_series[:, transient_bins:]
+def discard_transient(timestamps, transient_time_ms=0):
+    """Discards an initial transient period.
+
+    Args:
+        timestamps (numpy array): An (total_spikes, 2) array, where 
+                                  timestamps[:, 0] is spike time in ms, and 
+                                  timestamps[:, 1] is the neuron ID.
+        transient_time_ms (float/int): The duration of the transient period to discard.
+    Returns:
+        filtered_timestamps (numpy array): An array of the same format as input, 
+                                        but only containing spikes that occur after 
+                                        the transient period, with times shifted so 
+                                        that the first spike after the transient.
+    """
+    # 1. Use binary search to find the index where spikes cross the threshold
+    # Since column 0 is already sorted, this is an O(log N) operation
+    idx = np.searchsorted(timestamps[:, 0], transient_time_ms)
+    
+    # 2. Slice the matrix from that index onward (O(1) memory view allocation)
+    filtered_timestamps = timestamps[idx:].copy()
+    
+    # 3. Shift remaining times to reset origin to t = 0
+    filtered_timestamps[:, 0] -= transient_time_ms
+    
+    return filtered_timestamps
 
 def pick_random_sample_from_stamps(timestamps, sample_size, random_seed = 123):
     """
@@ -98,6 +127,122 @@ def pick_random_sample_from_stamps(timestamps, sample_size, random_seed = 123):
     mask = np.isin(timestamps[:, 1], selected_units)
     stamps_sample = timestamps[mask]
     return stamps_sample
+
+def slice_timestamps_by_window(timestamps, window_duration_ms, overlap_fraction=0.0, t_start=0):
+    """
+    Slices an ordered (total_spikes, 2) timestamp array into sequential temporal 
+    windows of a fixed duration, discarding any incomplete trailing window.
+
+    Args:
+        timestamps (numpy array): An (total_spikes, 2) array of sorted spikes.
+        Event times are in column 0 and unit IDs are in column 1.
+        window_duration_ms (float/int): The exact duration desired for each slice (in ms).
+        overlap_fraction (float): Fraction of overlap between consecutive windows [0.0, 1.0).
+    """
+    if len(timestamps) == 0:
+        return timestamps
+        
+    t_end = timestamps[-1, 0]
+    total_duration = t_end - t_start
+    
+    # If the total duration is shorter than a single window, no complete slice can be made
+    if total_duration < window_duration_ms:
+        return timestamps
+
+    # Calculate step size based on overlap
+    step_size = window_duration_ms * (1.0 - overlap_fraction)
+    
+    # Determine the number of complete windows that can fit
+    # total_duration >= window_duration + (nslices - 1) * step_size
+    if step_size > 0:
+        nslices = int((total_duration - window_duration_ms) // step_size) + 1
+    else:
+        # If overlap is somehow configured to completely match step size (not recommended)
+        nslices = 1
+
+    slices = []
+    for i in range(nslices):
+        w_start = t_start + i * step_size
+        w_end = w_start + window_duration_ms
+        
+        # Binary search for window boundaries
+        idx_start = np.searchsorted(timestamps[:, 0], w_start)
+        idx_end = np.searchsorted(timestamps[:, 0], w_end)
+        
+        window_slice = timestamps[idx_start:idx_end].copy()
+        
+        if len(window_slice) > 0:
+            # Cast explicitly to ensure clean floating-point subtraction
+            window_slice = window_slice.astype(np.float64)
+            window_slice[:, 0] -= w_start
+            
+        slices.append(window_slice)
+        
+    return slices
+
+def shuffle_isi(timestamps, random_seed=None):
+    """
+    Creates a surrogate dataset by shuffling the Inter-Spike Intervals (ISIs) 
+    independently for each individual unit.
+    
+    This preserves each neuron's average firing rate and ISI distribution 
+    (first-order statistics) while destroying temporal correlations, 
+    bursting structures, and cross-unit synchrony.
+
+    Parameters
+    ----------
+    timestamps : numpy.ndarray
+        An N x 2 array where column 0 is times and column 1 is unit IDs.
+    random_seed : int or None, optional
+        Seed for the random number generator to for reproducibility.
+        Default is None.
+
+    Returns
+    -------
+    surrogate_timestamps : numpy.ndarray
+        A new N x 2 array sorted chronologically with ISI-shuffled spikes.
+    """
+    rng = np.random.default_rng(random_seed)
+    
+    # Extract unique unit IDs present in this dataset
+    unique_units = np.unique(timestamps[:, 1])
+    
+    # We will collect the newly generated spikes in a list of arrays
+    shuffled_units_data = []
+    
+    for unit in unique_units:
+        # 1. Isolate the spike times for this specific unit
+        unit_mask = (timestamps[:, 1] == unit)
+        unit_times = timestamps[unit_mask, 0]
+        
+        # If a neuron only spiked 0 or 1 time, it has no ISIs to shuffle
+        if len(unit_times) <= 1:
+            # Keep the spike(s) exactly as they were
+            shuffled_times = unit_times
+        else:
+            # 2. Calculate the Inter-Spike Intervals (ISIs)
+            isis = np.diff(unit_times)
+            
+            # 3. Randomly shuffle the order of the intervals
+            rng.shuffle(isis)
+            
+            # 4. Reconstruct the spike train using the cumulative sum.
+            # We anchor the first spike to its original starting time 
+            # to preserve the absolute onset of the neuron's activity.
+            t0 = unit_times[0]
+            shuffled_times = np.concatenate(([t0], t0 + np.cumsum(isis)))
+            
+        # Combine the new times with the unit ID column
+        unit_shuffled_array = np.column_stack((shuffled_times, np.full_like(shuffled_times, unit)))
+        shuffled_units_data.append(unit_shuffled_array)
+        
+    # 5. Concatenate all reconstructed units back into a single matrix
+    surrogate_timestamps = np.vstack(shuffled_units_data)
+    
+    # 6. CRUCIAL: Re-sort chronologically by time so it matches your pipeline format
+    surrogate_timestamps = surrogate_timestamps[surrogate_timestamps[:, 0].argsort()]
+    
+    return surrogate_timestamps
 
 def binary_array_from_stamps(x,binSize):
     """
@@ -140,7 +285,7 @@ def is_function_observable(observable):
 
             
 def average_observable_sample_values(CG_observable, stacked_results):
-    if type(CG_observable) != prg.max_covariance_eigenvalue and type(CG_observable) != prg.avalanche_covariance_eigenvalue:
+    if type(CG_observable) != prg.max_covariance_eigenvalue and type(CG_observable) != prg._avalanche_covariance_eigenvalue:
         CG_observable.avg_across_windows = np.mean(stacked_results, axis=0)
         CG_observable.std_across_windows = np.std(stacked_results, axis=0)
         CG_observable.exponent, CG_observable.exponent_error, CG_observable.exponent_r2 = \
@@ -227,81 +372,6 @@ def average_observable_sample_values_for_functions(CG_observable, stacked_result
     CG_observable.rg_steps = rg_steps
 
     return CG_observable
-
-def run_PRG(timestamps, user_params=None):
-    """
-    Compute the average of a coarse-grained observable over multiple random samples.
-
-    Args:
-        observable_call_list(list of callables): list of functions applied to CGVariables object (e.g. mean_variance)
-        path_to_data (str)                     : path to timestamp data file
-        nsamples (int)                         : number of random subsamples
-        binsize (int)                          : bin size for time discretization
-        samplesize (int)                       : number of timestamps per subsample
-        rg_steps (int)                         : number of coarse-graining steps
-        random_seed (int)                      : seed for random number generation in subsampling
-
-    Returns:
-        CG_observable_dict (dict)              : dictionary with observable names as keys
-        CG_observable (object)                 : observable object with averaged results
-                                                in the following attributes:
-                                                    avg_across_windows (numpy array)
-                                                    exponent (float)
-                                                    exponent_error (float)
-                                                    exponent_r2 (float)
-    """
-    prg_params = get_default_prg_params()
-    if user_params:
-        prg_params.update(user_params)
-
-    # explicitly extract parameters for clarity
-    observable_call_list = prg_params["observables"]
-    rg_steps = prg_params["rg_steps"]
-    binsize = prg_params["binsize"]
-    dt_ms = prg_params["dt_ms"]
-    discard_transient_time_ms = prg_params["discard_transient_time_ms"]
-    nsamples = prg_params["nsamples"]
-    samplesize = prg_params["samplesize"]
-    random_seed = prg_params["random_seed"]
-
-    # one list per observable
-    observable_stacker = {obs.__name__: [] for obs in observable_call_list}
-
-    # run coarse-graining and store observable values for each sample
-    for i in range(nsamples):
-        subsample = pick_random_sample_from_stamps(timestamps, samplesize, random_seed = random_seed*i*nsamples) if samplesize is not None else timestamps
-        binary_time_series = binary_array_from_stamps(subsample, binsize)
-        if discard_transient_time_ms > 0:
-            binary_time_series = discard_transient(binary_time_series, binsize, dt_ms, discard_transient_time_ms)
-        cgvar = prg.CGVariables(binary_time_series, rg_steps=rg_steps)
-
-
-        for call in observable_call_list:
-            CG_observable = call(cgvar)
-            observable_stacker[call.__name__].append(CG_observable.avg_across_windows)
-        # clear_output(wait=True)
-        # print(f"sample {i+1}/{nsamples} done at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
-
-    # average each observable according to its structure
-    result_dict = {}
-
-    for call in observable_call_list:
-        key = call.__name__
-        if not is_function_observable(call):
-            stacked_data = np.stack(observable_stacker[key], axis=0)
-            # reuse structure (has to double calculate, but is
-            # cleaner than instantiating empty object)
-            CG_observable = call(cgvar)  
-            CG_observable = average_observable_sample_values(CG_observable, stacked_data)
-        else:
-            stacked_data = observable_stacker[key]
-            CG_observable = call(cgvar)
-            CG_observable = average_observable_sample_values_for_functions(CG_observable, stacked_data, rg_steps, binary_time_series)
-
-        result_dict[key] = CG_observable
-        # print(f"Averaged observable: {key} at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
-    return result_dict 
 
 def average_across_windows_for_functions(values,rg_steps):
     """
@@ -392,7 +462,7 @@ def make_plots_for_observables(result_dict,
                 plt.close()
 
     
-def save_manifest(files, prg_params):
+def save_manifest(files, prg_params: AnalysisParams):
 
     # create parent folder for analysis results
     data_dir = os.path.dirname(files[0])
@@ -400,9 +470,9 @@ def save_manifest(files, prg_params):
     save_path = os.path.join('./results/', simulation_folder_name)
     os.makedirs(save_path, exist_ok=True)
 
-    clean_params = prg_params.copy()
+    clean_params = dataclasses.asdict(prg_params)
     # Convert objects to strings: [prg.mean_variance] -> ["mean_variance"]
-    clean_params["observables"] = [obs.__name__ for obs in prg_params["observables"]]
+    clean_params["observables"] = [obs.__name__ for obs in prg_params.observables]
     # sort_keys=True ensures the hash is identical even if you write the dict in a different order later
     params_str = json.dumps(clean_params, sort_keys=True)
     full_hash = hashlib.sha256(params_str.encode('utf-8')).hexdigest()
@@ -435,7 +505,7 @@ def save_result_dictionaries(result_dict, prg_params,file_key, analysis_save_pat
     file_results = {}
 
     output_file = os.path.join(analysis_save_path, file_key.replace('.gdf', '.pkl'))
-    for observable in prg_params["observables"]:
+    for observable in prg_params.observables:
         name = observable.__name__
         data_obj = result_dict[observable.__name__]
 
@@ -472,134 +542,4 @@ def save_result_dictionaries(result_dict, prg_params,file_key, analysis_save_pat
 
     print(f"Saved → {output_file}")
 
-def get_default_prg_params():    
-    return {        
-        "observables": [
-            prg.mean_variance, 
-            prg.log_silence_probability, 
-            prg.max_covariance_eigenvalue, 
-            prg.covariance_spectrum, 
-            prg.activity_distribution
-        ],  
-        "rg_steps": 7, 
-        "binsize": 1, 
-        "dt_ms": 1,
-        "discard_transient_time_ms": 500,
-        "samplesize": None, 
-        "nsamples": 1, 
-        "random_seed": 123
-    }
-def run_PRG_in_directory(file_directory, 
-                        skipped_files_list = [],
-                        file_format = "tabular",
-                        user_params = None,
-                        show_plots = False,
-                        save_plots = False,
-                        save_results = False):
 
-    prg_params = get_default_prg_params()
-    if user_params:
-        prg_params.update(user_params)
-
-    if not show_plots and not save_results and not save_plots:
-        print("Warning: You are not showing or saving any results. Set show_plots or save_plots or save_results to True to see or keep your results.")
-    
-    all_files = [f for f in file_directory]
-    N = len(all_files)
-    results_path, plots_path = save_manifest(file_directory, prg_params) if save_results else (None, None)
-
-    for i, path in enumerate(all_files, start=1):
-
-        file_key = os.path.basename(path)
-        
-        # Optionally you can filter to skip unwanted files
-        if i in skipped_files_list or file_key in skipped_files_list:
-            print(f"[{i}/{N}] {file_key} skipped.")
-            continue
-
-        print(f"[{i}/{N}] Processing file: {file_key}")
-        timestamps = load_timestamps(path, file_format, time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0)
-
-        # Calculating observables and averaging across samples
-        result_dict = run_PRG(
-            timestamps = timestamps,
-            user_params = prg_params
-        )
-
-        # Show plots for the observables
-        if show_plots or save_plots:
-            make_plots_for_observables(result_dict, prg_params["observables"], show_plots, save_plots, plots_path, file_key)
-
-        if save_results:
-            save_result_dictionaries(result_dict, prg_params, file_key, results_path)
-            
-
-# ==========================================
-# 1. PARALLELIZATION SETUP
-# ==========================================
-
-def process_single_file(path, i, N, 
-                        skipped_files_list, 
-                        prg_params, 
-                        show_plots, save_plots, save_results, 
-                        results_path, plots_path):
-    
-    file_key = os.path.basename(path)
-    
-    if i in skipped_files_list or file_key in skipped_files_list:
-        print(f"[{i}/{N}] {file_key} skipped.")
-        return
-
-    print(f"[{i}/{N}] Processing file: {file_key}")
-    
-    timestamps = load_timestamps(path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0)
-
-    result_dict = run_PRG(
-            timestamps = timestamps,
-            user_params = prg_params
-        )
-    
-    if show_plots or save_plots:
-        make_plots_for_observables(result_dict, prg_params["observables"], show_plots, save_plots, plots_path, file_key)
-
-    if save_results:
-        save_result_dictionaries(result_dict, prg_params, file_key, results_path)
-
-def run_PRG_in_directory_parallel(file_directory, 
-                        skipped_files_list = [],
-                        file_format = "tabular",
-                        user_params = None,
-                        show_plots = False,
-                        save_plots = False,
-                        save_results = False,
-                        num_cores_to_use=None):
-    prg_params = get_default_prg_params()
-    if user_params:
-        prg_params.update(user_params)
-
-    if not show_plots and not save_results and not save_plots:
-        print("Warning: You are not showing or saving any results.")
-    
-    gdf_files = [f for f in file_directory if f.endswith('.gdf')]
-    N = len(gdf_files)
-
-    results_path, plots_path = None, None
-    if save_results:
-        results_path, plots_path = save_manifest(file_directory, prg_params, skipped_files_list)
-
-    # Launching the parallel pool
-    if not num_cores_to_use:
-        num_cores_to_use = max(1, os.cpu_count() - 3)
-    with ProcessPoolExecutor(max_workers=num_cores_to_use) as executor:
-        futures = [
-            executor.submit(
-                process_single_file, 
-                path, i, N, skipped_files_list, file_format, prg_params, 
-                show_plots, save_plots, save_results, results_path, plots_path
-            )
-            for i, path in enumerate(gdf_files, start=1)
-        ]
-        
-        # This loop forces Python to wait for all files and prints errors if any crash
-        for future in futures:
-            future.result()

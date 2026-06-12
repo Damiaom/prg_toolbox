@@ -6,6 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "prg_toolbox"
 version = "0.1.0"
 description = "Toolbox for Phenomenological Renormalization Group Analysis of brain data"
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn>=1.0" 
+]
 
 # Tell setuptools exactly which folder is the Python package
 [tool.setuptools]

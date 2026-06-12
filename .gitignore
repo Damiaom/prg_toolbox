@@ -10,7 +10,7 @@
 
 !prg_toolbox/**
 !tests/**
-
+git
 # EXCEPTION: Force Git to ignore all python bytecode caches
 **/__pycache__/
 *.pyc

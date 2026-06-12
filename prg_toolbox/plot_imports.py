@@ -16,7 +16,7 @@ from .observables import (
     mean_variance, 
     log_silence_probability, 
     max_covariance_eigenvalue, 
-    avalanche_covariance_eigenvalue,
+    _avalanche_covariance_eigenvalue,
     decay_time, 
     covariance_spectrum, 
     autocorrelation_function,
@@ -186,7 +186,7 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
     plot_kw = {**DEFAULT_LINE_KWARGS, "color":COLORS[data_or_surrogate], **(plot_kwargs or {})}
     fill_kw = {**DEFAULT_FILL_KWARGS, "color":COLORS[data_or_surrogate], **(fill_kwargs or {})}
 
-    if isinstance(data, mean_variance) or isinstance(data, log_silence_probability) or isinstance(data, max_covariance_eigenvalue) or isinstance(data, avalanche_covariance_eigenvalue) or isinstance(data, decay_time):
+    if isinstance(data, mean_variance) or isinstance(data, log_silence_probability) or isinstance(data, max_covariance_eigenvalue) or isinstance(data, _avalanche_covariance_eigenvalue) or isinstance(data, decay_time):
         values = extract_data_from_object(data)
     elif isinstance(data, dict):
         values = extract_data_from_dictionary(data)
@@ -195,4 +195,3 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
     
     return values, plot_kw, fill_kw
 
-import numpy as np

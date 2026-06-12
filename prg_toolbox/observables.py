@@ -454,7 +454,9 @@ class covariance_spectrum:
         
         return pdf_exponent, normalization_constant
 
-class nth_moment:
+class _nth_moment:
+    # Not currently included in the __init__.py import list, 
+    # but this is where it would go if we wanted to add it as an observable.
     def __init__(self, CG_variables, order=4):
         """
         Compute and analyze the scaling of n-th statistical moment under real-space PRG.
@@ -850,7 +852,9 @@ class activity_distribution:
         return probability_density
 
 
-class avalanche_covariance_eigenvalue:
+class _avalanche_covariance_eigenvalue:
+    # Not currently included in the __init__.py import list, 
+    # but this is where it would go if we wanted to add it as an observable.
     def __init__(self, CG_variables):
         """
         Compute and analyze the scaling of max covariance eigenvalue under real-space PRG,
