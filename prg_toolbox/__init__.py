@@ -35,16 +35,10 @@ __all__ = [
     "autocorrelation_function",
     "decay_time",
     "activity_distribution",
-    "avalanche_covariance_eigenvalue",
-    "plot_mean_variance",
-    "plot_log_silence_probability",
-    "plot_max_covariance_eigenvalue",
-    "plot_covariance_spectrum",
-    "plot_autocorrelation_function",
-    "plot_decay_time",
-    "plot_activity_distribution"
-    "plot_avalanche_covariance_eigenvalue",
-    "analysis_tools",
+    "_avalanche_covariance_eigenvalue",
+    "plot",
+    "tools",
     "config_params",
+    "get_scaling_exponent",
     "pipelines"
 ]

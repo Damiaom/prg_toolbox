@@ -11,18 +11,6 @@ import matplotlib.lines as mlines
 #     set_colors_from_palette
 # )
 
-# Import the data classes for type-checking across all plot files
-from ..observables import (
-    mean_variance, 
-    log_silence_probability, 
-    max_covariance_eigenvalue, 
-    _avalanche_covariance_eigenvalue,
-    decay_time, 
-    covariance_spectrum, 
-    autocorrelation_function,
-    activity_distribution
-)
-
 # Shared utility for power laws
 from ..utils import powerLaw_function
 
@@ -186,7 +174,22 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
     plot_kw = {**DEFAULT_LINE_KWARGS, "color":COLORS[data_or_surrogate], **(plot_kwargs or {})}
     fill_kw = {**DEFAULT_FILL_KWARGS, "color":COLORS[data_or_surrogate], **(fill_kwargs or {})}
 
-    if isinstance(data, mean_variance) or isinstance(data, log_silence_probability) or isinstance(data, max_covariance_eigenvalue) or isinstance(data, _avalanche_covariance_eigenvalue) or isinstance(data, decay_time):
+    # Create a set of the string names of your PRG dataclasses/objects
+    valid_observable_types = {
+        "mean_variance", 
+        "log_silence_probability", 
+        "max_covariance_eigenvalue", 
+        "_avalanche_covariance_eigenvalue", 
+        "decay_time",
+        "covariance_spectrum",
+        "autocorrelation_function",
+        "activity_distribution"
+    }
+
+    # Extract the actual name of the class as a string (e.g., "mean_variance")
+    data_type_name = type(data).__name__
+
+    if data_type_name in valid_observable_types:
         values = extract_data_from_object(data)
     elif isinstance(data, dict):
         values = extract_data_from_dictionary(data)
