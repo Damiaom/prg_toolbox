@@ -15,7 +15,7 @@ from .utils import get_scaling_exponent
 from .config import *
 from prg_toolbox.config import AnalysisParams
 
-def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
+def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
     Loads neuronal spike timestamps and unit IDs from various file formats 
     into a standardized N x 2 NumPy array.
@@ -59,7 +59,7 @@ def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\
     
     if format == "tabular":
         # Handles CSV, TSV, TXT, GDF uniformly
-        df = pd.read_csv(file_path, sep=sep, header=header)
+        df = pd.read_csv(file_or_path, sep=sep, header=header) if isinstance(file_or_path, str) else file_or_path
         
         # Extract just the two columns we care about in the right order
         times = df.iloc[:, time_col].to_numpy() * scale_factor
@@ -69,7 +69,7 @@ def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\
         
     elif format == "numpy_2d":
         # Handles standard N x 2 numpy arrays
-        raw_array = np.load(file_path)
+        raw_array = np.load(file_or_path) if isinstance(file_or_path, str) else file_or_path
         times = raw_array[:, time_col] * scale_factor
         units = raw_array[:, unit_col]
         
