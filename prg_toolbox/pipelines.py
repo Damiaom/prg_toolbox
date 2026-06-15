@@ -143,7 +143,7 @@ def run_PRG_in_directory(file_directory,
 
         # Show plots for the observables
         if show_plots or save_plots:
-            make_plots_for_observables(result_dict, prg_params.observables, show_plots, save_plots, plots_path, file_key)
+            make_plots_for_observables(result_dict, prg_params, show_plots, save_plots, plots_path, file_key)
 
         if save_results:
             save_result_dictionaries(result_dict, prg_params, file_key, results_path)

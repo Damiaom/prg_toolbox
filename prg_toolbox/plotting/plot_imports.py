@@ -12,7 +12,7 @@ import matplotlib.lines as mlines
 # )
 
 # Import the data classes for type-checking across all plot files
-from .observables import (
+from ..observables import (
     mean_variance, 
     log_silence_probability, 
     max_covariance_eigenvalue, 
@@ -24,7 +24,7 @@ from .observables import (
 )
 
 # Shared utility for power laws
-from .utils import powerLaw_function
+from ..utils import powerLaw_function
 
 def set_default_kwargs(colors = None):    
     """

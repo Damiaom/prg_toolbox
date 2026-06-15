@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import prg_toolbox as prg
 from .utils import get_scaling_exponent
 from .config import *
+from prg_toolbox.config import AnalysisParams
 
 def load_timestamps(file_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
@@ -435,25 +436,28 @@ def average_across_windows_for_functions(values,rg_steps):
     return avg_across_windows, std_across_windows
 
 def make_plots_for_observables(result_dict, 
-                               observable_call_list, 
+                               prg_params: AnalysisParams, 
                                show_plots=False, 
                                save_plots=False, plots_path=None, 
                                file_key=None, 
                                figsize=(8, 8)):
-        plot_call_list = {"mean_variance": prg.plot_mean_variance,
-                        "log_silence_probability": prg.plot_log_silence_probability,
-                        "max_covariance_eigenvalue": prg.plot_max_covariance_eigenvalue,
-                        "avalanche_covariance_eigenvalue": prg.plot_avalanche_covariance_eigenvalue,
-                        "covariance_spectrum": prg.plot_covariance_spectrum,
-                        "activity_distribution": prg.plot_activity_distribution,
-                        "autocorrelation_function": prg.plot_autocorrelation_function,
-                        "decay_time": prg.plot_decay_time}
+        plot_call_list = {"mean_variance": prg.plot.plot_mean_variance,
+                        "log_silence_probability": prg.plot.plot_log_silence_probability,
+                        "max_covariance_eigenvalue": prg.plot.plot_max_covariance_eigenvalue,
+                        "avalanche_covariance_eigenvalue": prg.plot.plot_avalanche_covariance_eigenvalue,
+                        "covariance_spectrum": prg.plot.plot_covariance_spectrum,
+                        "activity_distribution": prg.plot.plot_activity_distribution,
+                        "autocorrelation_function": prg.plot.plot_autocorrelation_function,
+                        "decay_time": prg.plot.plot_decay_time}
+
+        observable_call_list = prg_params.observables
+        style_kwargs = dataclasses.asdict(prg_params.plot_style)
 
         for call in observable_call_list:
             fig = plt.figure(figsize=figsize)
             observable_name = call.__name__
             observable_object = result_dict[call.__name__]
-            plot_call_list[observable_name](observable_object)
+            plot_call_list[observable_name](observable_object, **style_kwargs)
             if show_plots:
                 plt.show()
             elif save_plots and plots_path is not None:

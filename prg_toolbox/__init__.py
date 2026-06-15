@@ -18,21 +18,12 @@ from .observables import (
     _avalanche_covariance_eigenvalue
 )
 
-# 2. Plotting Functions
-from .plot_mean_variance import plot_mean_variance
-from .plot_log_silence_probability import plot_log_silence_probability
-from .plot_max_covariance_eigenvalue import plot_max_covariance_eigenvalue
-from .plot_covariance_spectrum import plot_covariance_spectrum
-from .plot_autocorrelation_function import plot_autocorrelation_function
-from .plot_decay_time import plot_decay_time
-from .plot_activity_distribution import plot_activity_distribution
-from .plot_avalanche_covariance_eigenvalue import plot_avalanche_covariance_eigenvalue
-
 # 3. Helper/Utility Functions (Optional - sometimes used in notebooks)
 from .utils import get_scaling_exponent
 from . import analysis_tools as tools
 from . import config as config
 from .pipelines import *
+from . import plotting as plot
 
 # Define what is accessible when someone does 'from prg_toolbox import *'
 __all__ = [
