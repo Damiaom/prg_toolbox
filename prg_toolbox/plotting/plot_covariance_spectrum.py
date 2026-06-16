@@ -1,6 +1,4 @@
 from .plot_imports import *
-
-import numpy as np
     
 def labels_marchenko_pastur(spectrum):
     """
