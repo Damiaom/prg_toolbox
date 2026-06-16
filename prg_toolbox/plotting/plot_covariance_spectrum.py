@@ -223,8 +223,9 @@ def set_covariance_spectrum_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_
         plot_kw (list)  : List of line kwargs (one per curve)
         fill_kw (list)  : List of fill kwargs (one per curve)
     """ 
+    data_type_name = type(data).__name__
 
-    if isinstance(data, covariance_spectrum):
+    if data_type_name == "covariance_spectrum":
         values = extract_covariance_spectrum_from_object(data)
     elif isinstance(data, dict):
         values = extract_covariance_spectrum_from_dictionary(data)
