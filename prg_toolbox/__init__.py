@@ -19,9 +19,9 @@ from .observables import (
 )
 
 # Helper/Utility Functions
-from .utils import *
+from .utils import get_scaling_exponent
 from . import analysis_tools as tools
-from prg_toolbox.plotting as plot
+from . import plotting.plot_mean_variance as plot
 from . import config as config
 from .pipelines import *
 
