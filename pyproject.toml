@@ -14,6 +14,6 @@ dependencies = [
     "scikit-learn>=1.0" 
 ]
 
-# Tell setuptools exactly which folder is the Python package
-[tool.setuptools]
-packages = ["prg_toolbox"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["prg_toolbox*"]
