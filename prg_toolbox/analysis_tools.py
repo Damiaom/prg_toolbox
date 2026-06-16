@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from . import observables as obs
 from .utils import get_scaling_exponent
 from .config import *
+from . import plotting as plot
 
 def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
@@ -440,14 +441,14 @@ def make_plots_for_observables(result_dict,
                                save_plots=False, plots_path=None, 
                                file_key=None, 
                                figsize=(8, 8)):
-        plot_call_list = {"mean_variance": obs.plot.plot_mean_variance,
-                        "log_silence_probability": obs.plot.plot_log_silence_probability,
-                        "max_covariance_eigenvalue": obs.plot.plot_max_covariance_eigenvalue,
-                        "avalanche_covariance_eigenvalue": obs.plot.plot_avalanche_covariance_eigenvalue,
-                        "covariance_spectrum": obs.plot.plot_covariance_spectrum,
-                        "activity_distribution": obs.plot.plot_activity_distribution,
-                        "autocorrelation_function": obs.plot.plot_autocorrelation_function,
-                        "decay_time": obs.plot.plot_decay_time}
+        plot_call_list = {"mean_variance": plot.plot_mean_variance,
+                        "log_silence_probability": plot.plot_log_silence_probability,
+                        "max_covariance_eigenvalue": plot.plot_max_covariance_eigenvalue,
+                        "avalanche_covariance_eigenvalue": plot.plot_avalanche_covariance_eigenvalue,
+                        "covariance_spectrum": plot.plot_covariance_spectrum,
+                        "activity_distribution": plot.plot_activity_distribution,
+                        "autocorrelation_function": plot.plot_autocorrelation_function,
+                        "decay_time": plot.plot_decay_time}
 
         observable_call_list = prg_params.observables
         style_kwargs = dataclasses.asdict(prg_params.plot_style)
