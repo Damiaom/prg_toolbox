@@ -10,7 +10,7 @@ import pandas as pd
 import dataclasses
 import matplotlib.pyplot as plt
 
-import prg_toolbox as prg
+import .observables as obs
 from .utils import get_scaling_exponent
 from .config import *
 from prg_toolbox.config import AnalysisParams
@@ -278,7 +278,7 @@ def binary_array_from_stamps(x,binSize):
     return binary_array
 
 def is_function_observable(observable):
-    function_list = [prg.covariance_spectrum, prg.autocorrelation_function, prg.activity_distribution]
+    function_list = [obs.covariance_spectrum, obs.autocorrelation_function, obs.activity_distribution]
     if observable in function_list:
         return True
     else:
@@ -286,7 +286,7 @@ def is_function_observable(observable):
 
             
 def average_observable_sample_values(CG_observable, stacked_results):
-    if type(CG_observable) != prg.max_covariance_eigenvalue and type(CG_observable) != prg._avalanche_covariance_eigenvalue:
+    if type(CG_observable) != obs.max_covariance_eigenvalue and type(CG_observable) != obs._avalanche_covariance_eigenvalue:
         CG_observable.avg_across_windows = np.mean(stacked_results, axis=0)
         CG_observable.std_across_windows = np.std(stacked_results, axis=0)
         CG_observable.exponent, CG_observable.exponent_error, CG_observable.exponent_r2 = \
@@ -363,7 +363,7 @@ def average_across_windows_for_functions(values,rg_steps):
 def average_observable_sample_values_for_functions(CG_observable, stacked_results, rg_steps, raw_timeseries):
     CG_observable.avg_across_windows, CG_observable.std_across_windows = average_across_windows_for_functions(stacked_results, rg_steps)
 
-    if type(CG_observable) == prg.covariance_spectrum:
+    if type(CG_observable) == obs.covariance_spectrum:
         CG_observable.exponent, CG_observable.exponent_error, CG_observable.exponent_r2 = \
         get_scaling_exponent(CG_observable.avg_across_windows[-1][:CG_observable.fit_length], spectrum = True)
         CG_observable.exponent = -CG_observable.exponent
@@ -441,14 +441,14 @@ def make_plots_for_observables(result_dict,
                                save_plots=False, plots_path=None, 
                                file_key=None, 
                                figsize=(8, 8)):
-        plot_call_list = {"mean_variance": prg.plot.plot_mean_variance,
-                        "log_silence_probability": prg.plot.plot_log_silence_probability,
-                        "max_covariance_eigenvalue": prg.plot.plot_max_covariance_eigenvalue,
-                        "avalanche_covariance_eigenvalue": prg.plot.plot_avalanche_covariance_eigenvalue,
-                        "covariance_spectrum": prg.plot.plot_covariance_spectrum,
-                        "activity_distribution": prg.plot.plot_activity_distribution,
-                        "autocorrelation_function": prg.plot.plot_autocorrelation_function,
-                        "decay_time": prg.plot.plot_decay_time}
+        plot_call_list = {"mean_variance": obs.plot.plot_mean_variance,
+                        "log_silence_probability": obs.plot.plot_log_silence_probability,
+                        "max_covariance_eigenvalue": obs.plot.plot_max_covariance_eigenvalue,
+                        "avalanche_covariance_eigenvalue": obs.plot.plot_avalanche_covariance_eigenvalue,
+                        "covariance_spectrum": obs.plot.plot_covariance_spectrum,
+                        "activity_distribution": obs.plot.plot_activity_distribution,
+                        "autocorrelation_function": obs.plot.plot_autocorrelation_function,
+                        "decay_time": obs.plot.plot_decay_time}
 
         observable_call_list = prg_params.observables
         style_kwargs = dataclasses.asdict(prg_params.plot_style)
@@ -475,7 +475,7 @@ def save_manifest(files, prg_params: AnalysisParams):
     os.makedirs(save_path, exist_ok=True)
 
     clean_params = dataclasses.asdict(prg_params)
-    # Convert objects to strings: [prg.mean_variance] -> ["mean_variance"]
+    # Convert objects to strings: [obs.mean_variance] -> ["mean_variance"]
     clean_params["observables"] = [obs.__name__ for obs in prg_params.observables]
     # sort_keys=True ensures the hash is identical even if you write the dict in a different order later
     params_str = json.dumps(clean_params, sort_keys=True)

@@ -19,8 +19,8 @@ from .observables import (
 )
 
 # Helper/Utility Functions
-from . import plotting as plot
 from .utils import get_scaling_exponent
+from . import plotting as plot
 from . import analysis_tools as tools
 from . import config as config
 from .pipelines import *

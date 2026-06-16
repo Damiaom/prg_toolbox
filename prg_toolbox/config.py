@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Callable, Optional, Dict, Any
-import prg_toolbox as prg 
+import .observables as obs 
 
 @dataclass
 class PlotStyleConfig:
@@ -31,13 +31,13 @@ class TimeWindowingParams:
 @dataclass
 class AnalysisParams:
     observables: List[Callable] = field(default_factory=lambda: [
-        prg.mean_variance, 
-        prg.log_silence_probability, 
-        prg.max_covariance_eigenvalue, 
-        prg.covariance_spectrum, 
-        prg.activity_distribution
-        # prg.autocorrelation_function, 
-        # prg.decay_time 
+        obs.mean_variance, 
+        obs.log_silence_probability, 
+        obs.max_covariance_eigenvalue, 
+        obs.covariance_spectrum, 
+        obs.activity_distribution
+        # obs.autocorrelation_function, 
+        # obs.decay_time 
     ])
     rg_steps: int = 7
     cluster_method: str = "pearson"  # Options: 'pearson', 'spearman', 'mutual_info', 'cosine', 'hamming', 'random'
