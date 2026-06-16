@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Callable, Optional, Dict, Any
-import .observables as obs 
+from . import observables as obs 
 
 @dataclass
 class PlotStyleConfig:

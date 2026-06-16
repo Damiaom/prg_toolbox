@@ -10,10 +10,9 @@ import pandas as pd
 import dataclasses
 import matplotlib.pyplot as plt
 
-import .observables as obs
+from . import observables as obs
 from .utils import get_scaling_exponent
 from .config import *
-from prg_toolbox.config import AnalysisParams
 
 def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""

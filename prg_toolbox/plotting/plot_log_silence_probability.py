@@ -1,4 +1,5 @@
 from .plot_imports import *
+from ..utils import powerLaw_function
 
 def labels_log_silence_probability(data, surrogate_data = None):
     """

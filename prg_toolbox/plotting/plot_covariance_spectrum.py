@@ -1,5 +1,6 @@
 from .plot_imports import *
-    
+from ..utils import powerLaw_function
+
 def labels_marchenko_pastur(spectrum):
     """
     Creates axis labels and legend entries for Marchenko-Pastur fits.
