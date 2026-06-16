@@ -97,8 +97,8 @@ def set_activity_distribution_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FIL
     Returns:
         None
     """
-
-    if isinstance(data, activity_distribution):
+    data_type_name = type(data).__name__
+    if data_type_name == "activity_distribution":
         values = extract_activity_distribution_from_object(data)
     elif isinstance(data, dict):
         values = extract_activity_distribution_from_dictionary(data)

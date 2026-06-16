@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+from ..utils import powerLaw_function
 
 def set_default_kwargs(colors = None):    
     """

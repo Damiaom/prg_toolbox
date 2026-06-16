@@ -97,8 +97,9 @@ def set_autocorrelation_function_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_
     Returns:
         None
     """
+    data_type_name = type(data).__name__
 
-    if isinstance(data, autocorrelation_function):
+    if data_type_name == "autocorrelation_function":
         values = extract_autocorrelation_function_from_object(data)
     elif isinstance(data, dict):
         values = extract_autocorrelation_function_from_dictionary(data)

@@ -1,5 +1,4 @@
 from .plot_imports import *
-from ..utils import powerLaw_function
 
 def labels_decay_time(data, surrogate_data = None):
     """
