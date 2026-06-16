@@ -5,7 +5,7 @@ PRG Toolbox: A collection of tools for real-space Renormalization Group
 analysis and visualization of scaling exponents.
 """
 
-# 1. Core Data Classes
+# Core Data Classes
 from .coarse_graining import CGVariables
 from .observables import (
     mean_variance, 
@@ -18,8 +18,8 @@ from .observables import (
     _avalanche_covariance_eigenvalue
 )
 
-# 3. Helper/Utility Functions (Optional - sometimes used in notebooks)
-from .utils import get_scaling_exponent
+# Helper/Utility Functions
+from .utils import *
 from . import analysis_tools as tools
 from . import plotting as plot
 from . import config as config
