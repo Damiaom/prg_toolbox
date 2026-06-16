@@ -20,7 +20,7 @@ from .observables import (
 
 # Helper/Utility Functions
 from .utils import get_scaling_exponent
-# from . import plotting as plot          # uses utils with ..utils powerLaw_function
+from . import plotting as plot          # uses utils with ..utils powerLaw_function
 from . import config as config          # uses observables
 from . import analysis_tools as tools   # uses observables, utils, plot and config
 from .pipelines import *                # uses config and analysis_tools
