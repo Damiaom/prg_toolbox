@@ -12,7 +12,7 @@ import matplotlib.lines as mlines
 # )
 
 # Shared utility for power laws
-from prg_toolbox.utils import powerLaw_function
+# from prg_toolbox.utils import powerLaw_function
 
 def set_default_kwargs(colors = None):    
     """
