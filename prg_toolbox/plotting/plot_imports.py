@@ -2,14 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
-# Import all the shared helper functions
-# from .plot_helper_funcs import (
-#     set_default_kwargs, 
-#     set_values_and_kwargs, 
-#     style_axes, 
-#     apply_log_axes, 
-#     set_colors_from_palette
-# )
 
 # Shared utility for power laws
 # from prg_toolbox.utils import powerLaw_function

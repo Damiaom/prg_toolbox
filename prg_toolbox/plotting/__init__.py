@@ -1,3 +1,4 @@
+from . import plot_imports
 from .plot_mean_variance import plot_mean_variance
 from .plot_log_silence_probability import plot_log_silence_probability
 from .plot_max_covariance_eigenvalue import plot_max_covariance_eigenvalue
