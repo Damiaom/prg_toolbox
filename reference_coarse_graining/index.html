@@ -1,0 +1,1959 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../reference_observables/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>The coarse graining method - PRG Toolbox</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="violet" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-coarse-graining-method-coarse_grainingpy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="PRG Toolbox" class="md-header__button md-logo" aria-label="PRG Toolbox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PRG Toolbox
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The coarse graining method
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="PRG Toolbox" class="md-nav__button md-logo" aria-label="PRG Toolbox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PRG Toolbox
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The coarse graining method
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The coarse graining method
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        coarse_graining
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="coarse_graining">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CGVariables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CGVariables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables.coarse_grain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        coarse_grain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables.get_CG_variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_CG_variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_observables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statistical observables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_analysis_tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_plotting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_pipelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        coarse_graining
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="coarse_graining">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CGVariables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CGVariables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables.coarse_grain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        coarse_grain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prg_toolbox.coarse_graining.CGVariables.get_CG_variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_CG_variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="the-coarse-graining-method-coarse_grainingpy">The coarse graining method (<code>coarse_graining.py</code>)</h1>
+<p>The coarse-graining method within the PRG framework operates by iteratively grouping a high-dimensional system's variables to observe how statistical properties change across scales. Instead of grouping units based on their physical location on a rigid grid (as with the traditional  real-space RG from physics theory), the method groups units based on their functional similarity. The distance between two variables is defined by their statistical correlation, meaning that highly correlated units are treated as neighbors in an abstract functional space and clustered together into a block.</p>
+<p>The method begins with <span class="arithmatex">\(N\)</span> individual binary variables, which the algorithm clusters into pairs or blocks. For each block, the underlying activity of the individual units is summed to create a new macroscopic block variable, effectively halving the total number of variables in the system. The newly <span class="arithmatex">\(N/2\)</span> formed coarse-grained variables <span class="arithmatex">\(\{x^{(k+1)}\}\)</span> for the subsequent scale are then defined as</p>
+<p><span class="arithmatex">\(x_i^{(k+1)} = x_i^{(k)} + x_{j*i}^{(k)} \quad ,\)</span></p>
+<p>where <span class="arithmatex">\(x_i^{(k)}\)</span> and <span class="arithmatex">\(x_{j*i}^{(k)}\)</span> represent the time series activity of two maximally correlated variables at renormalization step <span class="arithmatex">\(k\)</span>.</p>
+<p>This step then repeated recursively, clustering the <span class="arithmatex">\(N/2^{k}\)</span> previously formed blocks into progressively larger blocks at each subsequent scale. As this recursive process continues, different statistical observables can be measured across scales. Their behavior can be used to infer scale-invariant dynamics, mainly through power law statistics and shape collapse of some observables and the convergence of the probability distributions to a fixed non-Gaussian form. In Renormalization Group terminology, the RG transformation delineates a flow through the space of possible probability distributions, which, in the presence of scale invariance, trends toward a non-trivial fixed point in this space.</p>
+<h2 id="references">References</h2>
+<ol>
+<li>Meshulam, L., Gauthier, J. L., Brody, C. D., Tank, D. W., &amp; Bialek, W. (2019). Coarse Graining, Fixed Points, and Scaling in a Large Population of Neurons. <em>Physical Review Letters</em>, 123(17), 178103. <a href="https://doi.org/10.1103/PhysRevLett.123.178103">DOI: 10.1103/PhysRevLett.123.178103</a></li>
+<li>Nicoletti, G., Suweis, S., &amp; Maritan, A. (2020). Scaling and criticality in a phenomenological renormalization group. <em>Physical Review Research</em>, 2(2), 023144. <a href="https://doi.org/10.1103/PhysRevResearch.2.023144">DOI: 10.1103/PhysRevResearch.2.023144</a></li>
+</ol>
+<hr />
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="prg_toolbox.coarse_graining" class="doc doc-heading">
+            <code>prg_toolbox.coarse_graining</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Real-Space Phenomenological Renormalization Group (PRG) Coarse-Graining.</p>
+<p>This module provides the core data infrastructure and algorithmic transformation
+routines required to perform real-space coarse graining on multivariate binary 
+time series (e.g., neural spike-train grids), following the framework described in
+Meshulam et al. (2019).</p>
+<p>The primary engine is the <code>CGVariables</code> wrapper class, which stores coarse grained
+variables across the recursive PRG steps, along with correlation matrices calculated
+and original raw variable indices.</p>
+<p>The coarse graining rule can be implemented with a handful of similarity metrics, 
+including standard correlation definitions as well as information-theoretic and discrete 
+alignment measurements (see below).</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<h3 id="prg_toolbox.coarse_graining-classes">Classes</h3>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="prg_toolbox.coarse_graining.CGVariables" class="doc doc-heading">
+            <code>CGVariables</code>
+
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Wrapper class for performing real-space PRG coarse graining on binary time series data.</p>
+<p>This class applies the real-space coarse graining (PRG) procedure described in
+Meshulam et al. (2019) to multidimensional binary time series. It computes and
+stores the coarse-grained variables, correlation matrices, and cluster indices
+across multiple renormalization group (RG) steps.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>binary_array</code>
+            </td>
+            <td>
+                  <code>numpy array of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Binary time series data of shape (N, t), where N is the number of variables
+and t is the number of time samples. Entries must be 0 or 1.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cluster_method</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Metric used to define similarity between variables during coarse graining.
+Available options are:
+'pearson', 'spearman', 'mutual_information', 'cosine', 'hamming', 'random'.
+Default is "Pearson".</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;pearson&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>rg_steps</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of renormalization group (coarse graining) steps to apply.
+The initial (uncoarse-grained) data corresponds to step k = 0.
+Default is 6 or clusters with up to 64 variables.</p>
+              </div>
+            </td>
+            <td>
+                  <code>6</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="prg_toolbox.coarse_graining.CGVariables.cluster_method">cluster_method</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>String identifying the metric used for pairing variables.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="prg_toolbox.coarse_graining.CGVariables.rg_steps">rg_steps</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of PRG iterations.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="prg_toolbox.coarse_graining.CGVariables.time_window">time_window</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Total length of temporal observation slices (t).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="prg_toolbox.coarse_graining.CGVariables.CG_timeseries">CG_timeseries</span></code></td>
+            <td>
+                  <code>list of ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coarse-grained variables over steps. Scale <code>k</code> has shape (N / 2^k, t).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="prg_toolbox.coarse_graining.CGVariables.CG_correlation_matrices">CG_correlation_matrices</span></code></td>
+            <td>
+                  <code>list of ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Calculated similarity matrices evaluated at the start of each coarse graining step.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="prg_toolbox.coarse_graining.CGVariables.CG_cluster_idx">CG_cluster_idx</span></code></td>
+            <td>
+                  <code>list of list of ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trace indices mapping lineage back to individual constituent units from scale 0.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>prg_toolbox/coarse_graining.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CGVariables</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper class for performing real-space PRG coarse graining on binary time series data.</span>
+
+<span class="sd">    This class applies the real-space coarse graining (PRG) procedure described in</span>
+<span class="sd">    Meshulam et al. (2019) to multidimensional binary time series. It computes and</span>
+<span class="sd">    stores the coarse-grained variables, correlation matrices, and cluster indices</span>
+<span class="sd">    across multiple renormalization group (RG) steps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    binary_array : numpy array of int</span>
+<span class="sd">        Binary time series data of shape (N, t), where N is the number of variables</span>
+<span class="sd">        and t is the number of time samples. Entries must be 0 or 1.</span>
+
+<span class="sd">    cluster_method : str, optional</span>
+<span class="sd">        Metric used to define similarity between variables during coarse graining.</span>
+<span class="sd">        Available options are:</span>
+<span class="sd">        &#39;pearson&#39;, &#39;spearman&#39;, &#39;mutual_information&#39;, &#39;cosine&#39;, &#39;hamming&#39;, &#39;random&#39;.</span>
+<span class="sd">        Default is &quot;Pearson&quot;.</span>
+
+<span class="sd">    rg_steps : int, optional</span>
+<span class="sd">        Number of renormalization group (coarse graining) steps to apply.</span>
+<span class="sd">        The initial (uncoarse-grained) data corresponds to step k = 0.</span>
+<span class="sd">        Default is 6 or clusters with up to 64 variables.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cluster_method : str</span>
+<span class="sd">        String identifying the metric used for pairing variables.</span>
+<span class="sd">    rg_steps : int</span>
+<span class="sd">        Number of PRG iterations.</span>
+<span class="sd">    time_window : int</span>
+<span class="sd">        Total length of temporal observation slices (t).</span>
+<span class="sd">    CG_timeseries : list of ndarray</span>
+<span class="sd">        Coarse-grained variables over steps. Scale `k` has shape (N / 2^k, t).</span>
+<span class="sd">    CG_correlation_matrices : list of ndarray</span>
+<span class="sd">        Calculated similarity matrices evaluated at the start of each coarse graining step.</span>
+<span class="sd">    CG_cluster_idx : list of list of ndarray</span>
+<span class="sd">        Trace indices mapping lineage back to individual constituent units from scale 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_CLUSTER_METHODS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;pearson&quot;</span><span class="p">:</span> <span class="n">_compute_pearson</span><span class="p">,</span>
+    <span class="s2">&quot;spearman&quot;</span><span class="p">:</span> <span class="n">_compute_spearman</span><span class="p">,</span>
+    <span class="s2">&quot;mutual_information&quot;</span><span class="p">:</span> <span class="n">_compute_mutual_information</span><span class="p">,</span>
+    <span class="s2">&quot;cosine&quot;</span><span class="p">:</span> <span class="n">_compute_cosine</span><span class="p">,</span>
+    <span class="s2">&quot;hamming&quot;</span><span class="p">:</span> <span class="n">_compute_hamming</span><span class="p">,</span>
+    <span class="s2">&quot;random&quot;</span><span class="p">:</span> <span class="n">_compute_random</span>   
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary_array</span><span class="p">,</span> <span class="n">cluster_method</span><span class="o">=</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="n">rg_steps</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_method</span> <span class="o">=</span> <span class="n">cluster_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CLUSTER_METHODS</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown cluster method. Choose from: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_CLUSTER_METHODS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rg_steps</span> <span class="o">=</span> <span class="n">rg_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span> <span class="o">=</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Process and assign variables dynamically</span>
+        <span class="n">CG_timeseries</span><span class="p">,</span> <span class="n">CG_correlation_matrices</span><span class="p">,</span> <span class="n">CG_cluster_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_CG_variables</span><span class="p">(</span><span class="n">binary_array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rg_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CG_timeseries</span> <span class="o">=</span> <span class="n">CG_timeseries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CG_correlation_matrices</span> <span class="o">=</span> <span class="n">CG_correlation_matrices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CG_cluster_idx</span> <span class="o">=</span> <span class="n">CG_cluster_idx</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_binary_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">M</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">((</span><span class="n">M</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">M</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">coarse_grain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_variables</span><span class="p">,</span> <span class="n">oldclu_idx</span><span class="p">,</span> <span class="n">cluster_method</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform one step of real-space coarse graining following Meshulam et al.(2019).</span>
+
+<span class="sd">        This function groups pairs of variables based on a chosen similarity metric</span>
+<span class="sd">        and constructs new coarse-grained variables by summing the paired time series.</span>
+<span class="sd">        At each step, the two most similar variables are merged, and the procedure</span>
+<span class="sd">        is repeated until the number of variables is halved.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        old_variables : ndarray of float</span>
+<span class="sd">            Time series data to be coarse grained, of shape (N, t), where N is the</span>
+<span class="sd">            number of variables and t is the number of time samples.</span>
+
+<span class="sd">        oldclu_idx : list of list of int</span>
+<span class="sd">            Indices of the original variables composing each variable at the</span>
+<span class="sd">            current RG step.</span>
+
+<span class="sd">        cluster_method : str, optional</span>
+<span class="sd">            Similarity metric used for coarse graining.</span>
+<span class="sd">            Available options are:</span>
+<span class="sd">            &#39;pearson&#39;, &#39;spearman&#39;, &#39;mutual_information&#39;, &#39;cosine&#39;,</span>
+<span class="sd">            &#39;hamming&#39;, &#39;random&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        new_variables : ndarray of float</span>
+<span class="sd">            Coarse-grained time series of shape (N/2, t), obtained by summing</span>
+<span class="sd">            pairs of maximally correlated variables.</span>
+
+<span class="sd">        corr_matrix : ndarray of float</span>
+<span class="sd">            Similarity (correlation) matrix used during the pairing procedure.</span>
+
+<span class="sd">        newclu_idx : list of list of int</span>
+<span class="sd">            Updated indices of the original variables composing each</span>
+<span class="sd">            coarse-grained variable.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Each variable is used exactly once per coarse-graining step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 1. Compute similarity matrix</span>
+        <span class="n">compute_matrix_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CLUSTER_METHODS</span><span class="p">[</span><span class="n">cluster_method</span><span class="p">]</span>
+        <span class="n">corr_matrix</span> <span class="o">=</span> <span class="n">compute_matrix_fn</span><span class="p">(</span><span class="n">old_variables</span><span class="p">)</span>
+        <span class="n">return_matrix</span> <span class="o">=</span> <span class="n">corr_matrix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">N</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">corr_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">old_variables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">halfN</span> <span class="o">=</span> <span class="n">N</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="n">new_variables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">halfN</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">newclu_idx</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">halfN</span><span class="p">)]</span>
+
+        <span class="c1"># Mask identity entries to avoid self-pairing</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">corr_matrix</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+        <span class="c1"># 2. Pair most correlated units (Meshulam et al. 2019)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">halfN</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">corr_matrix</span><span class="p">),</span> <span class="n">corr_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+            <span class="c1"># Sum rows to generate the next scale&#39;s block variable</span>
+            <span class="n">new_variables</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">old_variables</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">old_variables</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+            <span class="c1"># Track cluster tracking lineage indices</span>
+            <span class="n">newclu_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">oldclu_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">oldclu_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]]))</span>
+
+            <span class="c1"># Eliminate paired rows/columns from future lookup steps</span>
+            <span class="n">corr_matrix</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">corr_matrix</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">corr_matrix</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">corr_matrix</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="k">return</span> <span class="n">new_variables</span><span class="p">,</span> <span class="n">return_matrix</span><span class="p">,</span> <span class="n">newclu_idx</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_CG_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary_array</span><span class="p">,</span> <span class="n">cluster_method</span><span class="p">,</span> <span class="n">rg_steps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply real-space PRG coarse graining to multidimensional binary time series.</span>
+
+<span class="sd">        Recursively calls `coarse_grain` to generate the coarse grained variables</span>
+<span class="sd">        data arrays spanning from step 0 to `self.rg_steps`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        binary_array : ndarray of int</span>
+<span class="sd">            Binary time series data of shape (N, t), where N is the number of</span>
+<span class="sd">            variables and t is the number of time samples.</span>
+
+<span class="sd">        cluster_method : str, optional</span>
+<span class="sd">            Similarity metric used for coarse graining.</span>
+<span class="sd">            Available options are:</span>
+<span class="sd">            &#39;pearson&#39;, &#39;spearman&#39;, &#39;mutual_information&#39;, &#39;cosine&#39;,</span>
+<span class="sd">            &#39;hamming&#39;, &#39;random&#39;.</span>
+
+<span class="sd">        rg_steps : int, optional</span>
+<span class="sd">            Number of renormalization group (coarse graining) steps to apply.</span>
+<span class="sd">            Step k = 0 corresponds to the original (uncoarse-grained) data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CG_var : list of ndarray of float</span>
+<span class="sd">            Coarse-grained time series at each RG step.</span>
+<span class="sd">            Entry k contains an array of shape (N_k, t), where N_k = N / 2^k.</span>
+
+<span class="sd">        corr_matrix : list of ndarray of float</span>
+<span class="sd">            Similarity (correlation) matrices used at each RG step.</span>
+
+<span class="sd">        clu_idx : list of ndarray of int</span>
+<span class="sd">            Indices of the original variables composing each coarse-grained</span>
+<span class="sd">            variable at every RG step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validation checks</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_binary_matrix</span><span class="p">(</span><span class="n">binary_array</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data time series should contain binarized values for real space PRG analysis.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">**</span><span class="n">rg_steps</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of variables in data (</span><span class="si">{</span><span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) is less than required size (</span><span class="si">{</span><span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">rg_steps</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Number of variables is greater than number of samples. Spatial correlations may be unstable.&quot;</span><span class="p">)</span>
+
+        <span class="n">total_steps</span> <span class="o">=</span> <span class="n">rg_steps</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">CG_var</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_steps</span>
+        <span class="n">corr_matrix</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_steps</span>
+        <span class="n">clu_idx</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_steps</span>
+
+        <span class="c1"># Establish base step (k = 0)</span>
+        <span class="n">CG_var</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">corr_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CLUSTER_METHODS</span><span class="p">[</span><span class="n">cluster_method</span><span class="p">](</span><span class="n">CG_var</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">clu_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Execute coarse-graining flow across scales</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_steps</span><span class="p">):</span>
+            <span class="n">CG_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">corr_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">clu_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coarse_grain</span><span class="p">(</span><span class="n">CG_var</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">clu_idx</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">cluster_method</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">CG_var</span><span class="p">,</span> <span class="n">corr_matrix</span><span class="p">,</span> <span class="n">clu_idx</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+<h5 id="prg_toolbox.coarse_graining.CGVariables-functions">Methods:</h5>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="prg_toolbox.coarse_graining.CGVariables.coarse_grain" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">coarse_grain</span><span class="p">(</span><span class="n">old_variables</span><span class="p">,</span> <span class="n">oldclu_idx</span><span class="p">,</span> <span class="n">cluster_method</span><span class="p">)</span></code>
+
+</h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform one step of real-space coarse graining following Meshulam et al.(2019).</p>
+<p>This function groups pairs of variables based on a chosen similarity metric
+and constructs new coarse-grained variables by summing the paired time series.
+At each step, the two most similar variables are merged, and the procedure
+is repeated until the number of variables is halved.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>old_variables</code>
+            </td>
+            <td>
+                  <code>ndarray of float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Time series data to be coarse grained, of shape (N, t), where N is the
+number of variables and t is the number of time samples.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>oldclu_idx</code>
+            </td>
+            <td>
+                  <code>list of list of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Indices of the original variables composing each variable at the
+current RG step.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cluster_method</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Similarity metric used for coarse graining.
+Available options are:
+'pearson', 'spearman', 'mutual_information', 'cosine',
+'hamming', 'random'.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>new_variables</code></td>            <td>
+                  <code>ndarray of float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coarse-grained time series of shape (N/2, t), obtained by summing
+pairs of maximally correlated variables.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td><code>corr_matrix</code></td>            <td>
+                  <code>ndarray of float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Similarity (correlation) matrix used during the pairing procedure.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td><code>newclu_idx</code></td>            <td>
+                  <code>list of list of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Updated indices of the original variables composing each
+coarse-grained variable.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Each variable is used exactly once per coarse-graining step.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>prg_toolbox/coarse_graining.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">coarse_grain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_variables</span><span class="p">,</span> <span class="n">oldclu_idx</span><span class="p">,</span> <span class="n">cluster_method</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform one step of real-space coarse graining following Meshulam et al.(2019).</span>
+
+<span class="sd">    This function groups pairs of variables based on a chosen similarity metric</span>
+<span class="sd">    and constructs new coarse-grained variables by summing the paired time series.</span>
+<span class="sd">    At each step, the two most similar variables are merged, and the procedure</span>
+<span class="sd">    is repeated until the number of variables is halved.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    old_variables : ndarray of float</span>
+<span class="sd">        Time series data to be coarse grained, of shape (N, t), where N is the</span>
+<span class="sd">        number of variables and t is the number of time samples.</span>
+
+<span class="sd">    oldclu_idx : list of list of int</span>
+<span class="sd">        Indices of the original variables composing each variable at the</span>
+<span class="sd">        current RG step.</span>
+
+<span class="sd">    cluster_method : str, optional</span>
+<span class="sd">        Similarity metric used for coarse graining.</span>
+<span class="sd">        Available options are:</span>
+<span class="sd">        &#39;pearson&#39;, &#39;spearman&#39;, &#39;mutual_information&#39;, &#39;cosine&#39;,</span>
+<span class="sd">        &#39;hamming&#39;, &#39;random&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_variables : ndarray of float</span>
+<span class="sd">        Coarse-grained time series of shape (N/2, t), obtained by summing</span>
+<span class="sd">        pairs of maximally correlated variables.</span>
+
+<span class="sd">    corr_matrix : ndarray of float</span>
+<span class="sd">        Similarity (correlation) matrix used during the pairing procedure.</span>
+
+<span class="sd">    newclu_idx : list of list of int</span>
+<span class="sd">        Updated indices of the original variables composing each</span>
+<span class="sd">        coarse-grained variable.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Each variable is used exactly once per coarse-graining step.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1. Compute similarity matrix</span>
+    <span class="n">compute_matrix_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CLUSTER_METHODS</span><span class="p">[</span><span class="n">cluster_method</span><span class="p">]</span>
+    <span class="n">corr_matrix</span> <span class="o">=</span> <span class="n">compute_matrix_fn</span><span class="p">(</span><span class="n">old_variables</span><span class="p">)</span>
+    <span class="n">return_matrix</span> <span class="o">=</span> <span class="n">corr_matrix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">N</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">corr_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">old_variables</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">halfN</span> <span class="o">=</span> <span class="n">N</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="n">new_variables</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">halfN</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">newclu_idx</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">halfN</span><span class="p">)]</span>
+
+    <span class="c1"># Mask identity entries to avoid self-pairing</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">corr_matrix</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="c1"># 2. Pair most correlated units (Meshulam et al. 2019)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">halfN</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">corr_matrix</span><span class="p">),</span> <span class="n">corr_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># Sum rows to generate the next scale&#39;s block variable</span>
+        <span class="n">new_variables</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">old_variables</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">old_variables</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="c1"># Track cluster tracking lineage indices</span>
+        <span class="n">newclu_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">oldclu_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">oldclu_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]]))</span>
+
+        <span class="c1"># Eliminate paired rows/columns from future lookup steps</span>
+        <span class="n">corr_matrix</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">corr_matrix</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">corr_matrix</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">corr_matrix</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="k">return</span> <span class="n">new_variables</span><span class="p">,</span> <span class="n">return_matrix</span><span class="p">,</span> <span class="n">newclu_idx</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h6 id="prg_toolbox.coarse_graining.CGVariables.get_CG_variables" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_CG_variables</span><span class="p">(</span><span class="n">binary_array</span><span class="p">,</span> <span class="n">cluster_method</span><span class="p">,</span> <span class="n">rg_steps</span><span class="p">)</span></code>
+
+</h6>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Apply real-space PRG coarse graining to multidimensional binary time series.</p>
+<p>Recursively calls <code>coarse_grain</code> to generate the coarse grained variables
+data arrays spanning from step 0 to <code>self.rg_steps</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>binary_array</code>
+            </td>
+            <td>
+                  <code>ndarray of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Binary time series data of shape (N, t), where N is the number of
+variables and t is the number of time samples.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cluster_method</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Similarity metric used for coarse graining.
+Available options are:
+'pearson', 'spearman', 'mutual_information', 'cosine',
+'hamming', 'random'.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>rg_steps</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of renormalization group (coarse graining) steps to apply.
+Step k = 0 corresponds to the original (uncoarse-grained) data.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>CG_var</code></td>            <td>
+                  <code>list of ndarray of float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coarse-grained time series at each RG step.
+Entry k contains an array of shape (N_k, t), where N_k = N / 2^k.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td><code>corr_matrix</code></td>            <td>
+                  <code>list of ndarray of float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Similarity (correlation) matrices used at each RG step.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td><code>clu_idx</code></td>            <td>
+                  <code>list of ndarray of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Indices of the original variables composing each coarse-grained
+variable at every RG step.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>prg_toolbox/coarse_graining.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_CG_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary_array</span><span class="p">,</span> <span class="n">cluster_method</span><span class="p">,</span> <span class="n">rg_steps</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply real-space PRG coarse graining to multidimensional binary time series.</span>
+
+<span class="sd">    Recursively calls `coarse_grain` to generate the coarse grained variables</span>
+<span class="sd">    data arrays spanning from step 0 to `self.rg_steps`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    binary_array : ndarray of int</span>
+<span class="sd">        Binary time series data of shape (N, t), where N is the number of</span>
+<span class="sd">        variables and t is the number of time samples.</span>
+
+<span class="sd">    cluster_method : str, optional</span>
+<span class="sd">        Similarity metric used for coarse graining.</span>
+<span class="sd">        Available options are:</span>
+<span class="sd">        &#39;pearson&#39;, &#39;spearman&#39;, &#39;mutual_information&#39;, &#39;cosine&#39;,</span>
+<span class="sd">        &#39;hamming&#39;, &#39;random&#39;.</span>
+
+<span class="sd">    rg_steps : int, optional</span>
+<span class="sd">        Number of renormalization group (coarse graining) steps to apply.</span>
+<span class="sd">        Step k = 0 corresponds to the original (uncoarse-grained) data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    CG_var : list of ndarray of float</span>
+<span class="sd">        Coarse-grained time series at each RG step.</span>
+<span class="sd">        Entry k contains an array of shape (N_k, t), where N_k = N / 2^k.</span>
+
+<span class="sd">    corr_matrix : list of ndarray of float</span>
+<span class="sd">        Similarity (correlation) matrices used at each RG step.</span>
+
+<span class="sd">    clu_idx : list of ndarray of int</span>
+<span class="sd">        Indices of the original variables composing each coarse-grained</span>
+<span class="sd">        variable at every RG step.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Validation checks</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_binary_matrix</span><span class="p">(</span><span class="n">binary_array</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data time series should contain binarized values for real space PRG analysis.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">**</span><span class="n">rg_steps</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of variables in data (</span><span class="si">{</span><span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) is less than required size (</span><span class="si">{</span><span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">rg_steps</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Number of variables is greater than number of samples. Spatial correlations may be unstable.&quot;</span><span class="p">)</span>
+
+    <span class="n">total_steps</span> <span class="o">=</span> <span class="n">rg_steps</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">CG_var</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_steps</span>
+    <span class="n">corr_matrix</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_steps</span>
+    <span class="n">clu_idx</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_steps</span>
+
+    <span class="c1"># Establish base step (k = 0)</span>
+    <span class="n">CG_var</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">binary_array</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">corr_matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CLUSTER_METHODS</span><span class="p">[</span><span class="n">cluster_method</span><span class="p">](</span><span class="n">CG_var</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">clu_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">binary_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Execute coarse-graining flow across scales</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_steps</span><span class="p">):</span>
+        <span class="n">CG_var</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">corr_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">clu_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coarse_grain</span><span class="p">(</span><span class="n">CG_var</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">clu_idx</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">cluster_method</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">CG_var</span><span class="p">,</span> <span class="n">corr_matrix</span><span class="p">,</span> <span class="n">clu_idx</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
