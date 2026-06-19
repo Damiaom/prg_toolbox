@@ -1,27 +1,46 @@
+"""
+Pipelines for full PRG workflows.
+
+This module provides high-level workflows to execute the PRG analysis pipeline
+across single data files or entire datasets.
+
+Core Functions:
+    `run_PRG`: Executes a single analysis loop based on an AnalysisParams configuration.
+    `run_PRG_in_directory`: Runs the pipeline across a collection of files within a directory, 
+      automating plotting, data packing, and exporting results to a uniquely hashed folder.
+    Parallel Variations: Parallelized versions of both workflows are available to speed up 
+      computations across larger datasets.
+"""
+from concurrent.futures import ProcessPoolExecutor
+import os
+import numpy as np
+
+from .coarse_graining import CGVariables
 from .config import *
 from .analysis_tools import *
 
+
 def run_PRG(timestamps, user_params: AnalysisParams = None):
     """
-    Compute the average of a coarse-grained observable over multiple random samples.
+    Execute the PRG analysis pipeline over spatio-temporal splits.
 
-    Args:
-        observable_call_list(list of callables): list of functions applied to CGVariables object (e.g. mean_variance)
-        path_to_data (str)                     : path to timestamp data file
-        nsamples (int)                         : number of random subsamples
-        binsize (int)                          : bin size for time discretization
-        samplesize (int)                       : number of timestamps per subsample
-        rg_steps (int)                         : number of coarse-graining steps
-        random_seed (int)                      : seed for random number generation in subsampling
+    This function isolates steady-state windows from chronological timestamps, 
+    subsamples spatial records, binarizes events, and computes the requested 
+    observables across geometric renormalization scales.
 
-    Returns:
-        CG_observable_dict (dict)              : dictionary with observable names as keys
-        CG_observable (object)                 : observable object with averaged results
-                                                in the following attributes:
-                                                    avg_across_windows (numpy array)
-                                                    exponent (float)
-                                                    exponent_error (float)
-                                                    exponent_r2 (float)
+    Parameters
+    ----------
+    timestamps : ndarray
+        Spike timing matrix formatted with events (e.g., Column 0: time, Column 1: Unit ID).
+    user_params : AnalysisParams, optional
+        Configuration dataclass defining steps, slices, methods, and metrics. 
+        If None, initializes standard factory defaults.
+
+    Returns
+    -------
+    result_dict
+        A summary dictionary mapping observable class identifiers to their 
+        calculated values, scaling exponents and diagnostics.
     """
     if user_params is None:
         params = AnalysisParams()
@@ -44,7 +63,7 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
     random_seed = params.subsampling.random_seed
     
     # Time windowing parameters
-    binsize = params.time_slicing.binary_binsize
+    binsize = params.time_slicing.binary_binsize_ms
     time_window_ms = params.time_slicing.window_duration_ms
     slice_overlap = params.time_slicing.overlap_fraction
     discard_transient_time_ms = params.time_slicing.discard_transient_time_ms
@@ -73,14 +92,14 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
             
             # Construct configuration space mapping
             binary_time_series = binary_array_from_stamps(subsample, binsize)
-            cgvar = prg.CGVariables(binary_time_series, cluster_method=cluster_method, rg_steps=rg_steps)
+            cgvar = CGVariables(binary_time_series, cluster_method=cluster_method, rg_steps=rg_steps)
 
             # Evaluate observables on the current spatio-temporal realization
             for call in observable_call_list:
                 CG_observable = call(cgvar)
                 observable_stacker[call.__name__].append(CG_observable.avg_across_windows)
 
-    # 4. Structural Aggregation and Averaging
+    # Structural Aggregation and Averaging
     result_dict = {}
     for call in observable_call_list:
         key = call.__name__
@@ -105,6 +124,35 @@ def run_PRG_in_directory(file_directory,
                         show_plots = False,
                         save_plots = False,
                         save_results = False):
+    """
+    Run the PRG analysis pipeline sequentially across a directory of data files.
+
+    Loops through all specified file paths, extracts chronological event 
+    timestamps, runs the multi-scale coarse-graining analysis loop, and 
+    optionally exports visualization plots and pickled result dictionaries.
+
+    Parameters
+    ----------
+    file_directory : list of str
+        Collection of absolute or relative file paths to analyze.
+    skipped_files_list : list, optional
+        File names or 1-based integer indices to exclude from processing. 
+        Default is an empty list.
+    file_format : str, optional
+        The format of the input data files (e.g., 'tabular', 'numpy_2d'). 
+        Default is "tabular".
+    user_params : AnalysisParams, optional
+        Configuration settings for the PRG pipeline. If None, default 
+        parameters are initialized.
+    show_plots : bool, optional
+        If True, displays matplotlib visualization figures on screen. 
+        Default is False.
+    save_plots : bool, optional
+        If True, exports generated figure plots as PNG files. Default is False.
+    save_results : bool, optional
+        If True, saves result matrices and scaling exponents to a uniquely 
+        hashed manifest directory. Default is False.
+    """
 
     if user_params is None:
         prg_params = AnalysisParams()
@@ -150,7 +198,7 @@ def run_PRG_in_directory(file_directory,
             
 
 # ==========================================
-# 1. PARALLELIZATION SETUP
+# PARALLELIZATION SETUP
 # ==========================================
 
 def process_single_file(path, i, N, 

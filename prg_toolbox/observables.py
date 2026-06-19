@@ -1,3 +1,25 @@
+"""
+Statistical Observables and Scaling Analysis for Real-Space PRG.
+
+This module implements the measurements (observables) used to analyse 
+scale invariance signatures across coarse-grained variables.
+
+Each class takes a populated `CGVariables` object and calculates its statistical properties as 
+a function of the coarse-graining step $k$, automatically extracting scaling 
+exponents via power-law least-squares fitting.
+
+Calculated observables include:
+
+    * `mean_variance`: Scaling of cluster activity mean variance.
+    * `log_silence_probability`: Scaling of probability of having no activity
+        within a cluster (free-energy proxy).
+    * `max_covariance_eigenvalue`: Scaling of the dominant covariance eigenvalue.
+    * `covariance_spectrum`: Intracluster eigenvalue spectrum scaling alongside 
+      Marchenko-Pastur random matrix null models.
+    * `autocorrelation_function` & `decay_time`: Scaling of autocorrelation decay
+        (critical slowing down).
+    * `activity_distribution`: Probability density profile across transformations.
+"""
 import numpy as np
 import warnings
 from scipy.stats import moment
@@ -25,34 +47,22 @@ class mean_variance:
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Mean variance as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the mean variance.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        avg_across_windows : numpy array, optional
-            Mean of the mean-variance curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the mean-variance curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting the mean variance averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Calculated average variance evaluated across steps.
+        exponent : float
+            Estimated scaling exponent (alpha).
+        exponent_error : float
+            One-sigma fitting uncertainty for the scaling exponent.
+        exponent_r2 : float
+            Goodness of fit metric ($R^2$).
+        avg_across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -93,48 +103,34 @@ class mean_variance:
 class log_silence_probability:
     def __init__(self, CG_variables):
         """
-        Compute and analyze the scaling of log silence probability under real-space PRG.
+        Compute the scaling of log silence probability under real-space PRG.
 
-        This class extracts the log silence probability of coarse-grained variables
-        obtained from a `CG_variables` object and estimates the
-        corresponding scaling exponent.
-
+        Measures the probability that a block variable is entirely quiet.
+        
         Parameters
         ----------
-        CG_variables : CG_variables output object from the real-space
+        CG_variables :  CG_variables output object from the real-space
             coarse graining procedure, containing coarse-grained time series and
             metadata.
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Log silence probability as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the log silence probability.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        across_windows : numpy array, optional
-            Mean of the log silence probability curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the log silence probability curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting the mean variance averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Negative log probability values across steps.
+        exponent : float
+            Estimated scaling exponent (beta).
+        exponent_error : float
+            One-sigma fitting uncertainty for the scaling exponent.
+        exponent_r2 : float
+            Goodness of fit metric ($R^2$).
+        avg_across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -190,48 +186,34 @@ class log_silence_probability:
 class max_covariance_eigenvalue:
     def __init__(self, CG_variables):
         """
-        Compute and analyze the scaling of max covariance eigenvalue under real-space PRG.
+        Analyze the scaling of the maximum covariance eigenvalue under real-space PRG.
 
-        This class extracts the max covariance eigenvalue of coarse-grained variables
-        obtained from a `CG_variables` object and estimates the
-        corresponding scaling exponent.
+        Tracks the dominant shared mode variance trend within emergent cluster blocks.
 
         Parameters
         ----------
-        CG_variables : CG_variables output object from the real-space
+        CG_variables :  CG_variables output object from the real-space
             coarse graining procedure, containing coarse-grained time series and
             metadata.
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Max covariance eigenvalue as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the max covariance eigenvalue.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        across_windows : numpy array, optional
-            Mean of the max covariance eigenvalue curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the max covariance eigenvalue curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting the max covariance eigenvalue averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Averaged maximal eigenvalues computed across steps.
+        exponent : float
+            Calculated scaling exponent (epsilon).
+        exponent_error : float
+            One-sigma fitting uncertainty for the scaling exponent.
+        exponent_r2 : float
+            Goodness of fit metric ($R^2$).
+        avg_across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -275,52 +257,41 @@ class max_covariance_eigenvalue:
 class covariance_spectrum:
     def __init__(self, CG_variables, spectrum_fit_length = 1/5):
         """
-        Compute and analyze the scaling of covariance spectrum under real-space PRG.
+        Analyze the scaling of the intracluster covariance spectra patterns under PRG.
 
-        This class extracts the mean variance of coarse-grained variables
-        obtained from a `CG_variables` object and estimates the
-        corresponding scaling exponent.
+        Fits power-law trends to rank-ordered spectrum curves and compares 
+        the bulk eigenvalue density with Marchenko-Pastur theoretical limits.
 
         Parameters
         ----------
-        CG_variables : CG_variables output object from the real-space
+        CG_variables :  CG_variables output object from the real-space
             coarse graining procedure, containing coarse-grained time series and
             metadata.
-
-        spectrum_fitlength : smallest eigenvalue used to estimate the spectrum exponent mu.
-            This avoids distortions from finite-size effects.
-            Default is 1/4 of the total number of eigenvalues.
+        spectrum_fit_length : float, optional
+            Fractional cutoff specifying how much of the tail rank spectrum to use 
+            to estimate the spectral exponent mu. Default is 1/5.
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Max covariance eigenvalue as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the max covariance eigenvalue.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        across_windows : numpy array, optional
-            Mean of the max covariance eigenvalue curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the max covariance eigenvalue curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting the max covariance eigenvalue averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        fit_length : int
+            spectrum_fit_length argument parsed directly from the arguments.
+        values : list of ndarray
+            Rank-ordered eigenvalue collections evaluated for each scaling step $k$.
+        exponent : float
+            Calculated scaling exponent (mu).
+        mp_x_fit : ndarray
+            X-coordinates evaluating Marchenko-Pastur null curves.
+        mp_y_fit : ndarray
+            Theoretical probability density function values for the MP distribution.
+        mp_lambda_plus : float
+            Analytical upper edge noise bound predicted by Marchenko-Pastur bulk fits.
+        pdf_pl_exponent : float
+            Power-law exponent obtained from Maximum Likelihood Estimation (MLE) of
+            bulk eigenvalues density, which can be analitically compared to exponent mu.
         """
 
         if type(CG_variables) != CGVariables:
@@ -455,8 +426,7 @@ class covariance_spectrum:
         return pdf_exponent, normalization_constant
 
 class _nth_moment:
-    # Not currently included in the __init__.py import list, 
-    # but this is where it would go if we wanted to add it as an observable.
+    # Not currently included in the __init__.py import list,
     def __init__(self, CG_variables, order=4):
         """
         Compute and analyze the scaling of n-th statistical moment under real-space PRG.
@@ -467,44 +437,28 @@ class _nth_moment:
 
         Parameters
         ----------
-        CG_variables : CG_variables output object from the real-space
+        CG_variables :  CG_variables output object from the real-space
             coarse graining procedure, containing coarse-grained time series and
             metadata.
 
-        order : int, optional
-            Order of the statistical moment to compute.
-            Default is 4.
-
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            nth statistical moment as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the nth statistical moment.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        across_windows : numpy array, optional
-            Mean of the mean-variance curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the mean-variance curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting the mean variance averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Calculated average nth-moment evaluated across steps.
+        exponent : float
+            Calculated scaling exponent (alpha_n).
+        exponent_error : float
+            One-sigma fitting uncertainty for the scaling exponent.
+        exponent_r2 : float
+            Goodness of fit metric ($R^2$).
+        avg_across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -550,9 +504,11 @@ class autocorrelation_function:
         Compute and analyze the scaling of zero-lag autocorrelation functions under real-space PRG.
 
         This class extracts the mean autocorrelation of coarse-grained variables
-        obtained from a `CG_variables` object. Note that this one does
-        not estimate any scalig exponent, although it is used in the `decay_time`
-        class to estimate the characteristic decay time scaling exponent.
+        obtained from a `CG_variables` object. 
+        
+        Note: this observable does not estimate a scaling exponent, although it 
+        is used in the `decay_time` class to estimate the characteristic decay time 
+        scaling exponent.
 
         Parameters
         ----------
@@ -562,14 +518,17 @@ class autocorrelation_function:
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Autocorrelation function as a function of RG step.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Autocorrelation function evaluated for each scaling step $k$..
 
-        across_windows : numpy array, optional
-            Mean of the autocorrelation functions  across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the autocorrelation function across time windows.
+        across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -603,7 +562,7 @@ class autocorrelation_function:
 
         Parameters
         ----------
-        CG_timeseries : list of numpy.ndarray
+        CG_timeseries : list of ndarray
             Coarse-grained time series data across RG steps.
             Entry k is a 2D array of shape (N_k, T), where N_k is the number
             of coarse-grained variables at RG step k and T is the number
@@ -615,7 +574,7 @@ class autocorrelation_function:
         Returns
         -------
         mean_autocorrelation : list of numpy.ndarray
-            List of length ``rg_steps``. Entry k is a 1D numpy array of length
+            List of length ``rg_steps``. Entry k is a 1D ndarray of length
             ``2*T - 1`` representing the mean autocorrelation function at RG
             step k, averaged across variables and normalized by its zero-lag
             value.
@@ -639,9 +598,8 @@ class decay_time:
         Compute and analyze the scaling of the autocorrelation decay time
         under real-space PRG.
 
-        This class extracts the characteristic exponential time from autocorrelation
-        functions of coarse-grained variables obtained from a `CG_variables`
-        object and estimates the corresponding scaling exponent.
+        Extracts the characteristic exponential time from autocorrelation
+        functions of coarse-grained variables and estimates the corresponding scaling exponent.
 
         Parameters
         ----------
@@ -656,34 +614,22 @@ class decay_time:
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Decay time as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the decay time.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        across_windows : numpy array, optional
-            Mean of the decay time curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the decay time curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting the mean decay time averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Calculated characteristic decay time evaluated across steps.
+        exponent : float
+            Estimated scaling exponent (z).
+        exponent_error : float
+            One-sigma fitting uncertainty for the scaling exponent.
+        exponent_r2 : float
+            Goodness of fit metric ($R^2$).
+        avg_across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -693,7 +639,6 @@ class decay_time:
         # Generate the required intermediate object
         ac_function = autocorrelation_function(CG_variables)
 
-        time_window = ac_function.time_window
         self.time_window = ac_function.time_window
 
         rg_steps = ac_function.rg_steps
@@ -719,10 +664,7 @@ class decay_time:
         function (ac_values) at each PRG iteration.
 
         For a given renormalization group (RG) step k, the autocorrelation exponential
-        decay time is computed taking into account the first ``nbins`` values. Note that,
-        as some autocorrelation functions decay very rapidly given a choice of time bin,
-        this method attempts to find suitable initial values for the exponential fit to
-        prevent crashes for uncorrelated data.
+        decay time is computed taking into account the first ``nbins`` values. 
         """
         first_bin = int((len(ac_values[0])-1)/2)
         decay_time = np.zeros(rg_steps)
@@ -761,8 +703,7 @@ class activity_distribution:
         """
         Compute and analyze the scaling of coarse-grained variables activity distribution under real-space PRG.
 
-        This class extracts the probability density of (summed) activity of coarse-grained variables
-        obtained from a `CG_variables` object.
+        Extracts the probability density of (summed) activity of coarse-grained variables.
 
         Parameters
         ----------
@@ -772,14 +713,17 @@ class activity_distribution:
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            Activity distribution as a function of RG step.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Summed activity probability density function evaluated for each scaling step $k$..
 
-        across_windows : numpy array, optional
-            Mean of the activity distribution across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the activity distribution across time windows.
+        across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:
@@ -827,11 +771,11 @@ class activity_distribution:
         Returns
         -------
         probability_density : list of numpy.ndarray
-            List of length ``rg_steps``. Entry k is a 1D numpy array of length
+            List of length ``rg_steps``. Entry k is a 1D ndarray of length
             ``k**2`` representing the normalized activity distribution at RG
             step k.
         normalized_activity : list of numpy.ndarray
-            List of length ``rg_steps``. Entry k is a 1D numpy array of length
+            List of length ``rg_steps``. Entry k is a 1D ndarray of length
             ``k**2`` representing the normalized x-axis (possible discrete values
             for the summed activity).
         """
@@ -857,49 +801,36 @@ class _avalanche_covariance_eigenvalue:
     # but this is where it would go if we wanted to add it as an observable.
     def __init__(self, CG_variables):
         """
-        Compute and analyze the scaling of max covariance eigenvalue under real-space PRG,
-        in this case from the neuron-index shuffled variables. 
+        Analyze the scaling of the `avalanche` covariance eigenvalue under real-space PRG.
 
-        This class extracts the "avalanche" covariance eigenvalue of coarse-grained variables
-        obtained from a `CG_variables` object and estimates the
-        corresponding scaling exponent.
+        Computes the dominant covariance eigenvalue out of the index-shuffled raw time series
+        (summed activity at any given time step remains the same). Then, tracks the trend within 
+        emergent cluster blocks.
 
         Parameters
         ----------
-        CG_variables : CG_variables output object from the real-space
+        CG_variables :  CG_variables output object from the real-space
             coarse graining procedure, containing coarse-grained time series and
             metadata.
 
         Attributes
         ----------
-        values : numpy array or list of numpy array (multi-trial)
-            (neuron shuffled) max covariance eigenvalue as a function of RG step.
-
-        exponent : float or numpy array
-            Estimated scaling exponent(s) of the mean variance.
-            If time windowing is used, one value is returned per trial.
-
-        exponent_error : float or numpy array
-            One-sigma uncertainty of the scaling exponent(s).
-
-        exponent_r2 : float or numpy array
-            Coefficient of determination (R²) of the power-law fit(s).
-
-        across_windows : numpy array, optional
-            Mean of the (neuron shuffled) max covariance eigenvalue  curves across time windows.
-
-        std_across_windows : numpy array, optional
-            Standard deviation of the (neuron shuffled) max covariance eigenvalue  curves across time windows.
-
-        global_exponent : float, optional
-            Scaling exponent obtained by fitting (neuron shuffled) max covariance eigenvalue  averaged
-            across time windows.
-
-        global_exponent_error : float, optional
-            Uncertainty of the global scaling exponent.
-
-        global_exponent_r2 : float, optional
-            R² score of the global power-law fit.
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        values : ndarray
+            Averaged maximal eigenvalues computed across steps.
+        exponent : float
+            Calculated scaling exponent (epsilon_avalanche).
+        exponent_error : float
+            One-sigma fitting uncertainty for the scaling exponent.
+        exponent_r2 : float
+            Goodness of fit metric ($R^2$).
+        avg_across_windows : ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
         """
 
         if type(CG_variables) != CGVariables:

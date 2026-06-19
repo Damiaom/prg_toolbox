@@ -1,11 +1,16 @@
-#@title set parameters and run
+"""
+Data preprocessing, result aggregation, and file I/O utilities.
+
+This module provides the independent supporting utilities for the PRG pipeline. 
+It handles data ingestion across formats, temporal shuffling for null models, 
+and functions to aggregate, save, and plot observables.
+"""
 import os
 import hashlib
 import json
 from datetime import datetime
 import pickle
 import numpy as np
-from concurrent.futures import ProcessPoolExecutor
 import pandas as pd
 import dataclasses
 import matplotlib.pyplot as plt
@@ -22,39 +27,42 @@ def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=
 
     The output array is guaranteed to be sorted chronologically by timestamp.
 
-    Args:
-        file_path : str
-            The absolute path to the data file.
-        format : {'tabular', 'numpy_2d', 'phy'}, optional
-            The format of the input data. 
-            - 'tabular': Text-based formats like .csv, .tsv, .txt, or .gdf.
-            - 'numpy_2d': A single .npy file containing a 2D array.
-            - 'phy': A directory containing split 1D arrays (`spike_times.npy` 
-            and `spike_clusters.npy`).
-            Default is 'tabular'.
-        time_col : int, optional
-            The column index containing the timestamp data (0-indexed). Only 
-            used if format is 'tabular' or 'numpy_2d'. Default is 1.
-        unit_col : int, optional
-            The column index containing the neuron/unit ID data (0-indexed). Only 
-            used if format is 'tabular' or 'numpy_2d'. Default is 0.
-        sep : str, optional
-            The delimiter string used to separate values in text files. Use r"\s+" 
-            for space-separated files (like .gdf). Only used if format is 'tabular'. 
-            Default is ','.
-        header : int or None, optional
-            Row number to use as the column names in text files. Use None if there 
-            is no header row. Only used if format is 'tabular'. Default is None.
-        scale_factor : float, optional
-            A multiplier applied to the raw timestamps to convert them into your 
-            desired unit (e.g., converting sample counts to seconds). For example, 
-            if data is sampled at 30kHz, use `scale_factor=1/30000`. Default is 1.0.
-    Returns:
-        timestamps : numpy.ndarray
-            An N x 2 array where column 0 contains spike times and column 1 contains 
-            corresponding neuron/unit IDs. The array is sorted in ascending order by 
-            spike time. Choosing ms as the time unit is recommended for consistency 
-            with other functions.
+    Parameters
+    ----------
+    file_or_path : str
+        The absolute path to the data file or the file itself.
+    format : {'tabular', 'numpy_2d', 'phy'}, optional
+        The format of the input data. 
+        - 'tabular': Text-based formats like .csv, .tsv, .txt, or .gdf.
+        - 'numpy_2d': A single .npy file containing a 2D array.
+        - 'phy': A directory containing split 1D arrays (`spike_times.npy` 
+        and `spike_clusters.npy`).
+        Default is 'tabular'.
+    time_col : int, optional
+        The column index containing the timestamp data (0-indexed). Only 
+        used if format is 'tabular' or 'numpy_2d'. Default is 1.
+    unit_col : int, optional
+        The column index containing the neuron/unit ID data (0-indexed). Only 
+        used if format is 'tabular' or 'numpy_2d'. Default is 0.
+    sep : str, optional
+        The delimiter string used to separate values in text files. Use r"\s+" 
+        for space-separated files (like .gdf). Only used if format is 'tabular'. 
+        Default is ','.
+    header : int or None, optional
+        Row number to use as the column names in text files. Use None if there 
+        is no header row. Only used if format is 'tabular'. Default is None.
+    scale_factor : float, optional
+        A multiplier applied to the raw timestamps to convert them into your 
+        desired unit (e.g., converting sample counts to seconds). For example, 
+        if data is sampled at 30kHz, use `scale_factor=1/30000`. Default is 1.0.
+
+    Returns
+    ----------
+    timestamps : numpy.ndarray
+        An N x 2 array where column 0 contains spike times and column 1 contains 
+        corresponding neuron/unit IDs. The array is sorted in ascending order by 
+        spike time. Choosing ms as the time unit is recommended for consistency 
+        with other functions.
         """
     
     if format == "tabular":
@@ -84,18 +92,21 @@ def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=
     return timestamps
 
 def discard_transient(timestamps, transient_time_ms=0):
-    """Discards an initial transient period.
+    """Discards from original timestamps all events before the specified time.
 
-    Args:
-        timestamps (numpy array): An (total_spikes, 2) array, where 
-                                  timestamps[:, 0] is spike time in ms, and 
-                                  timestamps[:, 1] is the neuron ID.
-        transient_time_ms (float/int): The duration of the transient period to discard.
-    Returns:
-        filtered_timestamps (numpy array): An array of the same format as input, 
-                                        but only containing spikes that occur after 
-                                        the transient period, with times shifted so 
-                                        that the first spike after the transient.
+    Parameters
+    ----------
+    timestamps (numpy array): An (total_spikes, 2) array, where 
+                                timestamps[:, 0] is spike time in ms, and 
+                                timestamps[:, 1] is the neuron ID.
+    transient_time_ms (float/int): The duration of the transient period to discard.
+
+    Returns
+    ----------
+    filtered_timestamps (numpy array): An array with 2 columns as the input, 
+                                    but only containing spikes that occur after 
+                                    the transient period, with times shifted so 
+                                    that the first spike after the transient.
     """
     # 1. Use binary search to find the index where spikes cross the threshold
     # Since column 0 is already sorted, this is an O(log N) operation
@@ -113,13 +124,19 @@ def pick_random_sample_from_stamps(timestamps, sample_size, random_seed = 123):
     """
     Subsample rows based on randomly selected unit indices.
 
-    Args:
-        timestamps (numpy array of floats)      : 2D array with shape (n_spikes, 2)
-        sample_size (int)                       : number of unique units to sample
-        random_seed (int)                       : seed for reproducibility
+    Parameters
+    ----------
+    timestamps : ndarray of floats     
+        2D array with shape (n_spikes, 2)
+    sample_size : integer                      
+        number of unique units to sample
+    random_seed : integer                      
+        seed for reproducibility
 
-    Returns:
-        stamps_sample (numpy array of floats)   : filtered data
+    Returns
+    ----------
+    stamps_sample : ndarray of floats  
+        filtered data
     """
     rng = np.random.default_rng(random_seed)
     original_idx = np.unique(timestamps[:, 1])
@@ -131,14 +148,32 @@ def pick_random_sample_from_stamps(timestamps, sample_size, random_seed = 123):
 
 def slice_timestamps_by_window(timestamps, window_duration_ms, overlap_fraction=0.0, t_start=0):
     """
-    Slices an ordered (total_spikes, 2) timestamp array into sequential temporal 
-    windows of a fixed duration, discarding any incomplete trailing window.
+    Slice an ordered timestamp array into sequential windows of a fixed duration.
 
-    Args:
-        timestamps (numpy array): An (total_spikes, 2) array of sorted spikes.
-        Event times are in column 0 and unit IDs are in column 1.
-        window_duration_ms (float/int): The exact duration desired for each slice (in ms).
-        overlap_fraction (float): Fraction of overlap between consecutive windows [0.0, 1.0).
+    Splits chronological event sequences into overlapping or contiguous temporal blocks 
+    of identical lengths. Any trailing data that cannot form a complete window of the 
+    specified duration is automatically discarded to prevent statistical bias.
+
+    Parameters
+    ----------
+    timestamps : ndarray of shape (n_spikes, 2)
+        Spike timing matrix where column 0 contains event times and column 1 contains unit IDs.
+        The array must be sorted chronologically by time.
+    window_duration_ms : float
+        Temporal duration desired for each generated slice window in milliseconds.
+    overlap_fraction : float, optional
+        The fractional overlap ratio between consecutive window boundaries, bounded between 
+        [0.0, 1.0). Default is 0.0 (no overlap).
+    t_start : float, optional
+        The absolute initial time coordinate to align window generation offsets against. 
+        Default is 0.0.
+
+    Returns
+    -------
+    list of ndarray
+        A list of partitioned timestamp arrays. Each valid sub-array is cast to `float64`, 
+        with its temporal baseline shifted so that the individual window's onset begins at 0.0. 
+        Returns an empty list if the incoming data duration is shorter than a single window.
     """
     if len(timestamps) == 0:
         return timestamps
@@ -245,16 +280,21 @@ def shuffle_isi(timestamps, random_seed=None):
     
     return surrogate_timestamps
 
-def binary_array_from_stamps(x,binSize):
+def binary_array_from_stamps(x,binsize_ms):
     """
     Creates a binary array out of timestamps for a chosen bin size
 
-    Args:
-        x(numpy array of integers)            : timeStamps in (t,neuron_j) form
-        binSize(scalar)                       : amount of time in each array slot (ms)
+    Parameters
+    ----------
+    x : ndarray of floats
+        timeStamps in (t,neuron_j) form
+    binsize_ms : float 
+        amount of time in each array slot (ms)
 
-    Returns:
-        binary_array(numpy array of integers) : (N,nbins) array with 1's on spike times t for neuron N
+    Returns
+    -------
+    binary_array : ndarray of integers
+        (N,nbins) array with 1's on spike times t for neuron N
     """
 
     # map IDs so the first neuron is neuron 0, second is 1 and so on
@@ -266,12 +306,12 @@ def binary_array_from_stamps(x,binSize):
     remapped[:, 1] = np.vectorize(mapping.get)(x[:, 1])
 
     # declare binary array based on last spike and number of units
-    nbins = int((np.max(remapped[:,0])+1)/binSize)
+    nbins = int(1+(np.max(remapped[:,0]))/binsize_ms)
     N = len(np.unique(remapped[:,1]))
     binary_array = np.zeros((N,nbins),dtype=int)
     T = len(binary_array[0,:])
     for i,j in remapped:
-        timeSlot = int(i/binSize)
+        timeSlot = int(i/binsize_ms)
         if timeSlot<T:
             binary_array[int(j),timeSlot] = 1
 
@@ -441,33 +481,72 @@ def make_plots_for_observables(result_dict,
                                save_plots=False, plots_path=None, 
                                file_key=None, 
                                figsize=(8, 8)):
-        plot_call_list = {"mean_variance": plot.plot_mean_variance,
-                        "log_silence_probability": plot.plot_log_silence_probability,
-                        "max_covariance_eigenvalue": plot.plot_max_covariance_eigenvalue,
-                        "avalanche_covariance_eigenvalue": plot.plot_avalanche_covariance_eigenvalue,
-                        "covariance_spectrum": plot.plot_covariance_spectrum,
-                        "activity_distribution": plot.plot_activity_distribution,
-                        "autocorrelation_function": plot.plot_autocorrelation_function,
-                        "decay_time": plot.plot_decay_time}
+    """
+    Automate data visualization for calculated metrics.
 
-        observable_call_list = prg_params.observables
-        style_kwargs = dataclasses.asdict(prg_params.plot_style)
+    Iterates through the requested observables list, initializes separate 
+    matplotlib figure canvases, and maps the results data directly to their 
+    corresponding visualization module while applying user style configurations.
 
-        for call in observable_call_list:
-            fig = plt.figure(figsize=figsize)
-            observable_name = call.__name__
-            observable_object = result_dict[call.__name__]
-            plot_call_list[observable_name](observable_object, **style_kwargs)
-            if show_plots:
-                plt.show()
-            elif save_plots and plots_path is not None:
-                plot_file = os.path.join(plots_path, f"{file_key}_{observable_name}.png")
-                plt.savefig(plot_file)
-                plt.close()
+    Parameters
+    ----------
+    result_dict : dict
+        Calculated trajectories and metric metrics data compiled from `run_PRG`.
+    prg_params : AnalysisParams
+        Active parameter dataclass defining style overrides and active metrics.
+    show_plots : bool, optional
+        If True, displays the generated figure canvas on screen. Default is False.
+    save_plots : bool, optional
+        If True, exports the generated figures to disk as PNG files. Default is False.
+    plots_path : str, optional
+        Directory destination path targeting export file writes. Default is None.
+    file_key : str, optional
+        A unique file prefix string added to the export file names. Default is None.
+    figsize : tuple, optional
+        The layout dimensions (width, height) in inches for the figure canvas. 
+        Default is (8, 8).
+    """
+    plot_call_list = {"mean_variance": plot.plot_mean_variance,
+                    "log_silence_probability": plot.plot_log_silence_probability,
+                    "max_covariance_eigenvalue": plot.plot_max_covariance_eigenvalue,
+                    "avalanche_covariance_eigenvalue": plot.plot_avalanche_covariance_eigenvalue,
+                    "covariance_spectrum": plot.plot_covariance_spectrum,
+                    "activity_distribution": plot.plot_activity_distribution,
+                    "autocorrelation_function": plot.plot_autocorrelation_function,
+                    "decay_time": plot.plot_decay_time}
+
+    observable_call_list = prg_params.observables
+    style_kwargs = dataclasses.asdict(prg_params.plot_style)
+
+    for call in observable_call_list:
+        fig = plt.figure(figsize=figsize)
+        observable_name = call.__name__
+        observable_object = result_dict[call.__name__]
+        plot_call_list[observable_name](observable_object, **style_kwargs)
+        if show_plots:
+            plt.show()
+        elif save_plots and plots_path is not None:
+            plot_file = os.path.join(plots_path, f"{file_key}_{observable_name}.png")
+            plt.savefig(plot_file)
+            plt.close()
 
     
 def save_manifest(files, prg_params: AnalysisParams):
+    """
+    Export runtime parameter details and generate unique directory validation hashes.
 
+    Parameters
+    ----------
+    files : list of str
+        List of file paths used this runtime sequence.
+    prg_params : AnalysisParams
+        Active master configuration dataclass holding operational parameters.
+
+    Returns
+    -------
+    str
+        A unique MD5/SHA tracking hash representing this distinct configuration state.
+    """
     # create parent folder for analysis results
     data_dir = os.path.dirname(files[0])
     simulation_folder_name = os.path.basename(data_dir)
@@ -506,6 +585,20 @@ def save_manifest(files, prg_params: AnalysisParams):
     return results_path, plots_path
 
 def save_result_dictionaries(result_dict, prg_params,file_key, analysis_save_path):
+    """
+    Serialize observable values and exponents into a pickle file.
+
+    Parameters
+    ----------
+    result_dict : dict
+        A summary dictionary mapping observable names to their populated objects.
+    prg_params : AnalysisParams
+        The active parameter dataclass settings utilized during the run execution.
+    file_key : str
+        The original input data file name used to name the output pickle.
+    analysis_save_path : str
+        The directory destination folder where the output file will be written.
+    """
     file_results = {}
 
     output_file = os.path.join(analysis_save_path, file_key.replace('.gdf', '.pkl'))

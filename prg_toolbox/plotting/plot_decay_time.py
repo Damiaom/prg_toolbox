@@ -59,6 +59,7 @@ def plot_decay_time(
     data,
     surrogate_data = None,
     ax=None,
+    style_config=None,
     plot_kwargs=None,
     fill_kwargs=None,
     label_kwargs=None,
@@ -74,6 +75,7 @@ def plot_decay_time(
         data (object or dict)        : Main data (result object or dictionary)
         surrogate_data (same type)   : Optional surrogate data
         ax (matplotlib axis or None) : Axis to plot on
+        style_config (object or None): Global AnalysisParams or PlotStyleConfig dataclass
         plot_kwargs (dict or None)   : Line plot kwargs
         fill_kwargs (dict or None)   : Fill (std. error band) kwargs
         label_kwargs (dict or None)  : Axis label kwargs
@@ -86,6 +88,22 @@ def plot_decay_time(
         None
     """
         
+    # Extract kwargs from the configuration object if provided
+    if style_config is not None:
+        # Handle if the user passes the full AnalysisParams instead of just PlotStyleConfig
+        if hasattr(style_config, "plot_style"):
+            style_config = style_config.plot_style
+            
+        config_dict = dataclasses.asdict(style_config)
+        
+        # Function arguments override configuration object parameters
+        plot_kwargs = plot_kwargs or config_dict.get("plot_kwargs")
+        fill_kwargs = fill_kwargs or config_dict.get("fill_kwargs")
+        label_kwargs = label_kwargs or config_dict.get("label_kwargs")
+        legend_kwargs = legend_kwargs or config_dict.get("legend_kwargs")
+        tick_kwargs = tick_kwargs or config_dict.get("tick_kwargs")
+        colors = colors or config_dict.get("colors")
+
     #----------- Set up labels and colors -------------------
     ax = ax or plt.gca()
     DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS, DEFAULT_LABEL_KWARGS, DEFAULT_LEGEND_KWARGS, COLORS = set_default_kwargs(colors)

@@ -5,12 +5,17 @@ def covariance_evals_and_evectors(x):
     """
     Calculates the data covariance matrix and diagonalizes it
 
-    Args:
-        x   (numpy array of floats)    : data as (x_i, t_j)
+    Parameters
+    ----------
+        x : ndarray of floats
+            data as (x_i, t_j)
 
-    Returns:
-        evals (numpy array of floats)  : Vector of eigenvalues in decreasing order
-        evectors(numpy array of floats): Matrix of eigenvectors in decreasing order
+    Returns
+    ----------
+        evals : ndarray of floats 
+            Vector of eigenvalues in decreasing order
+        evectors : ndarray of floats
+            Matrix of eigenvectors in decreasing order
     """
     x = x - np.mean(x,1,keepdims=True)
     cov_matrix = np.cov(x)
@@ -23,7 +28,7 @@ def covariance_evals_and_evectors(x):
 def powerLaw_function(x,a,b):
     return a*np.power(x,b)
 
-def get_scaling_exponent(CG_observable_values, spectrum = False, max_ev = False):
+def get_scaling_exponent(CG_observable_values, spectrum = False, skip_first_value = False):
     """
     Estimate the scaling exponent of the PRG observables under coarse graining.
 
@@ -32,15 +37,15 @@ def get_scaling_exponent(CG_observable_values, spectrum = False, max_ev = False)
     CG_observable_values : numpy array of float
         Observable values as a function of RG step k.
 
+    spectrum : boolean
+        When fitting the eigenvalue spectrum, the x-axis has 2**k elements (number of variables
+        in a cluster) instead of k (number of rg_steps).
+        Default is False. 
+
     skip_first_value : boolean
         Ignores initial value of the observable when it is trivial
         (e.g. there are no eigenvalues for 1x1 matrices in the 0-th step of coarse-graining).
         Default is False.
-
-    error : numpy array of float or None, optional
-        Standard deviation of `CG_observable` used as weights in the fit.
-        If None, unweighted fitting is performed.
-        Default is None.
 
     Returns
     -------
@@ -55,9 +60,9 @@ def get_scaling_exponent(CG_observable_values, spectrum = False, max_ev = False)
     """
 
     x = CG_observable_values
-    if max_ev:
+    if skip_first_value:
         t = np.array([2**(i+1) for i in range(len(x))])
-    elif                        not spectrum:
+    elif not spectrum:
         t = np.array([2**i for i in range(len(x))])
     else:
         t = np.arange(len(x))+1

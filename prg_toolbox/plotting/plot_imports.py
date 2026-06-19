@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+import dataclasses
 from ..utils import powerLaw_function
 
 def set_default_kwargs(colors = None):    
@@ -50,9 +51,9 @@ def set_default_kwargs(colors = None):
         }
     else:
         COLORS = {
-            "data": colors[0],
-            "surrogate": colors[-2],
-            "reference": colors[-1],
+            "data": colors['data'],
+            "surrogate": colors['surrogate'],
+            "reference": colors['reference'],
         }
 
 
@@ -129,7 +130,7 @@ def set_colors_from_palette(number_of_colors, palette=None, data_or_surrogate='d
         colors (list): List of RGBA colors
     """
     if palette is not None:
-        cmap = plt.get_cmap(palette[0]) if data_or_surrogate == 'data' else plt.get_cmap(palette[1])
+        cmap = plt.get_cmap(palette['data']) if data_or_surrogate == 'data' else plt.get_cmap(palette['surrogate'])
     elif data_or_surrogate == 'data':
         cmap = plt.get_cmap('magma')
     else:
