@@ -13,9 +13,11 @@ import json
 from datetime import datetime
 import pickle
 import numpy as np
+from scipy import stats
 import pandas as pd
 import dataclasses
 import matplotlib.pyplot as plt
+
 
 from . import observables as obs
 from .utils import get_scaling_exponent
@@ -264,7 +266,7 @@ def shuffle_isi(timestamps, random_seed=None):
             # 3. Randomly shuffle the order of the intervals
             rng.shuffle(isis)
             
-            # 4. Reconstruct the spike train using the cumulative sum.
+            # Reconstruct the spike train using the cumulative sum.
             # We anchor the first spike to its original starting time 
             # to preserve the absolute onset of the neuron's activity.
             t0 = unit_times[0]
@@ -274,10 +276,10 @@ def shuffle_isi(timestamps, random_seed=None):
         unit_shuffled_array = np.column_stack((shuffled_times, np.full_like(shuffled_times, unit)))
         shuffled_units_data.append(unit_shuffled_array)
         
-    # 5. Concatenate all reconstructed units back into a single matrix
+    # Concatenate all reconstructed units back into a single matrix
     surrogate_timestamps = np.vstack(shuffled_units_data)
     
-    # 6. CRUCIAL: Re-sort chronologically by time so it matches your pipeline format
+    # Re-sort chronologically by time
     surrogate_timestamps = surrogate_timestamps[surrogate_timestamps[:, 0].argsort()]
     
     return surrogate_timestamps
@@ -318,6 +320,93 @@ def binary_array_from_stamps(x,binsize_ms):
             binary_array[int(j),timeSlot] = 1
 
     return binary_array
+
+def binary_array_from_zscore(x, threshold):
+    """
+    Binarizes continuous time series data based on a row-wise z-score threshold.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Continuous time series matrix of shape (N, T), where N is the number of 
+        variables and T is the number of time points.
+    threshold : float
+        The number of standard deviations above the mean required to register 
+        a binary event (1).
+
+    Returns
+    -------
+    binary_array : numpy.ndarray
+        Binarized integer array containing only active, valid rows.
+    clu_list : numpy.ndarray
+        Array of remaining variable indices, preserving their original positions 
+        relative to the input matrix.
+    """
+    # Vectorized calculation of z-scores across the time axis (columns)
+    z_scores = stats.zscore(x, axis=1)
+    
+    # Generate the binary matrix using a boolean comparison
+    b_matrix = (z_scores > threshold).astype(int)
+    
+    # Create a mask to filter out rows with no activity or containing NaN values
+    has_activity = np.count_nonzero(b_matrix, axis=1) > 0
+    has_nan = np.isnan(z_scores).any(axis=1)
+    mask = has_activity & ~has_nan
+    
+    # Apply the mask to preserve original spatial index tracking
+    clu_list = np.arange(len(x))
+    clu_list = clu_list[mask]
+    binary_array = b_matrix[mask]
+    
+    return binary_array, clu_list
+
+def binary_array_from_zscore_maxima(x, threshold):
+    """
+    Binarizes continuous time series data by detecting local maxima (peaks) 
+    that exceed a specified row-wise z-score threshold.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Continuous time series matrix of shape (N, T), where N is the number of 
+        variables and T is the number of time points.
+    threshold : float
+        The number of standard deviations a local maximum must exceed to be 
+        considered a binary event (1).
+
+    Returns
+    -------
+    binary_array : numpy.ndarray
+        Binarized integer array containing only active, valid rows.
+    clu_list : numpy.ndarray
+        Array of remaining variable indices, preserving their original positions 
+        relative to the input matrix.
+    """
+    N, T = x.shape
+    
+    # Vectorized calculation of z-scores across the time axis (columns)
+    z_scores = stats.zscore(x, axis=1)
+    
+    # Initialize an empty binary matrix matching the shape of the input
+    b_matrix = np.zeros((N, T), dtype=int)
+    
+    # Extract peaks for each row from the precomputed z-score matrix
+    for i in range(N):
+        # Find local maxima indices that pass the height criteria
+        peaks, _ = find_peaks(z_scores[i], height=threshold)
+        b_matrix[i, peaks] = 1
+
+    # Create a mask to filter out rows with no activity or containing NaN values
+    has_activity = np.count_nonzero(b_matrix, axis=1) > 0
+    has_nan = np.isnan(z_scores).any(axis=1)
+    mask = has_activity & ~has_nan
+    
+    # Apply the mask to preserve original spatial index tracking
+    clu_list = np.arange(N)[mask]
+    binary_array = b_matrix[mask]
+    
+    return binary_array, clu_list
+
 
 def is_function_observable(observable):
     function_list = [obs.covariance_spectrum, obs.autocorrelation_function, obs.activity_distribution]
