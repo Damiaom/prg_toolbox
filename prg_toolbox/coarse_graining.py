@@ -1,4 +1,6 @@
 """
+Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
+
 Real-Space Phenomenological Renormalization Group (PRG) Coarse-Graining.
 
 This module provides the core data infrastructure and algorithmic transformation

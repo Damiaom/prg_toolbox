@@ -1,6 +1,7 @@
 # prg_toolbox/__init__.py
-
 """
+Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
+
 PRG Toolbox: A collection of tools for real-space Renormalization Group 
 analysis and visualization of scaling exponents.
 """

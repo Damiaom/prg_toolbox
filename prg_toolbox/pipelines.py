@@ -1,4 +1,6 @@
 """
+Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
+
 Pipelines for full PRG workflows.
 
 This module provides high-level workflows to execute the PRG analysis pipeline

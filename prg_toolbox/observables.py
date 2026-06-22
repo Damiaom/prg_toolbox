@@ -1,4 +1,6 @@
 """
+Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
+
 Statistical Observables and Scaling Analysis for Real-Space PRG.
 
 This module implements the measurements (observables) used to analyse 

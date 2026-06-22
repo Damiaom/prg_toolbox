@@ -1,4 +1,6 @@
 """
+Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
+
 Configuration parameters for PRG analysis.
 
 This module defines the dataclasses used to configure settings and parameters 

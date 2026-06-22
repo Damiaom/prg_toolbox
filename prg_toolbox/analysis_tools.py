@@ -1,4 +1,6 @@
 """
+Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
+
 Data preprocessing, result aggregation, and file I/O utilities.
 
 This module provides the independent supporting utilities for the PRG pipeline. 
