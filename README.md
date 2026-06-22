@@ -30,28 +30,6 @@ These multi-scale signatures can be used to analyze self-organized criticality, 
     *PRX Life 3*, 033026 
     DOI: [10.1103/w49n-2vz8](https://doi.org/10.1103/w49n-2vz8)
 
-## Documentation Index
-
-The toolbox is structured around configurations, core renormalization routines, individual metric implementations, and pipeline orchestration.
-
-### 📑 Configuration (`config.py`)
-Contains the dataclasses used to set parameters for the analysis. This includes time windowing settings (`TimeWindowingParams`), spatial subsampling choices (`SubsamplingParams`), and matplotlib figure layout arguments (`PlotStyleConfig`).
-
-### 🔍 Coarse-Graining (`coarse_graining.py`)
-Implements the `CGVariables` class, which handles the real-space Renormalization Group transformation. It executes the clustering loops, applies similarity matching to pair variables step-by-step, and maps the constituent unit lineages across scales.
-
-### 📈 Statistical Metrics (`observables.py`)
-Implements the distinct diagnostic classes used to calculate network scaling variables at each coarse-graining step. Each class (such as variance scaling, silence probability, eigenvalue spectrum, or temporal decay) accepts a `CGVariables` object and evaluates specific scaling behaviors and exponents.
-
-### 🛠️ Analysis Tools (`analysis_tools.py`)
-Provides functions for data ingestion, temporal preprocessing, and baseline calculations. It includes utilities to remove initial data transients, slice spike timestamps into temporal windows, binarize event arrays, generate shuffled inter-spike interval (ISI) data, and average results across trials.
-
-### ⚙️ Pipelines (`pipelines.py`)
-Coordinates workflow execution by combining the parameter settings, data tools, and coarse-graining routines. It contains functions to process a single data file (`run_PRG`) or sweep folders sequentially or in parallel using multi-core processing.
-
-### 🎨 Visualizations (`plotting/`)
-A submodule directory containing plotting functions corresponding to the classes in `observables.py`. These functions import style settings from the configuration classes to plot uniform output figures.
-
 ## Installation
 
 To clone the repository and install the package locally, run:
