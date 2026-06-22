@@ -10,7 +10,7 @@ PRG Toolbox is a Python package that implements the Phenomenological Renormaliza
 
 ## Method Overview
 
-The toolbox applies the intuition of the renormalization group from statistical physics directly to empirical data without relying on an explicit underlying model. Near a second-order phase transition, the collective dynamics of a complex system become insensitive to most microscopic details, displaying scale-invariant activity. 
+The toolbox applies the intuition of the renormalization group from statistical physics directly to empirical data without relying on an explicit underlying model. Near a second-order phase transition, the collective dynamics of a system become insensitive to most microscopic details, displaying scale-invariant activity. 
 
 The method begins with $N$ individual binary variables, which the algorithm clusters into pairs or blocks. For each block, the underlying activity of the individual units is summed to create a new macroscopic block variable, effectively halving the total number of variables in the system.
 This step then repeated recursively $k$ times, clustering the $N/2^{k}$ previously formed blocks into progressively larger blocks at each subsequent scale. As this recursive process continues, different statistical observables can be measured across scales. Their behavior can be used to infer scale-invariant dynamics, mainly through power law statistics and shape collapse of some observables and the convergence of the probability distributions to a fixed non-Gaussian form. In Renormalization Group terminology, the RG transformation delineates a flow through the space of possible probability distributions, which, in the presence of scale invariance, trends toward a non-trivial fixed point in this space.
