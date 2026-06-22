@@ -76,4 +76,6 @@ prg.plot_mean_variance(results['activity_distribution'])
 
 
 ```
-Detailed tutorials can be found in the Jupyter notebooks in the repository.
+
+👉 **[Read the Full Documentation](https://damiaom.github.io/prg_toolbox/)**
+Detailed tutorials can also be found in the Jupyter notebooks in the repository.
