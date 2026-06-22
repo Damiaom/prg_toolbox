@@ -52,7 +52,6 @@ pip install .
 Here is a basic example showing how to initialize a coarse-graining analysis from a spike time array:
 
 ```python
-import numpy as np
 import matplotlib.pyplot as plt
 import prg_toolbox as prg
 
@@ -66,11 +65,10 @@ f = 'path_to_your_file_here'
 timestamps = prg.tools.load_timestamps(f)
 results = prg.tools.run_PRG(timestamps, user_params=prg_params)
 
-# Load event timings with built-in methods
+# Plot results
 fig = plt.figure(figsize=(8,6))
 prg.plot_mean_variance(results['mean_variance'])
 
-# Load event timings with built-in methods
 fig = plt.figure(figsize=(8,6))
 prg.plot_mean_variance(results['activity_distribution'])
 
