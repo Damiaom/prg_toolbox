@@ -655,7 +655,8 @@
 
     <div class="doc doc-contents first">
 
-        <p>Configuration parameters for PRG analysis.</p>
+        <p>Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.</p>
+<p>Configuration parameters for PRG analysis.</p>
 <p>This module defines the dataclasses used to configure settings and parameters 
 for the Phenomenological Renormalization Group (PRG) pipeline, providing a 
 centralized configuration layer for functions like <code>run_PRG</code>.</p>
@@ -824,9 +825,7 @@ set_default_kwargs() at plotting/plot_imports.py.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>prg_toolbox/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">120</span>
 <span class="normal">121</span>
 <span class="normal">122</span>
 <span class="normal">123</span>
@@ -868,7 +867,9 @@ set_default_kwargs() at plotting/plot_imports.py.</p>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
-<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AnalysisParams</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Master parameters of the PRG analysis workflow.</span>
@@ -1088,9 +1089,7 @@ to <code>ax.tick_params</code> (e.g., <code>labelsize</code>, <code>direction</c
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>prg_toolbox/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
 <span class="normal">30</span>
@@ -1133,7 +1132,9 @@ to <code>ax.tick_params</code> (e.g., <code>labelsize</code>, <code>direction</c
 <span class="normal">67</span>
 <span class="normal">68</span>
 <span class="normal">69</span>
-<span class="normal">70</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlotStyleConfig</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Configuration options for downstream visualization and matplotlib layouts.</span>
@@ -1283,9 +1284,7 @@ Default is 123.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>prg_toolbox/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">74</span>
 <span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span>
@@ -1302,7 +1301,9 @@ Default is 123.</p>
 <span class="normal">88</span>
 <span class="normal">89</span>
 <span class="normal">90</span>
-<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SubsamplingParams</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parameters for subsampling of variables (neurons).</span>
@@ -1438,9 +1439,7 @@ Default is 1.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>prg_toolbox/config.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
@@ -1461,7 +1460,9 @@ Default is 1.</p>
 <span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
-<span class="normal">116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TimeWindowingParams</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parameters for temporal windowing and data binarization.</span>
