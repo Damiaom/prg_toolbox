@@ -49,28 +49,34 @@ pip install .
 
 ## Quick Start
 
-Here is a basic example showing how to initialize a coarse-graining analysis from a spike time array:
+Here is a basic example showing how to initialize a coarse-graining analysis from a binary array:
 
 ```python
-import matplotlib.pyplot as plt
 import prg_toolbox as prg
-
-# Set analysis parameters
+import matplotlib.pyplot as plt
+'''
+prg_toolbox.config.AnalysisParams() loads all the default 
+configurations necessary to run the toolbox.
+'''
 prg_params = prg.config.AnalysisParams()
+
+'''
+We can then change only the parameters we wish to change
+'''
+prg_params.loading.data_format = 'timeseries'
 prg_params.rg_steps = 7
 prg_params.observables = [prg.mean_variance, prg.activity_distribution]
 
-# Load event timings (e.g. neuronal spiking data) with built-in methods
-f = 'path_to_your_file_here'
-timestamps = prg.tools.load_timestamps(f)
-results = prg.tools.run_PRG(timestamps, user_params=prg_params)
 
-# Plot results
-fig = plt.figure(figsize=(8,6))
-prg.plot_mean_variance(results['mean_variance'])
+path_to_data = 'path.npy' # check accepted extensions
+timeseries = prg.tools.load_data(path_to_data, prg_params) 
+results = prg.run_PRG(scale_invariant_timeseries, user_params=prg_params)
 
 fig = plt.figure(figsize=(8,6))
-prg.plot_mean_variance(results['activity_distribution'])
+prg.plot.plot_mean_variance(results['mean_variance'], surrogate_data=results_trivial['mean_variance'], style_config=prg_params)
+
+fig = plt.figure(figsize=(8,6))
+prg.plot.plot_activity_distribution(results['activity_distribution'], surrogate_data=results_trivial['activity_distribution'], style_config=prg_params)
 
 
 ```
