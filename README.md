@@ -70,7 +70,7 @@ prg_params.observables = [prg.mean_variance, prg.activity_distribution]
 
 path_to_data = 'path.npy' # check accepted extensions
 timeseries = prg.tools.load_data(path_to_data, prg_params) 
-results = prg.run_PRG(scale_invariant_timeseries, user_params=prg_params)
+results = prg.run_PRG(timeseries, user_params=prg_params)
 
 fig = plt.figure(figsize=(8,6))
 prg.plot.plot_mean_variance(results['mean_variance'], surrogate_data=results_trivial['mean_variance'], style_config=prg_params)
