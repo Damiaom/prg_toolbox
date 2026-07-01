@@ -50,7 +50,7 @@ pip install .
 ## Quick Start
 
 Here is a basic example showing how to initialize a coarse-graining analysis from a binary array:
-
+(There is also a handful of example notebooks in the repository, with different uses of the toolbox)
 ```python
 import prg_toolbox as prg
 import matplotlib.pyplot as plt
