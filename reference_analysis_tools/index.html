@@ -862,7 +862,12 @@ across windows at RG step k.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 978</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 973</span>
+<span class="normal"> 974</span>
+<span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
 <span class="normal"> 979</span>
 <span class="normal"> 980</span>
 <span class="normal"> 981</span>
@@ -916,12 +921,7 @@ across windows at RG step k.</p>
 <span class="normal">1029</span>
 <span class="normal">1030</span>
 <span class="normal">1031</span>
-<span class="normal">1032</span>
-<span class="normal">1033</span>
-<span class="normal">1034</span>
-<span class="normal">1035</span>
-<span class="normal">1036</span>
-<span class="normal">1037</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">average_across_windows_for_functions</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">rg_steps</span><span class="p">):</span>
+<span class="normal">1032</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">average_across_windows_for_functions</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">rg_steps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the mean and standard deviation across windows for</span>
 <span class="sd">    function-valued observables at each PRG iteration.</span>
@@ -1073,7 +1073,12 @@ across windows at RG step k.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">706</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
 <span class="normal">707</span>
 <span class="normal">708</span>
 <span class="normal">709</span>
@@ -1103,12 +1108,7 @@ across windows at RG step k.</p>
 <span class="normal">733</span>
 <span class="normal">734</span>
 <span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_stamps</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">binsize_ms</span><span class="p">):</span>
+<span class="normal">736</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_stamps</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">binsize_ms</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a binary array out of timestamps for a chosen bin size</span>
 
@@ -1274,7 +1274,12 @@ Default is 0.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">262</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
@@ -1300,12 +1305,7 @@ Default is 0.0.</p>
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">discard_transient</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">data_format</span> <span class="o">=</span> <span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">timeseries_binsize_ms</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">transient_time_ms</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">discard_transient</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">data_format</span> <span class="o">=</span> <span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">timeseries_binsize_ms</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">transient_time_ms</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Removes the initial transient period from data.</span>
 
@@ -1495,7 +1495,12 @@ Default is (8, 8).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1039</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
 <span class="normal">1040</span>
 <span class="normal">1041</span>
 <span class="normal">1042</span>
@@ -1543,12 +1548,7 @@ Default is (8, 8).</p>
 <span class="normal">1084</span>
 <span class="normal">1085</span>
 <span class="normal">1086</span>
-<span class="normal">1087</span>
-<span class="normal">1088</span>
-<span class="normal">1089</span>
-<span class="normal">1090</span>
-<span class="normal">1091</span>
-<span class="normal">1092</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_plots_for_observables</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> 
+<span class="normal">1087</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_plots_for_observables</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> 
                                <span class="n">prg_params</span><span class="p">:</span> <span class="n">AnalysisParams</span><span class="p">,</span> 
                                <span class="n">show_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
                                <span class="n">save_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plots_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -1699,7 +1699,12 @@ Default is (8, 8).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1095</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span>
+<span class="normal">1093</span>
+<span class="normal">1094</span>
+<span class="normal">1095</span>
 <span class="normal">1096</span>
 <span class="normal">1097</span>
 <span class="normal">1098</span>
@@ -1745,12 +1750,7 @@ Default is (8, 8).</p>
 <span class="normal">1138</span>
 <span class="normal">1139</span>
 <span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span>
-<span class="normal">1145</span>
-<span class="normal">1146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_manifest</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">:</span> <span class="n">AnalysisParams</span><span class="p">):</span>
+<span class="normal">1141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_manifest</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">:</span> <span class="n">AnalysisParams</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Export runtime parameter details and generate unique directory validation hashes.</span>
 
@@ -1908,7 +1908,12 @@ Default is (8, 8).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1148</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1143</span>
+<span class="normal">1144</span>
+<span class="normal">1145</span>
+<span class="normal">1146</span>
+<span class="normal">1147</span>
+<span class="normal">1148</span>
 <span class="normal">1149</span>
 <span class="normal">1150</span>
 <span class="normal">1151</span>
@@ -1956,12 +1961,7 @@ Default is (8, 8).</p>
 <span class="normal">1193</span>
 <span class="normal">1194</span>
 <span class="normal">1195</span>
-<span class="normal">1196</span>
-<span class="normal">1197</span>
-<span class="normal">1198</span>
-<span class="normal">1199</span>
-<span class="normal">1200</span>
-<span class="normal">1201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result_dictionaries</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">,</span><span class="n">file_key</span><span class="p">,</span> <span class="n">analysis_save_path</span><span class="p">):</span>
+<span class="normal">1196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result_dictionaries</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">,</span><span class="n">file_key</span><span class="p">,</span> <span class="n">analysis_save_path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serialize observable values and exponents into a pickle file.</span>
 
@@ -2130,7 +2130,12 @@ Default is None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
 <span class="normal">676</span>
@@ -2156,12 +2161,7 @@ Default is None.</p>
 <span class="normal">696</span>
 <span class="normal">697</span>
 <span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shuffle_isi</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">699</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shuffle_isi</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a surrogate dataset by shuffling the Inter-Spike Intervals (ISIs) </span>
 <span class="sd">    independently for each individual unit.</span>

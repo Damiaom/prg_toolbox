@@ -2133,7 +2133,12 @@ across windows at RG step k.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 978</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 973</span>
+<span class="normal"> 974</span>
+<span class="normal"> 975</span>
+<span class="normal"> 976</span>
+<span class="normal"> 977</span>
+<span class="normal"> 978</span>
 <span class="normal"> 979</span>
 <span class="normal"> 980</span>
 <span class="normal"> 981</span>
@@ -2187,12 +2192,7 @@ across windows at RG step k.</p>
 <span class="normal">1029</span>
 <span class="normal">1030</span>
 <span class="normal">1031</span>
-<span class="normal">1032</span>
-<span class="normal">1033</span>
-<span class="normal">1034</span>
-<span class="normal">1035</span>
-<span class="normal">1036</span>
-<span class="normal">1037</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">average_across_windows_for_functions</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">rg_steps</span><span class="p">):</span>
+<span class="normal">1032</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">average_across_windows_for_functions</span><span class="p">(</span><span class="n">values</span><span class="p">,</span><span class="n">rg_steps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the mean and standard deviation across windows for</span>
 <span class="sd">    function-valued observables at each PRG iteration.</span>
@@ -2397,7 +2397,12 @@ Default is 2.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">830</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
 <span class="normal">831</span>
 <span class="normal">832</span>
 <span class="normal">833</span>
@@ -2441,12 +2446,7 @@ Default is 2.0.</p>
 <span class="normal">871</span>
 <span class="normal">872</span>
 <span class="normal">873</span>
-<span class="normal">874</span>
-<span class="normal">875</span>
-<span class="normal">876</span>
-<span class="normal">877</span>
-<span class="normal">878</span>
-<span class="normal">879</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binarize_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">binary_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<span class="normal">874</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binarize_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">binary_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
              <span class="n">binsize_ms</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">zscore_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms raw neural data into a dense binary matrix.</span>
@@ -2588,7 +2588,12 @@ Default is 2.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">706</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
 <span class="normal">707</span>
 <span class="normal">708</span>
 <span class="normal">709</span>
@@ -2618,12 +2623,7 @@ Default is 2.0.</p>
 <span class="normal">733</span>
 <span class="normal">734</span>
 <span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_stamps</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">binsize_ms</span><span class="p">):</span>
+<span class="normal">736</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_stamps</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">binsize_ms</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a binary array out of timestamps for a chosen bin size</span>
 
@@ -2764,7 +2764,12 @@ relative to the input matrix.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">743</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
@@ -2797,12 +2802,7 @@ relative to the input matrix.</p>
 <span class="normal">773</span>
 <span class="normal">774</span>
 <span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_zscore</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+<span class="normal">776</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_zscore</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Binarizes continuous time series data based on a row-wise z-score threshold.</span>
 
@@ -2947,7 +2947,12 @@ relative to the input matrix.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">783</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
 <span class="normal">784</span>
 <span class="normal">785</span>
 <span class="normal">786</span>
@@ -2987,12 +2992,7 @@ relative to the input matrix.</p>
 <span class="normal">820</span>
 <span class="normal">821</span>
 <span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
-<span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_zscore_maxima</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+<span class="normal">823</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">binary_array_from_zscore_maxima</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Binarizes continuous time series data by detecting local maxima (peaks) </span>
 <span class="sd">    that exceed a specified row-wise z-score threshold.</span>
@@ -3168,7 +3168,12 @@ Default is 0.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">262</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
@@ -3194,12 +3199,7 @@ Default is 0.0.</p>
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">discard_transient</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">data_format</span> <span class="o">=</span> <span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">timeseries_binsize_ms</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">transient_time_ms</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">discard_transient</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">data_format</span> <span class="o">=</span> <span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">timeseries_binsize_ms</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">transient_time_ms</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Removes the initial transient period from data.</span>
 
@@ -3514,25 +3514,6 @@ parsing engine based on the specified data format.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>data_format</code>
-            </td>
-            <td>
-                  <code>(<span title="timeseries">timeseries</span>, <span title="timestamps">timestamps</span>)</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A string flag indicating how the data should be interpreted. 
-- 'timeseries': Expects a dense 2D matrix (N_neurons, T_bins).
-- 'tabular' or 'numpy_2col': Expects an event list of spike times and IDs.
-Default is 'timeseries'.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;timeseries&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>user_params</code>
             </td>
             <td>
@@ -3628,12 +3609,7 @@ Default is 'timeseries'.</p>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">user_params</span><span class="p">:</span> <span class="n">AnalysisParams</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">user_params</span><span class="p">:</span> <span class="n">AnalysisParams</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Universal data loader for the PRG Toolbox. Routes files to the correct </span>
 <span class="sd">    parsing engine based on the specified data format.</span>
@@ -3642,11 +3618,6 @@ Default is 'timeseries'.</p>
 <span class="sd">    ----------</span>
 <span class="sd">    filepath : str</span>
 <span class="sd">        The absolute or relative path to the data file.</span>
-<span class="sd">    data_format : {&#39;timeseries&#39;, &#39;timestamps&#39;}, optional</span>
-<span class="sd">        A string flag indicating how the data should be interpreted. </span>
-<span class="sd">        - &#39;timeseries&#39;: Expects a dense 2D matrix (N_neurons, T_bins).</span>
-<span class="sd">        - &#39;tabular&#39; or &#39;numpy_2col&#39;: Expects an event list of spike times and IDs.</span>
-<span class="sd">        Default is &#39;timeseries&#39;.</span>
 <span class="sd">    user_params : AnalysisParams </span>
 <span class="sd">        Active parameter dataclass which define data loading settings in user_params.loading</span>
 
@@ -3844,7 +3815,12 @@ Default is (8, 8).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1039</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1034</span>
+<span class="normal">1035</span>
+<span class="normal">1036</span>
+<span class="normal">1037</span>
+<span class="normal">1038</span>
+<span class="normal">1039</span>
 <span class="normal">1040</span>
 <span class="normal">1041</span>
 <span class="normal">1042</span>
@@ -3892,12 +3868,7 @@ Default is (8, 8).</p>
 <span class="normal">1084</span>
 <span class="normal">1085</span>
 <span class="normal">1086</span>
-<span class="normal">1087</span>
-<span class="normal">1088</span>
-<span class="normal">1089</span>
-<span class="normal">1090</span>
-<span class="normal">1091</span>
-<span class="normal">1092</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_plots_for_observables</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> 
+<span class="normal">1087</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_plots_for_observables</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> 
                                <span class="n">prg_params</span><span class="p">:</span> <span class="n">AnalysisParams</span><span class="p">,</span> 
                                <span class="n">show_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
                                <span class="n">save_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plots_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
@@ -4078,7 +4049,12 @@ Default is 123.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">354</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
 <span class="normal">357</span>
@@ -4101,12 +4077,7 @@ Default is 123.</p>
 <span class="normal">374</span>
 <span class="normal">375</span>
 <span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pick_random_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">123</span><span class="p">):</span>
+<span class="normal">377</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pick_random_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">123</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Randomly subsamples a set number of units (neurons) from the data.</span>
 
@@ -4844,7 +4815,12 @@ hashed manifest directory. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1095</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span>
+<span class="normal">1093</span>
+<span class="normal">1094</span>
+<span class="normal">1095</span>
 <span class="normal">1096</span>
 <span class="normal">1097</span>
 <span class="normal">1098</span>
@@ -4890,12 +4866,7 @@ hashed manifest directory. Default is False.</p>
 <span class="normal">1138</span>
 <span class="normal">1139</span>
 <span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
-<span class="normal">1144</span>
-<span class="normal">1145</span>
-<span class="normal">1146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_manifest</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">:</span> <span class="n">AnalysisParams</span><span class="p">):</span>
+<span class="normal">1141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_manifest</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">:</span> <span class="n">AnalysisParams</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Export runtime parameter details and generate unique directory validation hashes.</span>
 
@@ -5053,7 +5024,12 @@ hashed manifest directory. Default is False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1148</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1143</span>
+<span class="normal">1144</span>
+<span class="normal">1145</span>
+<span class="normal">1146</span>
+<span class="normal">1147</span>
+<span class="normal">1148</span>
 <span class="normal">1149</span>
 <span class="normal">1150</span>
 <span class="normal">1151</span>
@@ -5101,12 +5077,7 @@ hashed manifest directory. Default is False.</p>
 <span class="normal">1193</span>
 <span class="normal">1194</span>
 <span class="normal">1195</span>
-<span class="normal">1196</span>
-<span class="normal">1197</span>
-<span class="normal">1198</span>
-<span class="normal">1199</span>
-<span class="normal">1200</span>
-<span class="normal">1201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result_dictionaries</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">,</span><span class="n">file_key</span><span class="p">,</span> <span class="n">analysis_save_path</span><span class="p">):</span>
+<span class="normal">1196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result_dictionaries</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">prg_params</span><span class="p">,</span><span class="n">file_key</span><span class="p">,</span> <span class="n">analysis_save_path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serialize observable values and exponents into a pickle file.</span>
 
@@ -5275,7 +5246,12 @@ Default is None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
 <span class="normal">676</span>
@@ -5301,12 +5277,7 @@ Default is None.</p>
 <span class="normal">696</span>
 <span class="normal">697</span>
 <span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shuffle_isi</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">699</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shuffle_isi</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a surrogate dataset by shuffling the Inter-Spike Intervals (ISIs) </span>
 <span class="sd">    independently for each individual unit.</span>
@@ -5503,7 +5474,12 @@ For timestamps, the temporal baseline is shifted so each window begins at t=0.</
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>prg_toolbox/analysis_tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
 <span class="normal">506</span>
 <span class="normal">507</span>
 <span class="normal">508</span>
@@ -5548,12 +5524,7 @@ For timestamps, the temporal baseline is shifted so each window begins at t=0.</
 <span class="normal">547</span>
 <span class="normal">548</span>
 <span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">slice_by_time_window</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window_duration_ms</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> 
+<span class="normal">550</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">slice_by_time_window</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window_duration_ms</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s1">&#39;timeseries&#39;</span><span class="p">,</span> 
                     <span class="n">timeseries_binsize_ms</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">overlap_fraction</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">t_start</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Slices chronological data into sequential windows of a fixed duration.</span>
