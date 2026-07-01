@@ -555,12 +555,12 @@ def slice_by_time_window(data, window_duration_ms, data_format='timeseries',
         raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy_2col'")
     
 
-def shuffle_isi(timestamps, random_seed=None):
+def _shuffle_isi_timestamps(timestamps, random_seed=None):
     """
     Creates a surrogate dataset by shuffling the Inter-Spike Intervals (ISIs) 
     independently for each individual unit.
     
-    This preserves each neuron's average firing rate and ISI distribution 
+    This preserves each unit's average firing rate and ISI distribution 
     (first-order statistics) while destroying temporal correlations, 
     bursting structures, and cross-unit synchrony.
 
@@ -618,6 +618,90 @@ def shuffle_isi(timestamps, random_seed=None):
     surrogate_timestamps = surrogate_timestamps[surrogate_timestamps[:, 0].argsort()]
     
     return surrogate_timestamps
+
+def _shuffle_isi_binary(binary_data, random_seed=None):
+    """
+    Creates a surrogate dataset by shuffling the Inter-Spike Intervals (ISIs) 
+    independently for each individual unit.
+    
+    This preserves each unit's average firing rate and ISI distribution 
+    (first-order statistics) while destroying temporal correlations, 
+    bursting structures, and cross-unit synchrony.
+
+    Parameters
+    ----------
+    binary_data : ndarray of shape (n_units, n_timebins)
+        Spike timing matrix with units in rows and time bins in columns (N,T).
+    random_seed : int or None, optional
+        Seed for the random number generator to for reproducibility.
+        Default is None.
+
+    Returns
+    -------
+    surrogate_data : numpy.ndarray
+        A new N x T array with ISI-shuffled spikes.
+    """
+    rng = np.random.default_rng(random_seed)
+    
+    # Pre-allocate a clean matrix of zeros with the exact same shape
+    surrogate_data = np.zeros_like(binary_data)
+    
+    # Iterate through each row (neuron/voxel)
+    for i in range(binary_data.shape[0]):
+        # Find the exact bin indices where this unit is active (i.e., where data == 1)
+        spike_idx = np.nonzero(binary_data[i, :])[0]
+        
+        if len(spike_idx) <= 1:
+            # Not enough spikes to shuffle, map them directly to the new matrix
+            surrogate_data[i, spike_idx] = binary_data[i, spike_idx]
+        else:
+            # Calculate the intervals between active bins
+            isis = np.diff(spike_idx)
+            
+            # Randomly shuffle the order of the intervals
+            rng.shuffle(isis)
+            
+            # Reconstruct the new active bin indices, anchoring to the first spike
+            t0 = spike_idx[0]
+            new_spike_idx = np.concatenate(([t0], t0 + np.cumsum(isis)))
+            
+            # Map the spikes back into the clean matrix
+            surrogate_data[i, new_spike_idx] = binary_data[i, spike_idx]
+            
+    return surrogate_data
+
+def shuffle_isi(data, data_format='timeseries', random_seed=None):
+    """
+    Creates a surrogate dataset by shuffling the Inter-Spike Intervals (ISIs) 
+    independently for each individual unit.
+    
+    This preserves each unit's average firing rate and ISI distribution 
+    (first-order statistics) while destroying temporal correlations, 
+    bursting structures, and cross-unit synchrony.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The input neural data. Can be either a dense binary matrix (timeseries) 
+        or a sparse 2-column array (timestamps).
+    data_format : {'timeseries', 'tabular', 'numpy_2col'}, optional
+        A string flag indicating the format of the input `data`. 
+        Default is 'timeseries'.
+    random_seed : int, optional
+        Seed for the random number generator to ensure reproducibility.
+        Default is None.
+
+    Returns
+    -------
+    numpy.ndarray
+        The surrogate dataset in the exact same format as the input.
+    """
+    if data_format == 'timeseries':
+        return _shuffle_isi_binary(data, random_seed)
+    elif data_format == 'tabular' or data_format == 'numpy_2col':
+        return _shuffle_isi_timestamps(data, random_seed)
+    else:
+        raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy2col'.")
 
 def binary_array_from_stamps(x,binsize_ms):
     """

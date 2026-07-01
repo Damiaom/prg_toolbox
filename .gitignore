@@ -12,6 +12,7 @@
 !prg_toolbox/**
 !tests/**
 !example_notebooks/**
+
 git
 # EXCEPTION: Force Git to ignore all python bytecode caches
 **/__pycache__/
