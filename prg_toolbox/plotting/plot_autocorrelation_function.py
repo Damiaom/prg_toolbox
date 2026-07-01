@@ -110,7 +110,16 @@ def set_autocorrelation_function_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_
     colors_by_iteration = set_colors_from_palette(number_of_colors,palette, data_or_surrogate=data_or_surrogate)
     plot_kw = [{**DEFAULT_LINE_KWARGS, "color":colors_by_iteration[k], **(plot_kwargs or {})} for k in range(len(values["y"]))]
     fill_kw = [{**DEFAULT_FILL_KWARGS, "color":colors_by_iteration[k], **(fill_kwargs or {})} for k in range(len(values["y"]))]
-
+    for k in range(len(values["y"])- 1):
+        if "alpha" in plot_kw[k]:
+            plot_kw[k]["alpha"] = fill_kw[k]["alpha"]*k/(len(values["y"]))
+        else:
+            plot_kw[k]["alpha"] = k/(len(values["y"]))
+            
+        if "alpha" in fill_kw[k]:
+            fill_kw[k]["alpha"] = fill_kw[k]["alpha"]*k/(len(values["y"]))
+        else:
+            fill_kw[k]["alpha"] = k/(len(values["y"]))
     return values, plot_kw, fill_kw
 
 def draw_plot_autocorrelation_function(values, ax, plot_kw=None, fill_kw=None):
@@ -233,6 +242,6 @@ def plot_autocorrelation_function(
 
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend:
+    if legend and config_dict.get("show_legend"):
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

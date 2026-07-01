@@ -83,16 +83,11 @@ def set_activity_distribution_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FIL
     Prepares activity distribution values and per-curve plotting kwargs.
 
     Args:
-        data (object or dict)        : Main data
-        surrogate_data (same type)   : Optional surrogate data
-        ax (matplotlib axis or None) : Axis to plot on
         plot_kwargs (dict or None)   : Line plot kwargs
         fill_kwargs (dict or None)   : Fill kwargs
-        label_kwargs (dict or None)  : Axis label kwargs
-        legend_kwargs (dict or None) : Legend kwargs
-        tick_kwargs (dict or None)   : Tick styling kwargs
         palette (list, tuple or None): Color palettes
-        legend (bool)                : Whether to display legend
+        data (object or dict)        : Main data
+        data_or_surrogate (str)      : Identifier for data type
 
     Returns:
         None
@@ -109,6 +104,17 @@ def set_activity_distribution_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FIL
     colors_by_iteration = set_colors_from_palette(number_of_colors,palette, data_or_surrogate=data_or_surrogate)
     plot_kw = [{**DEFAULT_LINE_KWARGS, "color":colors_by_iteration[k], **(plot_kwargs or {})} for k in range(len(values["y"]))]
     fill_kw = [{**DEFAULT_FILL_KWARGS, "color":colors_by_iteration[k], **(fill_kwargs or {})} for k in range(len(values["y"]))]
+    for k in range(len(values["y"])- 1):
+        if "alpha" in plot_kw[k]:
+            plot_kw[k]["alpha"] = fill_kw[k]["alpha"]*k/(len(values["y"]))
+        else:
+            plot_kw[k]["alpha"] = k/(len(values["y"]))
+            
+        if "alpha" in fill_kw[k]:
+            fill_kw[k]["alpha"] = fill_kw[k]["alpha"]*k/(len(values["y"]))
+        else:
+            fill_kw[k]["alpha"] = k/(len(values["y"]))
+
 
     return values, plot_kw, fill_kw
 
@@ -242,6 +248,6 @@ def plot_activity_distribution(
 
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend:
+    if legend and config_dict.get("show_legend"):
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

@@ -143,6 +143,6 @@ def plot_decay_time(
     all_labels = labels_decay_time(values, values_surrogate)
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend:
+    if legend and config_dict.get("show_legend"):
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

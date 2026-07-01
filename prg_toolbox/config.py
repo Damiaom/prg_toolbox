@@ -60,7 +60,7 @@ class PlotStyleConfig:
     Note: Kwargs left blank will trigger the default kwargs defined in set_default_kwargs() at plotting/plot_imports.py,
     """
     # Global/shared layout flags
-    legend: bool = True
+    show_legend: bool = True
     colors: Optional[Dict[str, str]] = None
     palette: Optional[Dict[str, str]] = None
     
@@ -70,6 +70,24 @@ class PlotStyleConfig:
     label_kwargs: Dict[str, Any] = field(default_factory=dict)
     legend_kwargs: Dict[str, Any] = field(default_factory=dict)
     tick_kwargs: Dict[str, Any] = field(default_factory=dict)
+
+@dataclass
+class DataLoadingParams:
+    """Configuration for data ingestion."""
+    data_format: str = "timeseries" # 'timeseries', 'tabular' or 'numpy_2col'
+    binary_method: Optional[str] = None # None, 'zscore_threshold' or 'zscore_maxima'
+    zscore_threshold: float = 2.0
+
+    # --- Timestamp specific ---
+    time_col: int = 1
+    unit_col: int = 0
+    sep: str = r"\s+"
+    header: Optional[int] = None
+    scale_factor: float = 1.0
+    
+    # --- Timeseries specific ---
+    delimiter: Optional[str] = None
+    mat_key: Optional[str] = None
 
 @dataclass
 class SubsamplingParams:
@@ -135,6 +153,10 @@ class AnalysisParams:
         The metric used to pair similar variables during coarse graining. 
         Options include: 'pearson', 'spearman', 'mutual_information', 'cosine', 
         'hamming', and 'random'. Default is "pearson".
+    data_format : str, optional
+        Settings for . Options are 'timeseries' for (N,T) arrays, 'tabular' for 
+        timestamps stored in csv/pandas dataframes and 'numpy_2col' for timestamps arrays. 
+        Default is 'timeseries'.
     subsampling : SubsamplingParams, optional
         Configuration settings for spatial subsampling. Default is a standard 
         SubsamplingParams object which performs no subsampling.
@@ -158,7 +180,7 @@ class AnalysisParams:
     rg_steps: int = 7
     cluster_method: str = "pearson"  # Options: 'pearson', 'spearman', 'mutual_info', 'cosine', 'hamming', 'random'
 
-    
+    loading: DataLoadingParams = field(default_factory=DataLoadingParams)
     subsampling: SubsamplingParams = field(default_factory=SubsamplingParams)
     time_slicing: TimeWindowingParams = field(default_factory=TimeWindowingParams)
     plot_style: PlotStyleConfig = field(default_factory=PlotStyleConfig)

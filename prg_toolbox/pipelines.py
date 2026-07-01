@@ -22,7 +22,7 @@ from .config import *
 from .analysis_tools import *
 
 
-def run_PRG(timestamps, user_params: AnalysisParams = None):
+def run_PRG(data, user_params: AnalysisParams = None):
     """
     Execute the PRG analysis pipeline over spatio-temporal splits.
 
@@ -32,8 +32,9 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
 
     Parameters
     ----------
-    timestamps : ndarray
-        Spike timing matrix formatted with events (e.g., Column 0: time, Column 1: Unit ID).
+    data : numpy.ndarray
+        The input data. Can be either a dense matrix (timeseries) or 
+        a 2-column timestamps array(Column 0: time, Column 1: Unit ID).
     user_params : AnalysisParams, optional
         Configuration dataclass defining steps, slices, methods, and metrics. 
         If None, initializes standard factory defaults.
@@ -59,6 +60,11 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
     rg_steps = params.rg_steps
     cluster_method = params.cluster_method
     
+    # Data loading parameters
+    data_format = params.loading.data_format
+    binary_method = params.loading.binary_method
+    zscore_threshold = params.loading.zscore_threshold
+
     # Subsampling parameters
     nsamples = params.subsampling.nsamples
     samplesize = params.subsampling.samplesize
@@ -75,9 +81,13 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
     observable_stacker = {obs.__name__: [] for obs in observable_call_list}
 
     # Strip the transient period if specified, ensuring that only the steady-state dynamics are analyzed
-    timestamps = discard_transient(timestamps, discard_transient_time_ms) if discard_transient_time_ms > 0 else timestamps
+    data = discard_transient(data,data_format = data_format, timeseries_binsize_ms = binsize, transient_time_ms = discard_transient_time_ms) if discard_transient_time_ms > 0 else data
 
-    time_windows_list = slice_timestamps_by_window(timestamps, time_window_ms, slice_overlap) if time_window_ms is not None else [timestamps]
+    time_windows_list = slice_by_time_window(data, 
+                                             data_format = data_format,
+                                             window_duration_ms=time_window_ms, 
+                                             timeseries_binsize_ms=binsize, 
+                                             overlap_fraction=slice_overlap, t_start=0.0) if time_window_ms is not None else [data]
 
     # Evaluation Loop (Slices x Subsamples)
     for slice_idx, current_slice in enumerate(time_windows_list):
@@ -86,14 +96,18 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
             # Unique deterministic seed mapping combining slice iteration and sample iteration
             combined_seed = random_seed * (slice_idx + 1) * (sample_idx + 1)
             
-            # Execute unit/spatial subsampling within the current clean temporal window
+            # Execute unit/spatial subsampling within the current temporal window
             if samplesize is not None:
-                subsample = pick_random_sample_from_stamps(current_slice, samplesize, random_seed=combined_seed)
+                subsample = pick_random_sample(current_slice, samplesize, data_format=data_format, random_seed=combined_seed)
             else:
                 subsample = current_slice
             
-            # Construct configuration space mapping
-            binary_time_series = binary_array_from_stamps(subsample, binsize)
+            # Binarize time series and run coarse graining
+            binary_time_series = binarize_data(subsample,
+                                               data_format = data_format,
+                                               binary_method=binary_method,
+                                               binsize_ms=binsize,
+                                               zscore_threshold=zscore_threshold)
             cgvar = CGVariables(binary_time_series, cluster_method=cluster_method, rg_steps=rg_steps)
 
             # Evaluate observables on the current spatio-temporal realization
@@ -121,7 +135,6 @@ def run_PRG(timestamps, user_params: AnalysisParams = None):
 
 def run_PRG_in_directory(file_directory, 
                         skipped_files_list = [],
-                        file_format = "tabular",
                         user_params = None,
                         show_plots = False,
                         save_plots = False,
@@ -140,9 +153,6 @@ def run_PRG_in_directory(file_directory,
     skipped_files_list : list, optional
         File names or 1-based integer indices to exclude from processing. 
         Default is an empty list.
-    file_format : str, optional
-        The format of the input data files (e.g., 'tabular', 'numpy_2d'). 
-        Default is "tabular".
     user_params : AnalysisParams, optional
         Configuration settings for the PRG pipeline. If None, default 
         parameters are initialized.
@@ -183,11 +193,11 @@ def run_PRG_in_directory(file_directory,
             continue
 
         print(f"[{i}/{N}] Processing file: {file_key}")
-        timestamps = load_timestamps(path, file_format, time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0)
+        data = load_data(path, load_params = prg_params)
 
         # Calculating observables and averaging across samples
         result_dict = run_PRG(
-            timestamps = timestamps,
+            data = data,
             user_params = prg_params
         )
 
@@ -217,10 +227,10 @@ def process_single_file(path, i, N,
 
     print(f"[{i}/{N}] Processing file: {file_key}")
     
-    timestamps = load_timestamps(path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0)
+    data = load_data(path, load_params=prg_params)
 
     result_dict = run_PRG(
-            timestamps = timestamps,
+            data = data,
             user_params = prg_params
         )
     
@@ -232,7 +242,6 @@ def process_single_file(path, i, N,
 
 def run_PRG_in_directory_parallel(file_directory, 
                         skipped_files_list = [],
-                        file_format = "tabular",
                         user_params = None,
                         show_plots = False,
                         save_plots = False,
@@ -265,7 +274,7 @@ def run_PRG_in_directory_parallel(file_directory,
         futures = [
             executor.submit(
                 process_single_file, 
-                path, i, N, skipped_files_list, file_format, prg_params, 
+                path, i, N, skipped_files_list, prg_params, 
                 show_plots, save_plots, save_results, results_path, plots_path
             )
             for i, path in enumerate(gdf_files, start=1)

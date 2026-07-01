@@ -143,6 +143,6 @@ def plot_mean_variance(
     all_labels = labels_mean_variance(values, values_surrogate)
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend:
+    if legend and config_dict.get("show_legend"):
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

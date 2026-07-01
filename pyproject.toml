@@ -17,3 +17,4 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["prg_toolbox*"]
+include = ["example_notebooks*"]

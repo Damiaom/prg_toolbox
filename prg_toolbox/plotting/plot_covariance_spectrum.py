@@ -1,4 +1,5 @@
 from .plot_imports import *
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 def labels_marchenko_pastur(spectrum):
     """
@@ -37,6 +38,33 @@ def draw_powerlaw_in_distribution(spectrum):
     pl_y_fit = spectrum.pdf_pl_normalization_constant * ((pl_x_fit / tail_start) ** -pdf_exponent)
         
     return pl_x_fit, pl_y_fit
+
+def get_optimal_inset_loc(x, y):
+    """
+    Determines the emptiest quadrant in a log-log space to safely place an inset.
+    """
+    # Filter strictly positive values to prevent log10 domain errors
+    valid_mask = (x > 0) & (y > 0)
+    log_x = np.log10(x[valid_mask])
+    log_y = np.log10(y[valid_mask])
+    
+    # Normalize data to a 0.0 - 1.0 scale to map directly to visual plotting space
+    norm_x = (log_x - np.min(log_x)) / (np.max(log_x) - np.min(log_x))
+    norm_y = (log_y - np.min(log_y)) / (np.max(log_y) - np.min(log_y))
+    
+    # Define boolean masks for the four visual quadrants
+    quadrants = {
+        'upper right': (norm_x > 0.5) & (norm_y > 0.5),
+        'upper left':  (norm_x <= 0.5) & (norm_y > 0.5),
+        'lower right': (norm_x > 0.5) & (norm_y <= 0.5),
+        'lower left':  (norm_x <= 0.5) & (norm_y <= 0.5)
+    }
+    
+    # Count the number of data points falling into each quadrant
+    counts = {loc: np.sum(mask) for loc, mask in quadrants.items()}
+    
+    # Return the string key of the quadrant with the minimum data density
+    return min(counts, key=counts.get)
 
 def draw_plot_marchenko_pastur(spectrum, ax, hist_kw=None, plot_kw=None, vline_kw=None):
     """
@@ -111,15 +139,6 @@ def plot_marchenko_pastur(
     if legend:
         ax.legend(labels=all_labels["legend"], **legend_kw)
     plt.title("Eigenvalue Distribution")
-
-def set_inset_position(values):
-    if values["y"][-1][0] < 0.1:
-        # No outlier: Inset to Top Left, Legend pushed to Bottom
-        inset_bounds = [0.15, 0.6, 0.35, 0.35]
-    else:
-        # Outlier present: Inset to Bottom Left, Legend pushed to Top
-        inset_bounds = [0.15, 0.1, 0.35, 0.35]
-    return inset_bounds
 
 def labels_covariance_spectrum(data, surrogate_data = None):
     """
@@ -236,7 +255,16 @@ def set_covariance_spectrum_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_
     colors_by_iteration = set_colors_from_palette(number_of_colors,palette, data_or_surrogate=data_or_surrogate)
     plot_kw = [{**DEFAULT_LINE_KWARGS, "color":colors_by_iteration[k], **(plot_kwargs or {})} for k in range(len(values["y"]))]
     fill_kw = [{**DEFAULT_FILL_KWARGS, "color":colors_by_iteration[k], **(fill_kwargs or {})} for k in range(len(values["y"]))]
-
+    for k in range(len(values["y"])- 1):
+        if "alpha" in plot_kw[k]:
+            plot_kw[k]["alpha"] = fill_kw[k]["alpha"]*k/(len(values["y"]))
+        else:
+            plot_kw[k]["alpha"] = k/(len(values["y"]))
+            
+        if "alpha" in fill_kw[k]:
+            fill_kw[k]["alpha"] = fill_kw[k]["alpha"]*k/(len(values["y"]))
+        else:
+            fill_kw[k]["alpha"] = k/(len(values["y"]))
     return values, plot_kw, fill_kw
 
 def draw_plot_covariance_spectrum(values, ax, plot_kw=None, fill_kw=None):
@@ -356,7 +384,7 @@ def plot_covariance_spectrum(
 
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend:
+    if legend and config_dict.get("show_legend"):
         ax.legend(labels = all_labels["legend"], **legend_kw)
         
     #----------- Marchenko-Pastur Inset ---------------------
@@ -366,13 +394,17 @@ def plot_covariance_spectrum(
             raise AttributeError(
                 "The spectrum object lacks Marchenko-Pastur fit data."
             )
-            
-        # Choose inset position dynamically based on presence of outliers to avoid overlap
-        # If the last eigenvalue is much smaller than the bulk, we can safely put the inset in the top left without overlap.
-        inset_bounds = set_inset_position(values)
+
+        inset_location = get_optimal_inset_loc(values['x'][-1], values['y'][-1])
+        axins = inset_axes(
+            ax, 
+            width="35%",   # Size relative to the parent bounding box
+            height="35%", 
+            loc=inset_location, 
+            borderpad=4.0  # Padding between the inset and the parent axes edges
+            )
         dynamic_legend_kw = {"bbox_to_anchor": (1.05, 0.5)}
-        # Create the inset axis using relative coordinates (0 to 1)
-        axins = ax.inset_axes(inset_bounds)
+ 
         
         # Prepare kwargs for the MP plot (assuming these functions from earlier are in your file)
         hist_kw, plot_mp_kw, vline_kw = set_marchenko_pastur_kwargs(palette,

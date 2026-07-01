@@ -14,6 +14,8 @@ from datetime import datetime
 import pickle
 import numpy as np
 from scipy import stats
+from scipy.signal import find_peaks
+import scipy.io as sio
 import pandas as pd
 import dataclasses
 import matplotlib.pyplot as plt
@@ -24,7 +26,7 @@ from .utils import get_scaling_exponent
 from .config import *
 from . import plotting as plot
 
-def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
+def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
     Loads neuronal spike timestamps and unit IDs from various file formats 
     into a standardized N x 2 NumPy array.
@@ -35,19 +37,17 @@ def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=
     ----------
     file_or_path : str
         The absolute path to the data file or the file itself.
-    format : {'tabular', 'numpy_2d', 'phy'}, optional
+    format : {'tabular', 'numpy_2col', 'phy'}, optional
         The format of the input data. 
         - 'tabular': Text-based formats like .csv, .tsv, .txt, or .gdf.
-        - 'numpy_2d': A single .npy file containing a 2D array.
-        - 'phy': A directory containing split 1D arrays (`spike_times.npy` 
-        and `spike_clusters.npy`).
+        - 'numpy_2col': A single .npy file containing a 2D array.
         Default is 'tabular'.
     time_col : int, optional
         The column index containing the timestamp data (0-indexed). Only 
-        used if format is 'tabular' or 'numpy_2d'. Default is 1.
+        used if format is 'tabular' or 'numpy_2col'. Default is 1.
     unit_col : int, optional
         The column index containing the neuron/unit ID data (0-indexed). Only 
-        used if format is 'tabular' or 'numpy_2d'. Default is 0.
+        used if format is 'tabular' or 'numpy_2col'. Default is 0.
     sep : str, optional
         The delimiter string used to separate values in text files. Use r"\s+" 
         for space-separated files (like .gdf). Only used if format is 'tabular'. 
@@ -79,7 +79,7 @@ def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=
         
         timestamps = np.column_stack((times, units))
         
-    elif format == "numpy_2d":
+    elif format == "numpy_2col":
         # Handles standard N x 2 numpy arrays
         raw_array = np.load(file_or_path) if isinstance(file_or_path, str) else file_or_path
         times = raw_array[:, time_col] * scale_factor
@@ -95,7 +95,120 @@ def load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=
     
     return timestamps
 
-def discard_transient(timestamps, transient_time_ms=0):
+def _load_timeseries(filepath, delimiter=None, mat_key=None):
+    """
+    Loads dense timeseries data from various file formats.
+
+    Parameters
+    ----------
+    filepath : str or pathlib.Path
+        The path to the data file. Supported formats: .npy, .txt, .csv, .dat, .mat.
+    delimiter : str, optional
+        The string used to separate values in text files (e.g., ',', '\t'). 
+        If None, it defaults to ',' for .csv and whitespace for .txt/.dat.
+    mat_key : str, optional
+        The dictionary key for the data array if loading a .mat file. If None 
+        and the .mat file contains multiple arrays, a ValueError is raised.
+
+    Returns
+    -------
+    data : numpy.ndarray
+        A 2D dense array representing the timeseries.
+    """
+    # 1. Extract the file extension to route the loading logic
+    _, ext = os.path.splitext(filepath)
+    ext = ext.lower()
+    
+    # 2. Branch based on file type
+    if ext == '.npy':
+        data = np.load(filepath)
+        
+    elif ext in ['.txt', '.csv', '.dat']:
+        if delimiter is None and ext == '.csv':
+            delimiter = ','
+        data = np.loadtxt(filepath, delimiter=delimiter)
+        
+    elif ext == '.mat':
+
+        mat_dict = sio.loadmat(filepath)
+        
+        if mat_key:
+            data = mat_dict[mat_key]
+        else:
+            # Filter out MATLAB's internal metadata keys (which start with '__')
+            valid_keys = [k for k in mat_dict.keys() if not k.startswith('__')]
+            if len(valid_keys) == 1:
+                data = mat_dict[valid_keys[0]]
+            else:
+                raise ValueError(
+                    f"Multiple arrays found in .mat file: {valid_keys}. "
+                    "Please specify exactly which one to load using the 'mat_key' parameter."
+                )
+    else:
+        raise ValueError(f"Unsupported file format: '{ext}'. Please use .npy, .mat, .txt, .csv, or .dat.")
+
+    # 3. Validation: Ensure it's a 2D matrix
+    if data.ndim != 2:
+        raise ValueError(f"Expected a 2D matrix, but loaded array has shape {data.shape}. " 
+                         "Timeseries data must be strictly 2D.")
+        
+    return data
+
+def load_data(filepath, user_params: AnalysisParams = None):
+    """
+    Universal data loader for the PRG Toolbox. Routes files to the correct 
+    parsing engine based on the specified data format.
+
+    Parameters
+    ----------
+    filepath : str
+        The absolute or relative path to the data file.
+    data_format : {'timeseries', 'timestamps'}, optional
+        A string flag indicating how the data should be interpreted. 
+        - 'timeseries': Expects a dense 2D matrix (N_neurons, T_bins).
+        - 'tabular' or 'numpy_2col': Expects an event list of spike times and IDs.
+        Default is 'timeseries'.
+    user_params : AnalysisParams 
+        Active parameter dataclass which define data loading settings in user_params.loading
+
+    Returns
+    -------
+    numpy.ndarray
+        The loaded and formatted data array.
+    """
+
+    # Standalone User Fallback: Instantiate default params if none are provided
+    if user_params is None:
+        params = DataLoadingParams()
+    else:
+        params = user_params.loading
+
+    # Explicit routing and unpacking
+    if params.data_format == 'timeseries':
+        return _load_timeseries(
+            filepath,
+            delimiter=params.delimiter,
+            mat_key=params.mat_key
+        )
+        
+    elif params.data_format == 'tabular' or params.data_format == 'numpy_2col':
+        return _load_timestamps(
+            filepath,
+            format=params.data_format,
+            time_col=params.time_col,
+            unit_col=params.unit_col,
+            sep=params.sep,
+            header=params.header,
+            scale_factor=params.scale_factor
+        )
+        
+    else:
+        raise ValueError(
+            f"Invalid data_format '{params.data_format}'. "
+            "Must be either 'timeseries', 'tabular' or 'numpy_2col'."
+        )
+
+def _discard_transient_from_timestamps(timestamps, transient_time_ms=0):
     """Discards from original timestamps all events before the specified time.
 
     Parameters
@@ -124,7 +237,62 @@ def discard_transient(timestamps, transient_time_ms=0):
     
     return filtered_timestamps
 
-def pick_random_sample_from_stamps(timestamps, sample_size, random_seed = 123):
+def _discard_transient_from_timeseries(data, timeseries_binsize_ms, transient_time_ms):
+    """
+    Discards the initial columns corresponding to the transient period from a dense matrix.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        A dense 2D array of shape (N_neurons, T_bins) representing continuous 
+        or binarized timeseries data.
+    timeseries_binsize_ms : float or int
+        The temporal resolution of a single bin in milliseconds (dt).
+    transient_time_ms : float or int
+        The total duration of the transient period to discard in milliseconds.
+
+    Returns
+    -------
+    numpy.ndarray
+        A view of the original array with the first `transient` columns removed.
+    """
+    transient = int(transient_time_ms/timeseries_binsize_ms)
+    return data[:,transient:]
+
+def discard_transient(data,data_format = 'timeseries', timeseries_binsize_ms = 1, transient_time_ms = 0):
+    """
+    Removes the initial transient period from data.
+    
+    This function acts as a wrapper that automatically applies the appropriate
+    discarding method based on the data format.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The input neural data. Can be either a dense matrix (timeseries) or 
+        a sparse 2-column array (timestamps).
+    data_format : {'timeseries', 'tabular', 'numpy_2col'}, optional
+        A string flag indicating the format of the input `data`. 
+        Default is 'timeseries'.
+    timeseries_binsize_ms : float or int, optional
+        The size of a single time bin in ms. Only used if data_format is 
+        'timeseries'. Default is 1.0.
+    transient_time_ms : float or int, optional
+        The duration of the initial recording period to discard in ms. 
+        Default is 0.0.
+
+    Returns
+    -------
+    filtered_data : numpy.ndarray
+        The truncated data in the exact same format as the input.
+    """
+    if data_format == 'timeseries':
+        filtered_data = _discard_transient_from_timeseries(data, timeseries_binsize_ms, transient_time_ms)
+    else:
+        filtered_data = _discard_transient_from_timestamps(data, transient_time_ms)
+    return filtered_data
+
+def _pick_random_sample_from_timestamps(timestamps, sample_size, random_seed = 123):
     """
     Subsample rows based on randomly selected unit indices.
 
@@ -150,7 +318,71 @@ def pick_random_sample_from_stamps(timestamps, sample_size, random_seed = 123):
     stamps_sample = timestamps[mask]
     return stamps_sample
 
-def slice_timestamps_by_window(timestamps, window_duration_ms, overlap_fraction=0.0, t_start=0):
+def _pick_random_sample_from_timeseries(data, sample_size, random_seed=123):
+    """
+    Subsamples a dense timeseries matrix by randomly selecting rows.
+
+    Parameters
+    ----------
+    timestamps : ndarray of floats     
+        2D array with shape (n_spikes, 2)
+    sample_size : integer                      
+        number of unique units to sample
+    random_seed : integer                      
+        seed for reproducibility
+
+    Returns
+    ----------
+    data[selected_rows, :] : ndarray of floats  
+        filtered data
+    """
+    rng = np.random.default_rng(random_seed)
+    n_neurons = data.shape[0]
+    
+    if sample_size > n_neurons:
+        raise ValueError(
+            f"Requested sample_size ({sample_size}) is larger than the number "
+            f"of rows/units in the timeseries matrix ({n_neurons})."
+        )
+        
+    # Choose random row indices and slice the matrix
+    selected_rows = rng.choice(n_neurons, size=sample_size, replace=False)
+    
+    return data[selected_rows, :]
+
+
+def pick_random_sample(data, sample_size, data_format='timeseries', random_seed=123):
+    """
+    Randomly subsamples a set number of units (neurons) from the data.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The input neural data. Can be either a dense matrix (timeseries) or 
+        a sparse 2-column array (timestamps).
+    sample_size : int
+        The exact number of unique units to randomly sample.
+    data_format : {'timeseries', 'tabular' or 'numpy_2col'}, optional
+        A string flag indicating the format of the input `data`. 
+        Default is 'timeseries'.
+    random_seed : int, optional
+        Seed for the random number generator to ensure reproducibility. 
+        Default is 123.
+
+    Returns
+    -------
+    numpy.ndarray
+        The subsampled data in the exact same format as the input.
+    """
+    if data_format == 'timeseries':
+        return _pick_random_sample_from_timeseries(data, sample_size, random_seed)
+    elif data_format == 'tabular' or data_format == 'numpy_2col':
+        return _pick_random_sample_from_timestamps(data, sample_size, random_seed)
+    else:
+        raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy_2col'")
+    
+
+def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_start=0):
     """
     Slice an ordered timestamp array into sequential windows of a fixed duration.
 
@@ -174,7 +406,7 @@ def slice_timestamps_by_window(timestamps, window_duration_ms, overlap_fraction=
 
     Returns
     -------
-    list of ndarray
+    slices: list of ndarray
         A list of partitioned timestamp arrays. Each valid sub-array is cast to `float64`, 
         with its temporal baseline shifted so that the individual window's onset begins at 0.0. 
         Returns an empty list if the incoming data duration is shorter than a single window.
@@ -219,6 +451,109 @@ def slice_timestamps_by_window(timestamps, window_duration_ms, overlap_fraction=
         slices.append(window_slice)
         
     return slices
+
+def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overlap_fraction=0.0):
+    """
+    Slice an ordered matrix array into sequential windows of a fixed duration.
+
+    Splits chronological event sequences into overlapping or contiguous temporal blocks 
+    of identical lengths. Any trailing data that cannot form a complete window of the 
+    specified duration is automatically discarded to prevent statistical bias.
+
+    Parameters
+    ----------
+    data : ndarray of shape (n_units, n_timebins)
+        Spike timing matrix with units in rows and time bins in columns (N,T).
+    window_duration_ms : float
+        Temporal duration desired for each generated slice window in milliseconds.
+    timeseries_binsize_ms : float or int, optional
+        The temporal resolution of a single bin in ms. Only used if data_format 
+        is 'timeseries'. Default is 1.0.
+    overlap_fraction : float, optional
+        The fractional overlap ratio between consecutive window boundaries, bounded between 
+        [0.0, 1.0). Default is 0.0 (no overlap).
+
+    Returns
+    -------
+    slices : list of ndarray
+        A list of partitioned matrix arrays. 
+    """
+    # Convert time specifications into column indices (bins)
+    window_bins = int(window_duration_ms // timeseries_binsize_ms)
+    total_bins = data.shape[1]
+    
+    if total_bins < window_bins:
+        return []
+        
+    step_bins = int(window_bins * (1.0 - overlap_fraction))
+    
+    if step_bins > 0:
+        nslices = int((total_bins - window_bins) // step_bins) + 1
+    else:
+        nslices = 1
+        
+    slices = []
+    for i in range(nslices):
+        start_bin = i * step_bins
+        end_bin = start_bin + window_bins
+        
+        # Fast column slicing (O(1) memory views)
+        slices.append(data[:, start_bin:end_bin])
+        
+    return slices
+
+def slice_by_time_window(data, window_duration_ms, data_format='timeseries', 
+                    timeseries_binsize_ms=1.0, overlap_fraction=0.0, t_start=0.0):
+    """
+    Slices chronological data into sequential windows of a fixed duration.
+    
+    Splits data into overlapping or contiguous temporal blocks. Any trailing data 
+    that cannot form a complete window is automatically discarded to prevent 
+    statistical bias in the downstream PRG analysis.
+
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The input data. Can be either a dense matrix (timeseries) or 
+        a 2-column array (timestamps).
+    window_duration_ms : float
+        Temporal duration desired for each generated slice window in milliseconds.
+    data_format : {'timeseries', 'tabular', 'numpy_2col'}, optional
+        A string flag indicating the format of the input `data`. 
+        Default is 'timeseries'.
+    timeseries_binsize_ms : float or int, optional
+        The temporal resolution of a single bin in ms. Only used if data_format 
+        is 'timeseries'. Default is 1.0.
+    overlap_fraction : float, optional
+        The fractional overlap ratio between consecutive window boundaries, bounded 
+        between [0.0, 1.0). Default is 0.0 (no overlap).
+    t_start : float, optional
+        The absolute initial time coordinate. Only relevant if data_format is 
+        'tabular' or 'numpy_2col'. Default is 0.0.
+
+    Returns
+    -------
+    list of numpy.ndarray
+        A list of partitioned data arrays in the same format as the input. 
+        For timestamps, the temporal baseline is shifted so each window begins at t=0.
+    """
+    if data_format == 'timeseries':
+        return _slice_timeseries(
+            data, 
+            window_duration_ms, 
+            timeseries_binsize_ms, 
+            overlap_fraction
+        )
+    elif data_format == 'tabular' or data_format == 'numpy_2col':
+        return _slice_timestamps(
+            data, 
+            window_duration_ms, 
+            overlap_fraction, 
+            t_start
+        )
+    else:
+        raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy_2col'")
+    
 
 def shuffle_isi(timestamps, random_seed=None):
     """
@@ -354,11 +689,12 @@ def binary_array_from_zscore(x, threshold):
     mask = has_activity & ~has_nan
     
     # Apply the mask to preserve original spatial index tracking
+    # (This is not currently in use, but may be useful)
     clu_list = np.arange(len(x))
     clu_list = clu_list[mask]
     binary_array = b_matrix[mask]
     
-    return binary_array, clu_list
+    return binary_array
 
 def binary_array_from_zscore_maxima(x, threshold):
     """
@@ -405,8 +741,58 @@ def binary_array_from_zscore_maxima(x, threshold):
     clu_list = np.arange(N)[mask]
     binary_array = b_matrix[mask]
     
-    return binary_array, clu_list
+    return binary_array
 
+def binarize_data(data, data_format='timeseries', binary_method=None, 
+             binsize_ms=1.0, zscore_threshold=2.0):
+    """
+    Transforms raw neural data into a dense binary matrix.
+    
+    If the data is already a binarized timeseries, it passes through untouched.
+    
+    Parameters
+    ----------
+    data : numpy.ndarray
+        The input data (either timestamps or continuous timeseries).
+    data_format : {'timeseries', 'timestamps'}, optional
+        The format of the input data. Default is 'timeseries'.
+    binary_method : {'zscore_threshold', 'zscore_maxima', None}, optional
+        The method used to binarize continuous timeseries data. If None, 
+        'timeseries' data is assumed to already be a dense binary matrix and is 
+        returned untouched. Default is None. Other formats will be assumed to be
+        event timestamps and binarized according to its event times.
+    binsize_ms : float, optional
+        The temporal resolution for binning timestamp data. Default is 1.0.
+    zscore_threshold : float, optional
+        The threshold applied when using z-score binarization methods. 
+        Default is 2.0.
+
+    Returns
+    -------
+    numpy.ndarray
+        A dense 2D binary matrix of shape (N_neurons, T_bins).
+    """
+    if data_format !='timeseries':
+        # Convert sparse events to dense binary matrix
+        return binary_array_from_stamps(data, binsize_ms=binsize_ms)
+        
+    elif data_format == 'timeseries':
+        # Process continuous data
+        if binary_method == 'zscore_threshold':
+            return binary_array_from_zscore(data, threshold=zscore_threshold)
+            
+        elif binary_method == 'zscore_maxima':
+            return binary_array_from_zscore_maxima(data, threshold=zscore_threshold)
+            
+        elif binary_method is None:
+            # Data is already binarized (pass-through)
+            return data
+            
+        else:
+            raise ValueError(f"Unknown binary_method: '{binary_method}'. "
+                             "Use 'zscore_threshold', 'zscore_maxima', or None.")
+    else:
+        raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy_2col'")
 
 def is_function_observable(observable):
     function_list = [obs.covariance_spectrum, obs.autocorrelation_function, obs.activity_distribution]
@@ -573,7 +959,7 @@ def make_plots_for_observables(result_dict,
                                file_key=None, 
                                figsize=(8, 8)):
     """
-    Automate data visualization for calculated metrics.
+    Data visualization for calculated metrics.
 
     Iterates through the requested observables list, initializes separate 
     matplotlib figure canvases, and maps the results data directly to their 
@@ -582,7 +968,7 @@ def make_plots_for_observables(result_dict,
     Parameters
     ----------
     result_dict : dict
-        Calculated trajectories and metric metrics data compiled from `run_PRG`.
+        Calculated metrics data compiled from `run_PRG`.
     prg_params : AnalysisParams
         Active parameter dataclass defining style overrides and active metrics.
     show_plots : bool, optional
