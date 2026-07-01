@@ -1,20 +1,16 @@
-# 1. Ignore all data files and large directories by default
-*
+# 1. Ignore all files and directories ONLY at the root level
+/*
 
+# 2. Allow these specific root files
 !.gitignore
 !pyproject.toml
 !README.md
 
-!prg_toolbox/
-!tests/
-!example_notebooks/
+# 3. Allow these directories and everything inside them recursively
+!/prg_toolbox/
+!/tests/
+!/example_notebooks/
 
-!prg_toolbox/**
-!tests/**
-!example_notebooks/**
-example_notebooks/nicoletti2020_contact_process
-
-git
-# EXCEPTION: Force Git to ignore all python bytecode caches
+# EXCEPTION: Force Git to ignore all python bytecode caches anywhere
 **/__pycache__/
 *.pyc
