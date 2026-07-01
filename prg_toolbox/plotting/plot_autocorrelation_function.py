@@ -56,14 +56,14 @@ def extract_autocorrelation_function_from_dictionary(data_dict):
     Extracts autocorrelation function data from a dictionary.
 
     Args:
-        data_dict (dict): Dictionary with 'avg' and 'std'
+        data_dict (dict): Dictionary with 'avg_across_windows' and 'std_across_windows' entries
 
     Returns:
         data (dict): Dictionary with x, y, error bounds, and metadata
     """
-    y = data_dict["avg"]
-    y_low= [y[k] - data_dict["std"][k] for k in range(len(y))]
-    y_high= [y[k] + data_dict["std"][k] for k in range(len(y))]
+    y = data_dict["avg_across_windows"]
+    y_low= [y[k] - data_dict["std_across_windows"][k] for k in range(len(y))]
+    y_high= [y[k] + data_dict["std_across_windows"][k] for k in range(len(y))]
     x = [np.arange(len(y[k])) - (len(y[k])-1)/2 for k in range(len(y))]
     data = {
         "y": y,

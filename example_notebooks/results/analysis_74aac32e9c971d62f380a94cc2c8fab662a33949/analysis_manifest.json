@@ -1,0 +1,50 @@
+{
+    "files": [
+        "spikes-V4-5E.gdf",
+        "spikes-V4-23E.gdf",
+        "spikes-V4-6E.gdf",
+        "spikes-V4-4E.gdf"
+    ],
+    "prg_params": {
+        "observables": [
+            "mean_variance",
+            "activity_distribution"
+        ],
+        "rg_steps": 7,
+        "cluster_method": "pearson",
+        "loading": {
+            "data_format": "tabular",
+            "binary_method": null,
+            "zscore_threshold": 2.0,
+            "time_col": 1,
+            "unit_col": 0,
+            "sep": "\\s+",
+            "header": null,
+            "time_scale_factor": 1.0,
+            "delimiter": null,
+            "mat_key": null
+        },
+        "subsampling": {
+            "samplesize": 512,
+            "nsamples": 5,
+            "random_seed": 42
+        },
+        "time_slicing": {
+            "window_duration_ms": null,
+            "overlap_fraction": 0.0,
+            "discard_transient_time_ms": 0.0,
+            "binary_binsize_ms": 1.0
+        },
+        "plot_style": {
+            "show_legend": true,
+            "colors": null,
+            "palette": null,
+            "plot_kwargs": {},
+            "fill_kwargs": {},
+            "label_kwargs": {},
+            "legend_kwargs": {},
+            "tick_kwargs": {}
+        }
+    },
+    "timestamp": "2026-07-01 16:40:06"
+}

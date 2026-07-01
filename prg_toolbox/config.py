@@ -83,7 +83,7 @@ class DataLoadingParams:
     unit_col: int = 0
     sep: str = r"\s+"
     header: Optional[int] = None
-    scale_factor: float = 1.0
+    time_scale_factor: float = 1.0
     
     # --- Timeseries specific ---
     delimiter: Optional[str] = None

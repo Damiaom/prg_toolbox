@@ -14,3 +14,6 @@
 # EXCEPTION: Force Git to ignore all python bytecode caches anywhere
 **/__pycache__/
 *.pyc
+
+# Explicitly ignore the nested contact process folder
+example_notebooks/nicoletti2020_contact_process/

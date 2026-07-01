@@ -179,21 +179,21 @@ def run_PRG_in_directory(file_directory,
     if not show_plots and not save_results and not save_plots:
         print("Warning: You are not showing or saving any results. Set show_plots or save_plots or save_results to True to see or keep your results.")
     
-    all_files = [f for f in file_directory]
+    all_files = [f for f in os.listdir(file_directory)]
     N = len(all_files)
-    results_path, plots_path = save_manifest(file_directory, prg_params) if save_results else (None, None)
+    results_path, plots_path = save_manifest(all_files, prg_params) if save_results else (None, None)
 
     for i, path in enumerate(all_files, start=1):
 
         file_key = os.path.basename(path)
-        
+        path = os.path.join(file_directory, path)
         # Optionally you can filter to skip unwanted files
         if i in skipped_files_list or file_key in skipped_files_list:
             print(f"[{i}/{N}] {file_key} skipped.")
             continue
 
         print(f"[{i}/{N}] Processing file: {file_key}")
-        data = load_data(path, load_params = prg_params)
+        data = load_data(path, user_params = prg_params)
 
         # Calculating observables and averaging across samples
         result_dict = run_PRG(

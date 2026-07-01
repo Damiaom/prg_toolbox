@@ -61,9 +61,9 @@ def extract_activity_distribution_from_dictionary(data_dict):
     Returns:
         data (dict): Dictionary with x, y, error bounds, and metadata
     """
-    y = data_dict["avg"]
-    y_low= [y[k] - data_dict["std"][k] for k in range(len(y))]
-    y_high= [y[k] + data_dict["std"][k] for k in range(len(y))]
+    y = data_dict["avg_across_windows"]
+    y_low= [y[k] - data_dict["std_across_windows"][k] for k in range(len(y))]
+    y_high= [y[k] + data_dict["std_across_windows"][k] for k in range(len(y))]
     x = [np.array([(i)/(2**(k)) for i in range(len(y[k]))]) for k in range(len(y))]
     data = {
         "y": y,

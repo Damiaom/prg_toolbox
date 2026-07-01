@@ -95,14 +95,14 @@ def extract_data_from_object(data_object):
 def extract_data_from_dictionary(data_dict):
     """
     Args:
-        data_dict (dict): Dictionary with keys 'avg', 'std', and optional exponent info
+        data_dict (dict): Dictionary with keys 'avg_across_windows', 'std_across_windows', and optional exponent info
 
     Returns:
         data (dict): Dictionary with x, y, error bounds, and exponent info
     """
-    y = data_dict["avg"]
-    y_low= y - data_dict["std"]
-    y_high= y + data_dict["std"]
+    y = data_dict["avg_across_windows"]
+    y_low= y - data_dict["std_across_windows"]
+    y_high= y + data_dict["std_across_windows"]
     x = np.array([2**i for i in range(len(y))])
 
     data = {

@@ -202,14 +202,14 @@ def extract_covariance_spectrum_from_dictionary(data_dict):
     Extracts covariance spectrum data from a dictionary.
 
     Args:
-        data_dict (dict): Dictionary with 'avg' and 'std' entries
+        data_dict (dict): Dictionary with 'avg_across_windows' and 'std_across_windows' entries
 
     Returns:
         data (dict): Dictionary with x, y, error bounds (each one array per iteration) and exponent info
     """
-    y = data_dict["avg"]
-    y_low= [y[k] - data_dict["std"][k] for k in range(len(y))]
-    y_high= [y[k] + data_dict["std"][k] for k in range(len(y))]
+    y = data_dict["avg_across_windows"]
+    y_low= [y[k] - data_dict["std_across_windows"][k] for k in range(len(y))]
+    y_high= [y[k] + data_dict["std_across_windows"][k] for k in range(len(y))]
     x = [np.array([(i+1)/(2**k) for i in range(len(y[k]))]) for k in range(len(y))]
     data = {
         "y": y,

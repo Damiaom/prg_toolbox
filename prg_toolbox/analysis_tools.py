@@ -70,7 +70,7 @@ def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep
         """
     
     if format == "tabular":
-        # Handles CSV, TSV, TXT, GDF uniformly
+        # Handles CSV, TSV, TXT, GDF
         df = pd.read_csv(file_or_path, sep=sep, header=header) if isinstance(file_or_path, str) else file_or_path
         
         # Extract just the two columns we care about in the right order
@@ -163,11 +163,6 @@ def load_data(filepath, user_params: AnalysisParams = None):
     ----------
     filepath : str
         The absolute or relative path to the data file.
-    data_format : {'timeseries', 'timestamps'}, optional
-        A string flag indicating how the data should be interpreted. 
-        - 'timeseries': Expects a dense 2D matrix (N_neurons, T_bins).
-        - 'tabular' or 'numpy_2col': Expects an event list of spike times and IDs.
-        Default is 'timeseries'.
     user_params : AnalysisParams 
         Active parameter dataclass which define data loading settings in user_params.loading
 
@@ -176,7 +171,6 @@ def load_data(filepath, user_params: AnalysisParams = None):
     numpy.ndarray
         The loaded and formatted data array.
     """
-
     # Standalone User Fallback: Instantiate default params if none are provided
     if user_params is None:
         params = DataLoadingParams()
@@ -199,7 +193,7 @@ def load_data(filepath, user_params: AnalysisParams = None):
             unit_col=params.unit_col,
             sep=params.sep,
             header=params.header,
-            scale_factor=params.scale_factor
+            scale_factor=params.time_scale_factor
         )
         
     else:
@@ -1077,13 +1071,12 @@ def make_plots_for_observables(result_dict,
                     "decay_time": plot.plot_decay_time}
 
     observable_call_list = prg_params.observables
-    style_kwargs = dataclasses.asdict(prg_params.plot_style)
 
     for call in observable_call_list:
         fig = plt.figure(figsize=figsize)
         observable_name = call.__name__
         observable_object = result_dict[call.__name__]
-        plot_call_list[observable_name](observable_object, **style_kwargs)
+        plot_call_list[observable_name](observable_object, style_config=prg_params)
         if show_plots:
             plt.show()
         elif save_plots and plots_path is not None:
