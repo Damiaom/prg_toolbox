@@ -12,6 +12,7 @@
 !prg_toolbox/**
 !tests/**
 !example_notebooks/**
+example_notebooks/nicoletti2020_contact_process
 
 git
 # EXCEPTION: Force Git to ignore all python bytecode caches
