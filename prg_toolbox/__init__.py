@@ -25,7 +25,7 @@ from . import plotting as plot          # uses utils with ..utils powerLaw_funct
 from . import config as config          # uses observables
 from . import analysis_tools as tools   # uses observables, utils, plot and config
 from .pipelines import *                # uses observables, config and analysis_tools
-
+from . import datasets as datasets      # uses pooch to download example data
 
 # Define what is accessible when someone does 'from prg_toolbox import *'
 __all__ = [
@@ -42,5 +42,6 @@ __all__ = [
     "tools",
     "config_params",
     "get_scaling_exponent",
-    "pipelines"
+    "pipelines",
+    "datasets"
 ]
