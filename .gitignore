@@ -14,3 +14,4 @@
 # EXCEPTION: Force Git to ignore all python bytecode caches anywhere
 **/__pycache__/
 *.pyc
+*.gdf
