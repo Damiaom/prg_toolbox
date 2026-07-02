@@ -9,9 +9,12 @@
 # 3. Allow these directories and everything inside them recursively
 !/prg_toolbox/
 !/tests/
-!/example_notebooks/
+!/example_notebooks/example_fMRI_data.ipynb
+!/example_notebooks/example_contact_process.ipynb
+!/example_notebooks/example_large_dataset.ipynb
+
 
 # EXCEPTION: Force Git to ignore all python bytecode caches anywhere
 **/__pycache__/
 *.pyc
-*.gdf
+
