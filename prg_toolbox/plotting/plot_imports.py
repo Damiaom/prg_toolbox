@@ -87,7 +87,7 @@ def extract_data_from_object(data_object):
         "y_low": y_low,
         "y_high": y_high,
         "exponent": getattr(data_object, "exponent", None),
-        "error": getattr(data_object, "exponent_error", None),
+        "exponent_error": getattr(data_object, "exponent_error", None),
         "r2": getattr(data_object, "exponent_r2", None),
     }
     return data
@@ -104,14 +104,13 @@ def extract_data_from_dictionary(data_dict):
     y_low= y - data_dict["std_across_windows"]
     y_high= y + data_dict["std_across_windows"]
     x = np.array([2**i for i in range(len(y))])
-
     data = {
         "y": y,
         "x": x,
         "y_low": y_low,
         "y_high": y_high,
         "exponent": data_dict.get("exponent", None),
-        "error": data_dict.get("error", None),
+        "exponent_error": data_dict.get("exponent_error", None),
         "r2": data_dict.get("r2", None),
     }
 

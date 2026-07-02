@@ -13,12 +13,12 @@ def labels_log_silence_probability(data, surrogate_data = None):
     """
     result_legend = r'$\beta = %.2f \pm %.2f$' % (
         data["exponent"],
-        data["error"],
+        data["exponent_error"],
     )
     if surrogate_data is not None:
         surrogate_legend = r'$\beta_{Surrogate} = %.2f \pm %.2f$' % (
             surrogate_data["exponent"],
-            surrogate_data["error"],
+            surrogate_data["exponent_error"],
         )
     else:
         surrogate_legend = None

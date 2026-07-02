@@ -13,12 +13,12 @@ def labels_avalanche_covariance_eigenvalue(data, surrogate_data = None):
     """
     result_legend = r'$\epsilon_{Avalanche} = %.2f \pm %.2f$' % (
         data["exponent"],
-        data["error"],
+        data["exponent_error"],
     )
     if surrogate_data is not None:
         surrogate_legend = r'$\epsilon_{Avalanche(Surrogate)} = %.2f \pm %.2f$' % (
             surrogate_data["exponent"],
-            surrogate_data["error"],
+            surrogate_data["exponent_error"],
         )
     else:
         surrogate_legend = None
