@@ -4,11 +4,13 @@ def labels_log_silence_probability(data, surrogate_data = None):
     """
     Creates axis labels and legend entries for log silence probability plots.
 
-    Args:
+    Parameters
+    ----------
         data (dict)                  : Dictionary with exponent and error
         surrogate_data (dict or None): Optional surrogate data dictionary
 
-    Returns:
+    Returns
+    ----------
         label_dict (dict): Contains xlabel, ylabel, and legend entries
     """
     result_legend = r'$\beta = %.2f \pm %.2f$' % (
@@ -35,13 +37,15 @@ def draw_plot_log_silence_probability(values, ax, plot_kw=None, fill_kw=None):
     """
     Draws log silence probability data and fitted power-law.
 
-    Args:
+    Parameters
+    ----------
         values (dict)            : Dictionary with x, y, y_low, y_high, exponent
         ax (matplotlib axis)     : Axis to plot on
         plot_kw (dict or None)   : Line plot kwargs
         fill_kw (dict or None)   : Fill (error band) kwargs
 
-    Returns:
+    Returns
+    ----------
         None
     """
     # Main line
@@ -71,7 +75,8 @@ def plot_log_silence_probability(
     """
     Plots log silence probability scaling with optional surrogate and reference.
 
-    Args:
+    Parameters
+    ----------
         data (object or dict)        : Main data (result object or dictionary)
         surrogate_data (same type)   : Optional surrogate data
         ax (matplotlib axis or None) : Axis to plot on
@@ -84,7 +89,8 @@ def plot_log_silence_probability(
         colors (list or None)        : Custom color scheme
         legend (bool)                : Whether to display legend
 
-    Returns:
+    Returns
+    ----------
         None
     """
 
@@ -103,6 +109,7 @@ def plot_log_silence_probability(
         legend_kwargs = legend_kwargs or config_dict.get("legend_kwargs")
         tick_kwargs = tick_kwargs or config_dict.get("tick_kwargs")
         colors = colors or config_dict.get("colors")
+        legend = legend or config_dict.get("show_legend")
 
     #----------- Set up labels and colors -------------------
     ax = ax or plt.gca()
@@ -143,6 +150,6 @@ def plot_log_silence_probability(
     all_labels = labels_log_silence_probability(values, values_surrogate)
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend and config_dict.get("show_legend"):
+    if legend:
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

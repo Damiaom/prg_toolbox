@@ -8,11 +8,12 @@ def set_default_kwargs(colors = None):
     """
     Defines default plotting styles and colors.
 
-    Args:
+    Parameters:
         colors (list or None):  Optional color list to override defaults
                                 [data, surrogate, reference]
 
-    Returns:
+    Returns
+    ----------
         DEFAULT_LINE_KWARGS (dict)   : Line plot defaults
         DEFAULT_FILL_KWARGS (dict)   : Fill (std. error band) defaults
         DEFAULT_LABEL_KWARGS (dict)  : Axis label defaults
@@ -70,10 +71,12 @@ def style_axes(ax, tick_kw):
 
 def extract_data_from_object(data_object):    
     """
-    Args:
+    Parameters
+    ----------
         data_object (object): Object with avg_across_windows and std_across_windows
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds, and exponent info
     """
     y = data_object.avg_across_windows
@@ -94,10 +97,12 @@ def extract_data_from_object(data_object):
 
 def extract_data_from_dictionary(data_dict):
     """
-    Args:
+    Parameters
+    ----------
         data_dict (dict): Dictionary with keys 'avg_across_windows', 'std_across_windows', and optional exponent info
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds, and exponent info
     """
     y = data_dict["avg_across_windows"]
@@ -120,12 +125,14 @@ def set_colors_from_palette(number_of_colors, palette=None, data_or_surrogate='d
     """
     Generates a list of colors from a colormap.
 
-    Args:
+    Parameters
+    ----------
         number_of_colors (int)       : Number of colors to generate
         palette (tuple or None)      : (data_cmap, surrogate_cmap)
         data_or_surrogate (str)      : Selects which palette to use
 
-    Returns:
+    Returns
+    ----------
         colors (list): List of RGBA colors
     """
     if palette is not None:
@@ -145,7 +152,8 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
     """
     Prepares plotting values and style kwargs.
 
-    Args:
+    Parameters
+    ----------
         DEFAULT_LINE_KWARGS (dict)
         DEFAULT_FILL_KWARGS (dict)
         plot_kwargs (dict or None)
@@ -154,7 +162,8 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
         data (object or dict)       : Result object or dictionary
         data_or_surrogate (str)     : 'data' or 'surrogate'
 
-    Returns:
+    Returns
+    ----------
         values (dict)  : Extracted plotting data
         plot_kw (dict) : Line plot kwargs
         fill_kw (dict) : Fill plot kwargs

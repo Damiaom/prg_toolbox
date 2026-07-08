@@ -4,11 +4,13 @@ def labels_activity_distribution(data, surrogate_data = None):
     """
     Creates axis labels and legend entries for activity distribution plots.
 
-    Args:
+    Parameters
+    ----------
         data (dict)                  : Dictionary with activity distribution
         surrogate_data (dict or None): Optional surrogate data
 
-    Returns:
+    Returns
+    ----------
         label_dict (dict): Contains xlabel, ylabel, and legend entries
     """
     result_legend = r'$(C_{size} = %d)$' % (len(data["y"][-1])-1)
@@ -30,10 +32,12 @@ def extract_activity_distribution_from_object(data_object):
     """
     Extracts activity distribution data from an object.
 
-    Args:
+    Parameters
+    ----------
         data_object (object): Object with avg_across_windows and std_across_windows
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds, and metadata
     """
     y = data_object.avg_across_windows
@@ -55,10 +59,12 @@ def extract_activity_distribution_from_dictionary(data_dict):
     """
     Extracts activity distribution data from a dictionary.
 
-    Args:
+    Parameters
+    ----------
         data_dict (dict): Dictionary with 'avg' and 'std'
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds, and metadata
     """
     y = data_dict["avg_across_windows"]
@@ -82,14 +88,16 @@ def set_activity_distribution_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FIL
     """
     Prepares activity distribution values and per-curve plotting kwargs.
 
-    Args:
+    Parameters
+    ----------
         plot_kwargs (dict or None)   : Line plot kwargs
         fill_kwargs (dict or None)   : Fill kwargs
         palette (list, tuple or None): Color palettes
         data (object or dict)        : Main data
         data_or_surrogate (str)      : Identifier for data type
 
-    Returns:
+    Returns
+    ----------
         None
     """
     data_type_name = type(data).__name__
@@ -122,13 +130,15 @@ def draw_plot_activity_distribution(values, ax, plot_kw=None, fill_kw=None):
     """
     Draws activity distribution curves.
 
-    Args:
+    Parameters
+    ----------
         values (dict)        : Dictionary with x, y, y_low, y_high
         ax (matplotlib axis) : Axis to plot on
         plot_kw (list)       : List of line kwargs
         fill_kw (list)       : List of fill kwargs
 
-    Returns:
+    Returns
+    ----------
         None
     """
     for k in range(len(values["y"])):
@@ -173,7 +183,8 @@ def plot_activity_distribution(
     """
     Plots activity distribution with multiple curves and optional surrogate.
 
-    Args:
+    Parameters
+    ----------
         data (object or dict)        : Main data
         surrogate_data (same type)   : Optional surrogate data
         ax (matplotlib axis or None) : Axis to plot on
@@ -186,7 +197,8 @@ def plot_activity_distribution(
         palette (list, tuple or None): Color palettes
         legend (bool)                : Whether to display legend
 
-    Returns:
+    Returns
+    ----------
         None
     """   
 
@@ -205,6 +217,7 @@ def plot_activity_distribution(
         legend_kwargs = legend_kwargs or config_dict.get("legend_kwargs")
         tick_kwargs = tick_kwargs or config_dict.get("tick_kwargs")
         palette = palette or config_dict.get("palette")
+        legend = legend or config_dict.get("show_legend")
 
     #----------- Set up labels and colors -------------------
     ax = ax or plt.gca()
@@ -248,6 +261,6 @@ def plot_activity_distribution(
 
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend and config_dict.get("show_legend"):
+    if legend:
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

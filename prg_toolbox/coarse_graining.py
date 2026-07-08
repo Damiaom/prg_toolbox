@@ -3,10 +3,9 @@ Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
 
 Real-Space Phenomenological Renormalization Group (PRG) Coarse-Graining.
 
-This module provides the core data infrastructure and algorithmic transformation
-routines required to perform real-space coarse graining on multivariate binary 
-time series (e.g., neural spike-train grids), following the framework described in
-Meshulam et al. (2019).
+This module provides the core algorithm that performs real-space coarse graining on 
+multivariate binary time series (e.g., neural spike-train grids), following the 
+framework described in Meshulam et al. (2019).
 
 The primary engine is the `CGVariables` wrapper class, which stores coarse grained
 variables across the recursive PRG steps, along with correlation matrices calculated
@@ -342,7 +341,7 @@ class CGVariables:
         if binary_array.shape[0] < 2**rg_steps:
             raise ValueError(f"Number of variables in data ({binary_array.shape[0]}) is less than required size ({2**self.rg_steps}).")
         if binary_array.shape[0] > binary_array.shape[1]:
-            warnings.warn("Number of variables is greater than number of samples. Spatial correlations may be unstable.")
+            warnings.warn("Number of variables is greater than number of samples. Correlation measurements may be unreliable.")
 
         total_steps = rg_steps + 1
         CG_var = [None] * total_steps

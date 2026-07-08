@@ -228,7 +228,7 @@ class max_covariance_eigenvalue:
 
         values = self.get_max_covariance_eigenvalue(CG_variables.CG_timeseries, CG_variables.CG_cluster_idx, rg_steps)
         self.values = values
-        epsilon, epsilon_error, epsilon_r2 = get_scaling_exponent(values[1:],max_ev = True)
+        epsilon, epsilon_error, epsilon_r2 = get_scaling_exponent(values[1:],skip_first_value = True)
         self.exponent = epsilon
         self.exponent_error = epsilon_error
         self.exponent_r2 = epsilon_r2
@@ -584,7 +584,6 @@ class autocorrelation_function:
         mean_autocorrelation = [np.zeros((2*len(CG_timeseries[i][0])-1)) for i in range(rg_steps)]
         for k in range(rg_steps):
             N = len(CG_timeseries[k][:,0])
-
             for j in range(N):
                 demeaned_data = CG_timeseries[k][j] - np.mean(CG_timeseries[k][j])
                 this_autocorrelation = np.correlate(demeaned_data, demeaned_data, mode='full')
@@ -852,7 +851,7 @@ class _avalanche_covariance_eigenvalue:
 
         values = self.get_max_covariance_eigenvalue(shuffled_CG_variables.CG_timeseries, shuffled_CG_variables.CG_cluster_idx, rg_steps)
         self.values = values
-        epsilon, epsilon_error, epsilon_r2 = get_scaling_exponent(values[1:],max_ev = True)
+        epsilon, epsilon_error, epsilon_r2 = get_scaling_exponent(values[1:],skip_first_value = True)
         self.exponent = epsilon
         self.exponent_error = epsilon_error
         self.exponent_r2 = epsilon_r2

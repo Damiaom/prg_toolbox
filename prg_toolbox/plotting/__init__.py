@@ -7,6 +7,8 @@ from .plot_autocorrelation_function import plot_autocorrelation_function
 from .plot_decay_time import plot_decay_time
 from .plot_activity_distribution import plot_activity_distribution
 from .plot_avalanche_covariance_eigenvalue import plot_avalanche_covariance_eigenvalue
+from .plot_constellation_steps import plot_constellation_steps
+from .plot_prg_cascade import plot_prg_cascade
 
 # Optional: explicitly define what is available publicly in this submodule
 __all__ = [
@@ -17,5 +19,7 @@ __all__ = [
     "plot_autocorrelation_function",
     "plot_decay_time",
     "plot_activity_distribution",
-    "plot_avalanche_covariance_eigenvalue"
+    "plot_avalanche_covariance_eigenvalue",
+    "plot_constellation_steps",
+    "plot_prg_cascade"
 ]

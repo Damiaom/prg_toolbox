@@ -97,7 +97,8 @@ def plot_marchenko_pastur(
     """
     Plots the Marchenko-Pastur null hypothesis fit against empirical covariance eigenvalues.
 
-    Args:
+    Parameters
+    ----------
         spectrum (covariance_spectrum): Object with pre-calculated MP attributes.
         ax (matplotlib axis)          : Axis to plot on
         # ... [standard kwargs]
@@ -144,11 +145,13 @@ def labels_covariance_spectrum(data, surrogate_data = None):
     """
     Creates axis labels and legend entries for covariance spectrum plots.
 
-    Args:
+    Parameters
+    ----------
         data (dict)                  : Dictionary with exponent, error, and spectrum data
         surrogate_data (dict or None): Optional surrogate data dictionary
 
-    Returns:
+    Returns
+    ----------
         label_dict (dict): Contains xlabel, ylabel, and legend entries
     """
     result_legend = r'$\mu = %.2f \pm %.2f$' %(
@@ -176,10 +179,12 @@ def extract_covariance_spectrum_from_object(data_object):
     """
     Extracts covariance spectrum data from an object.
 
-    Args:
+    Parameters
+    ----------
         data_object (object): Object with avg_across_windows and std_across_windows
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds (each one array per iteration) and exponent info
     """
     y = data_object.avg_across_windows
@@ -192,7 +197,7 @@ def extract_covariance_spectrum_from_object(data_object):
         "y_low": y_low,
         "y_high": y_high,
         "exponent": getattr(data_object, "exponent", None),
-        "error": getattr(data_object, "exponent_error", None),
+        "exponent_error": getattr(data_object, "exponent_error", None),
         "r2": getattr(data_object, "exponent_r2", None),
     }
     return data
@@ -201,10 +206,12 @@ def extract_covariance_spectrum_from_dictionary(data_dict):
     """
     Extracts covariance spectrum data from a dictionary.
 
-    Args:
+    Parameters
+    ----------
         data_dict (dict): Dictionary with 'avg_across_windows' and 'std_across_windows' entries
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds (each one array per iteration) and exponent info
     """
     y = data_dict["avg_across_windows"]
@@ -217,7 +224,7 @@ def extract_covariance_spectrum_from_dictionary(data_dict):
         "y_low": y_low,
         "y_high": y_high,
         "exponent": data_dict.get("exponent", None),
-        "error": data_dict.get("error", None),
+        "exponent_error": data_dict.get("exponent_error", None),
         "r2": data_dict.get("r2", None),
     }
     return data
@@ -228,7 +235,8 @@ def set_covariance_spectrum_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_
     """
     Prepares covariance spectrum values and per-curve plotting kwargs.
 
-    Args:
+    Parameters
+    ----------
         DEFAULT_LINE_KWARGS (dict)
         DEFAULT_FILL_KWARGS (dict)
         plot_kwargs (dict or None)
@@ -237,7 +245,8 @@ def set_covariance_spectrum_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_
         data (object or dict)        : Input data
         data_or_surrogate (str)      : 'data' or 'surrogate'
 
-    Returns:
+    Returns
+    ----------
         values (dict)   : Extracted data
         plot_kw (list)  : List of line kwargs (one per curve)
         fill_kw (list)  : List of fill kwargs (one per curve)
@@ -271,13 +280,15 @@ def draw_plot_covariance_spectrum(values, ax, plot_kw=None, fill_kw=None):
     """
     Draws covariance spectrum curves and fitted power-law to the last iteration.
 
-    Args:
+    Parameters
+    ----------
         values (dict)        : Dictionary with x, y, y_low, y_high, exponent
         ax (matplotlib axis) : Axis to plot on
         plot_kw (list)       : List of line kwargs
         fill_kw (list)       : List of fill kwargs
 
-    Returns:
+    Returns
+    ----------
         None
     """
     exponent = -values["exponent"]
@@ -307,14 +318,15 @@ def plot_covariance_spectrum(
     tick_kwargs = None,
     palette=None,
     legend=True,
-    add_marchenko_pastur_inset=True,                    
+    add_marchenko_pastur_inset=False,                    
     inset_bounds=[0.15, 0.15, 0.45, 0.35],
     mp_hist_kwargs=None, mp_plot_kwargs=None, mp_vline_kwargs=None
     ):
     """
     Plots covariance spectrum with one curve per PRG iteration and optional surrogate and Marchenko-Pastur fit.
 
-    Args:
+    Parameters
+    ----------
         data (object or dict)        : Main data
         surrogate_data (same type)   : Optional surrogate data
         ax (matplotlib axis or None) : Axis to plot on
@@ -329,7 +341,8 @@ def plot_covariance_spectrum(
         add_marchenko_pastur_inset   : Whether to plot the Marchenko-Pastur fit as an inset (bool)
         inset_bounds (list)          : [left, bottom, width, height] of the inset
 
-    Returns:
+    Returns
+    ----------
         None
     """
 
@@ -348,6 +361,7 @@ def plot_covariance_spectrum(
         legend_kwargs = legend_kwargs or config_dict.get("legend_kwargs")
         tick_kwargs = tick_kwargs or config_dict.get("tick_kwargs")
         palette = palette or config_dict.get("palette")
+        legend = legend or config_dict.get("show_legend")
 
     #----------- Set up labels and colors -------------------
     ax = ax or plt.gca()
@@ -384,7 +398,7 @@ def plot_covariance_spectrum(
 
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend and config_dict.get("show_legend"):
+    if legend:
         ax.legend(labels = all_labels["legend"], **legend_kw)
         
     #----------- Marchenko-Pastur Inset ---------------------

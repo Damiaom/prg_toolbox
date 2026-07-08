@@ -4,11 +4,13 @@ def labels_autocorrelation_function(data, surrogate_data = None):
     """
     Creates axis labels and legend entries for autocorrelation function plots.
 
-    Args:
+    Parameters
+    ----------
         data (dict)                  : Dictionary with autocorrelation function
         surrogate_data (dict or None): Optional surrogate data
 
-    Returns:
+    Returns
+    ----------
         label_dict (dict): Contains xlabel, ylabel, and legend entries
     """
     result_legend = r'$(C_{size} = %d)$' % (2**(len(data["y"])-1))
@@ -30,10 +32,12 @@ def extract_autocorrelation_function_from_object(data_object):
     """
     Extracts autocorrelation function data from an object.
 
-    Args:
+    Parameters
+    ----------
         data_object (object): Object with avg_across_windows and std_across_windows
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds, and metadata
     """
     y = data_object.avg_across_windows
@@ -55,10 +59,12 @@ def extract_autocorrelation_function_from_dictionary(data_dict):
     """
     Extracts autocorrelation function data from a dictionary.
 
-    Args:
+    Parameters
+    ----------
         data_dict (dict): Dictionary with 'avg_across_windows' and 'std_across_windows' entries
 
-    Returns:
+    Returns
+    ----------
         data (dict): Dictionary with x, y, error bounds, and metadata
     """
     y = data_dict["avg_across_windows"]
@@ -82,7 +88,8 @@ def set_autocorrelation_function_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_
     """
     Prepares autocorrelation function values and per-curve plotting kwargs.
 
-    Args:
+    Parameters
+    ----------
         data (object or dict)        : Main data
         surrogate_data (same type)   : Optional surrogate data
         ax (matplotlib axis or None) : Axis to plot on
@@ -94,7 +101,8 @@ def set_autocorrelation_function_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_
         palette (list, tuple or None): Color palettes
         legend (bool)                : Whether to display legend
 
-    Returns:
+    Returns
+    ----------
         None
     """
     data_type_name = type(data).__name__
@@ -126,13 +134,15 @@ def draw_plot_autocorrelation_function(values, ax, plot_kw=None, fill_kw=None):
     """
     Draws autocorrelation function curves.
 
-    Args:
+    Parameters
+    ----------
         values (dict)        : Dictionary with x, y, y_low, y_high
         ax (matplotlib axis) : Axis to plot on
         plot_kw (list)       : List of line kwargs
         fill_kw (list)       : List of fill kwargs
 
-    Returns:
+    Returns
+    ----------
         None
     """
     for k in range(len(values["y"])):
@@ -173,7 +183,8 @@ def plot_autocorrelation_function(
     """
     Plots autocorrelation function with multiple curves and optional surrogate.
 
-    Args:
+    Parameters
+    ----------
         data (object or dict)        : Main data
         surrogate_data (same type)   : Optional surrogate data
         ax (matplotlib axis or None) : Axis to plot on
@@ -186,7 +197,8 @@ def plot_autocorrelation_function(
         palette (list, tuple or None): Color palettes
         legend (bool)                : Whether to display legend
 
-    Returns:
+    Returns
+    ----------
         None
     """ 
 
@@ -205,6 +217,7 @@ def plot_autocorrelation_function(
         legend_kwargs = legend_kwargs or config_dict.get("legend_kwargs")
         tick_kwargs = tick_kwargs or config_dict.get("tick_kwargs")
         palette = palette or config_dict.get("palette")
+        legend = legend or config_dict.get("show_legend")
 
     #----------- Set up labels and colors -------------------
     ax = ax or plt.gca()
@@ -242,6 +255,6 @@ def plot_autocorrelation_function(
 
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw) 
-    if legend and config_dict.get("show_legend"):
+    if legend:
         ax.legend(labels = all_labels["legend"], **legend_kw)
    

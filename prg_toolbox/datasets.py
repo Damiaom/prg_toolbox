@@ -53,4 +53,7 @@ def get_spike_data(files='all'):
             fname=filename
         )
     print(f"✔ Ready: {local_path}")
-    return folder
+    if len(gdf_files) == 1:
+        return os.path.join(folder, local_path)
+    else:
+        return folder
