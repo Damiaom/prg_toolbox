@@ -156,7 +156,7 @@ def plot_prg_cascade(top_level=4, neuron_tracked=0,
         if level == 0:
             ax.set_ylabel('neuron / cluster', fontsize=9)
 
-    fig.suptitle(f"Coarse graining timeseries: neuron {neuron_tracked}", y=1.1, fontsize=20)
+    fig.suptitle(f"Coarse graining timeseries: {2**top_level} neurons", y=1.1, fontsize=20)
     plt.subplots_adjust(wspace=0.05)
 
     # --- curved, colored connectors between levels ---
