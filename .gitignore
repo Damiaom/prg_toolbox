@@ -11,8 +11,9 @@
 !/prg_toolbox/
 !/tests/
 
-example_notebooks/*
-!example_notebooks/*.ipynb
+!/example_notebooks/
+/example_notebooks/*
+!/example_notebooks/*.ipynb
 
 
 # EXCEPTION: Force Git to ignore all python bytecode caches anywhere
