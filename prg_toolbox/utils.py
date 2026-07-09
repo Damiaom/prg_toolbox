@@ -74,7 +74,7 @@ def get_scaling_exponent(CG_observable_values, spectrum = False, skip_first_valu
 
     exponent_error = np.sqrt(fit_cov[0,0])
     exponent = fit_param[0]
-    constant = np.exp(fit_param[1])
+    constant = fit_param[1]
     log_x_pred = exponent * log_t + constant
     exponent_r2 = r2_score(log_x, log_x_pred)
 
