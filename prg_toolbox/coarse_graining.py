@@ -343,6 +343,21 @@ class CGVariables:
         if binary_array.shape[0] > binary_array.shape[1]:
             warnings.warn("Number of variables is greater than number of samples. Correlation measurements may be unreliable.")
 
+        # Identify and remove constant rows (zero variance) before assigning
+        # base-level indices, so filtered-out variables never appear in clu_idx
+        # and can't be mistaken for surviving variables' lineage downstream.
+        row_is_constant = np.all(binary_array == binary_array[:, [0]], axis=1)
+        original_idx = np.arange(len(row_is_constant))[~row_is_constant]
+        if np.any(row_is_constant):
+            dropped = np.where(row_is_constant)[0]
+            warnings.warn(
+                f"Row(s) {dropped.tolist()} of binary_array are constant (all 0s or all 1s) "
+                f"across the time window and have zero variance. These variables have been "
+                f"excluded from coarse graining; their original indices will not appear in "
+                f"CG_cluster_idx."
+            )
+            binary_array = binary_array[~row_is_constant]
+
         total_steps = rg_steps + 1
         CG_var = [None] * total_steps
         corr_matrix = [None] * total_steps
@@ -351,7 +366,7 @@ class CGVariables:
         # Establish base step (k = 0)
         CG_var[0] = binary_array.astype(np.float64)
         corr_matrix[0] = self._CLUSTER_METHODS[cluster_method](CG_var[0])
-        clu_idx[0] = np.arange(binary_array.shape[0])
+        clu_idx[0] = original_idx
 
         # Execute coarse-graining flow across scales
         for i in range(1, total_steps):
