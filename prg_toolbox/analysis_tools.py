@@ -759,18 +759,7 @@ def binary_array_from_zscore(x, threshold):
     z_scores = stats.zscore(x, axis=1)
     
     # Generate the binary matrix using a boolean comparison
-    b_matrix = (z_scores > threshold).astype(int)
-    
-    # Create a mask to filter out rows with no activity or containing NaN values
-    has_activity = np.count_nonzero(b_matrix, axis=1) > 0
-    has_nan = np.isnan(z_scores).any(axis=1)
-    mask = has_activity & ~has_nan
-    
-    # Apply the mask to preserve original spatial index tracking
-    # (This is not currently in use, but may be useful)
-    clu_list = np.arange(len(x))
-    clu_list = clu_list[mask]
-    binary_array = b_matrix[mask]
+    binary_array = (z_scores > threshold).astype(int)
     
     return binary_array
 
@@ -802,22 +791,13 @@ def binary_array_from_zscore_maxima(x, threshold):
     z_scores = stats.zscore(x, axis=1)
     
     # Initialize an empty binary matrix matching the shape of the input
-    b_matrix = np.zeros((N, T), dtype=int)
+    binary_array = np.zeros((N, T), dtype=int)
     
     # Extract peaks for each row from the precomputed z-score matrix
     for i in range(N):
         # Find local maxima indices that pass the height criteria
         peaks, _ = find_peaks(z_scores[i], height=threshold)
-        b_matrix[i, peaks] = 1
-
-    # Create a mask to filter out rows with no activity or containing NaN values
-    has_activity = np.count_nonzero(b_matrix, axis=1) > 0
-    has_nan = np.isnan(z_scores).any(axis=1)
-    mask = has_activity & ~has_nan
-    
-    # Apply the mask to preserve original spatial index tracking
-    clu_list = np.arange(N)[mask]
-    binary_array = b_matrix[mask]
+        binary_array[i, peaks] = 1
     
     return binary_array
 
