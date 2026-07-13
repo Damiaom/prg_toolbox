@@ -1,0 +1,32 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package and docs dependencies
+        run: |
+          pip install -e .
+          pip install mkdocs mkdocs-material "mkdocstrings[python]"
+
+      - name: Configure git identity for the deploy commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy docs to gh-pages
+        run: mkdocs gh-deploy --force
