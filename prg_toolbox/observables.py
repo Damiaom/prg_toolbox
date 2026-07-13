@@ -154,11 +154,9 @@ class log_silence_probability:
         self.avg_across_windows = self.values
         self.std_across_windows = np.zeros(len(self.values))
 
-        if values.any() == 0:
-            clipped = 1
-        else:
-            clipped = 0
-
+        # A step's silence probability is clipped to 1e-6 (-> -log(1e-6)) when
+        # no coarse-grained variable was ever silent at that step.
+        clipped = np.any(np.isclose(values, -np.log(0.000001)))
 
         if clipped:
             warnings.warn(f" Coarse-graining yielded variables with no silence. Consider changing preprocessing or PRG parameters.")
@@ -642,7 +640,10 @@ class decay_time:
 
         self.time_window = ac_function.time_window
 
-        rg_steps = ac_function.rg_steps
+        # ac_function.rg_steps is already decremented once (it excludes the
+        # trivial step-0 count); use the full step count here so `values`
+        # covers every RG step, consistent with every other observable class.
+        rg_steps = len(ac_function.avg_across_windows)
         self.rg_steps = rg_steps-1
 
         values = self.get_decay_time(ac_function.avg_across_windows, correlation_bins, rg_steps)
@@ -844,7 +845,7 @@ class _avalanche_covariance_eigenvalue:
         rng.permuted(shuffled_timeseries, axis=0, out=shuffled_timeseries)
         # run coarse graining again on the shuffled data
         # this double calculates coarse-graining, but makes all classes take the same input
-        shuffled_CG_variables = CG_variables(shuffled_timeseries, rg_steps = len(CG_variables.CG_timeseries), time_window = self.time_window)
+        shuffled_CG_variables = CGVariables(shuffled_timeseries, cluster_method=CG_variables.cluster_method, rg_steps=CG_variables.rg_steps)
 
         rg_steps = len(CG_variables.CG_timeseries)
         self.rg_steps = rg_steps-1

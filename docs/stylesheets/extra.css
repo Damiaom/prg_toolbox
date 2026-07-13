@@ -1,0 +1,22 @@
+/* Restores standard vertical spacing for headings */
+.md-typeset h2, .md-typeset h3 {
+    margin-top: 1.0em;
+    margin-bottom: 0.5em;
+}
+
+/* Modifies the main container blocks for clean layouts */
+.doc-object {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Shifts the structural nesting focus to horizontal indentation */
+.doc-children {
+    margin-left: 1.5rem !important;   /* Pushes the inner functions to the right */
+}
+
+.doc-children .doc-object {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    padding-left: 1.0rem;             /* Adds breathing room after the border line */
+    border-left: 3px solid var(--md-primary-color--light); /* Draws a clear horizontal tracking anchor */
+}

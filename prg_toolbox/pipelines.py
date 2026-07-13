@@ -133,8 +133,8 @@ def run_PRG(data, user_params: AnalysisParams = None):
     return result_dict
 
 
-def run_PRG_in_directory(file_directory, 
-                        skipped_files_list = [],
+def run_PRG_in_directory(file_directory,
+                        skipped_files_list = None,
                         user_params = None,
                         show_plots = False,
                         save_plots = False,
@@ -166,6 +166,9 @@ def run_PRG_in_directory(file_directory,
         hashed manifest directory. Default is False.
     """
 
+    if skipped_files_list is None:
+        skipped_files_list = []
+
     if user_params is None:
         prg_params = AnalysisParams()
     elif not isinstance(user_params, AnalysisParams):
@@ -178,7 +181,7 @@ def run_PRG_in_directory(file_directory,
 
     if not show_plots and not save_results and not save_plots:
         print("Warning: You are not showing or saving any results. Set show_plots or save_plots or save_results to True to see or keep your results.")
-    
+
     all_files = [f for f in os.listdir(file_directory)]
     N = len(all_files)
     results_path, plots_path = save_manifest(all_files, prg_params) if save_results else (None, None)
@@ -240,13 +243,16 @@ def process_single_file(path, i, N,
     if save_results:
         save_result_dictionaries(result_dict, prg_params, file_key, results_path)
 
-def run_PRG_in_directory_parallel(file_directory, 
-                        skipped_files_list = [],
+def run_PRG_in_directory_parallel(file_directory,
+                        skipped_files_list = None,
                         user_params = None,
                         show_plots = False,
                         save_plots = False,
                         save_results = False,
                         num_cores_to_use=None):
+    if skipped_files_list is None:
+        skipped_files_list = []
+
     if user_params is None:
         prg_params = AnalysisParams()
     elif not isinstance(user_params, AnalysisParams):

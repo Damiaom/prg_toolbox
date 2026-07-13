@@ -18,6 +18,7 @@ from scipy.signal import find_peaks
 import scipy.io as sio
 import pandas as pd
 import dataclasses
+import warnings
 import matplotlib.pyplot as plt
 
 
@@ -406,14 +407,20 @@ def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_st
         Returns an empty list if the incoming data duration is shorter than a single window.
     """
     if len(timestamps) == 0:
-        return timestamps
-        
+        return []
+
     t_end = timestamps[-1, 0]
     total_duration = t_end - t_start
-    
-    # If the total duration is shorter than a single window, no complete slice can be made
+
+    # If the total duration is shorter than a single window, no complete slice can be made.
+    # Keep the data as a single window rather than silently discarding it.
     if total_duration < window_duration_ms:
-        return timestamps
+        warnings.warn(
+            f"Requested window_duration_ms ({window_duration_ms}) is longer than the "
+            f"available data duration ({total_duration}). Returning the full data as a "
+            f"single window instead of slicing."
+        )
+        return [timestamps]
 
     # Calculate step size based on overlap
     step_size = window_duration_ms * (1.0 - overlap_fraction)
@@ -475,10 +482,16 @@ def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overl
     # Convert time specifications into column indices (bins)
     window_bins = int(window_duration_ms // timeseries_binsize_ms)
     total_bins = data.shape[1]
-    
+
     if total_bins < window_bins:
-        return []
-        
+        warnings.warn(
+            f"Requested window_duration_ms ({window_duration_ms}) is longer than the "
+            f"available data duration ({total_bins * timeseries_binsize_ms}). Returning the "
+            f"full data as a single window instead of slicing."
+        )
+        return [data]
+
+
     step_bins = int(window_bins * (1.0 - overlap_fraction))
     
     if step_bins > 0:
@@ -750,10 +763,7 @@ def binary_array_from_zscore(x, threshold):
     Returns
     -------
     binary_array : numpy.ndarray
-        Binarized integer array containing only active, valid rows.
-    clu_list : numpy.ndarray
-        Array of remaining variable indices, preserving their original positions 
-        relative to the input matrix.
+        Binarized array.
     """
     # Vectorized calculation of z-scores across the time axis (columns)
     z_scores = stats.zscore(x, axis=1)
@@ -780,10 +790,7 @@ def binary_array_from_zscore_maxima(x, threshold):
     Returns
     -------
     binary_array : numpy.ndarray
-        Binarized integer array containing only active, valid rows.
-    clu_list : numpy.ndarray
-        Array of remaining variable indices, preserving their original positions 
-        relative to the input matrix.
+        Binarized array.
     """
     N, T = x.shape
     
@@ -871,7 +878,7 @@ def average_observable_sample_values(CG_observable, stacked_results):
         CG_observable.avg_across_windows = np.mean(stacked_results, axis=0)
         CG_observable.std_across_windows = np.std(stacked_results, axis=0)
         CG_observable.exponent, CG_observable.exponent_error, CG_observable.exponent_r2 = \
-            get_scaling_exponent(CG_observable.avg_across_windows[1:], max_ev=True)
+            get_scaling_exponent(CG_observable.avg_across_windows[1:], skip_first_value=True)
     return CG_observable
 
 def average_across_windows_for_functions(values,rg_steps):
@@ -949,68 +956,7 @@ def average_observable_sample_values_for_functions(CG_observable, stacked_result
 
     return CG_observable
 
-def average_across_windows_for_functions(values,rg_steps):
-    """
-    Compute the mean and standard deviation across windows for
-    function-valued observables at each PRG iteration.
-
-    This function is intended for observables whose outcome at each
-    renormalization group (RG) step is not a scalar but a function
-    (i.e., a vector evaluated over some domain, such as time, scale,
-    or lag).
-
-    For each RG step k, the function stacks the function-valued results
-    obtained from different windows (or trials), and computes the mean
-    and standard deviation across windows at each point of the function
-    domain.
-
-    Parameters
-    ----------
-    values : list of list of numpy.ndarray
-        Function-valued observable results across windows and RG steps.
-        The outer list indexes windows (or trials), and the inner list
-        indexes RG steps.
-
-        Specifically, ``values[i][k]`` is a 1D numpy array representing
-        the observable as a function at RG step k for window i.
-        All windows are assumed to have the same number of RG steps and
-        the same function length at each step.
-
-    rg_steps : int
-        Number of renormalization group (coarse-graining) steps.
-
-    Returns
-    -------
-    avg_across_windows : list of numpy.ndarray
-        List of length ``rg_steps``. Entry k is a 1D array giving the
-        pointwise mean of the function-valued observable across windows
-        at RG step k.
-
-    std_across_windows : list of numpy.ndarray
-        List of length ``rg_steps``. Entry k is a 1D array giving the
-        pointwise standard deviation of the function-valued observable
-        across windows at RG step k.
-    """
-    ntrials = len(values)
-    
-    avg_across_windows = [None] * rg_steps
-    std_across_windows = [None] * rg_steps
-
-    for k in range(rg_steps):
-        # find the minimum length across all trials 
-        # (autocorrelation functions can have different lengths due to different window sizes)
-        min_len = min(len(values[i][k]) for i in range(ntrials))
-        values_per_step = np.zeros((ntrials, min_len))
-        
-        for i in range(ntrials):
-            values_per_step[i] = values[i][k][:min_len]
-            
-        avg_across_windows[k] = np.mean(values_per_step, axis=0)
-        std_across_windows[k] = np.std(values_per_step, axis=0)
-        
-    return avg_across_windows, std_across_windows
-
-def make_plots_for_observables(result_dict, 
+def make_plots_for_observables(result_dict,
                                prg_params: AnalysisParams, 
                                show_plots=False, 
                                save_plots=False, plots_path=None, 

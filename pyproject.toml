@@ -6,15 +6,23 @@ build-backend = "setuptools.build_meta"
 name = "prg_toolbox"
 version = "0.1.0"
 description = "Toolbox for Phenomenological Renormalization Group Analysis of brain data"
+requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "scipy",
     "matplotlib",
     "pandas",
-    "scikit-learn>=1.0", 
+    "scikit-learn>=1.0",
     "pooch"
 ]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0", "pytest-cov"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["prg_toolbox*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

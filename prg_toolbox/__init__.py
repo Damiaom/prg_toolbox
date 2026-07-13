@@ -40,7 +40,7 @@ __all__ = [
     "_avalanche_covariance_eigenvalue",
     "plot",
     "tools",
-    "config_params",
+    "config",
     "get_scaling_exponent",
     "pipelines",
     "datasets"

@@ -7,9 +7,14 @@
 !README.md
 !LICENSE
 
+# 2b. Allow these specific root files
+!mkdocs.yml
+
 # 3. Allow these directories and everything inside them recursively
 !/prg_toolbox/
 !/tests/
+!/docs/
+!/.github/
 
 !/example_notebooks/
 /example_notebooks/*

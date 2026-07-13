@@ -56,6 +56,13 @@ def _compute_spearman(X):
     ndarray of shape (N, N)
         Symmetric monotonic rank correlation matrix.
     """
+    # scipy.stats.spearmanr returns a scalar (not a matrix) when given
+    # exactly 2 variables; coarse-graining always passes through N=2 on its
+    # last step, so that case must be handled explicitly to keep a
+    # consistent (N, N) return shape.
+    if X.shape[0] == 2:
+        rho = spearmanr(X[0], X[1])[0]
+        return np.array([[1.0, rho], [rho, 1.0]])
     return spearmanr(X, axis=1)[0]
 
 def _compute_cosine(X):
@@ -264,7 +271,10 @@ class CGVariables:
 
         Notes
         -----
-        Each variable is used exactly once per coarse-graining step.
+        Each variable is used at most once per coarse-graining step. If the
+        number of input variables is odd, one variable cannot be paired; it is
+        dropped from this and all subsequent scales, and a warning is raised
+        naming its original index lineage.
         """
         # 1. Compute similarity matrix
         compute_matrix_fn = self._CLUSTER_METHODS[cluster_method]
@@ -280,21 +290,37 @@ class CGVariables:
         # Mask identity entries to avoid self-pairing
         np.fill_diagonal(corr_matrix, -np.inf)
 
+        used = np.zeros(N, dtype=bool)
+
         # 2. Pair most correlated units (Meshulam et al. 2019)
         for i in range(halfN):
             idx = np.unravel_index(np.argmax(corr_matrix), corr_matrix.shape)
-            
+
             # Sum rows to generate the next scale's block variable
             new_variables[i, :] = old_variables[idx[0]] + old_variables[idx[1]]
-            
+
             # Track cluster tracking lineage indices
             newclu_idx[i] = np.hstack((oldclu_idx[idx[0]], oldclu_idx[idx[1]]))
-            
+            used[idx[0]] = True
+            used[idx[1]] = True
+
             # Eliminate paired rows/columns from future lookup steps
             corr_matrix[idx[0], :] = -np.inf
             corr_matrix[idx[1], :] = -np.inf
             corr_matrix[:, idx[0]] = -np.inf
             corr_matrix[:, idx[1]] = -np.inf
+
+        # With an odd number of variables, one is left without a pair. Warn and
+        # drop it (consistent with the zero-variance filtering warning above)
+        # rather than silently discarding its activity.
+        if N % 2 != 0:
+            dropped_local_idx = int(np.flatnonzero(~used)[0])
+            dropped_lineage = np.atleast_1d(oldclu_idx[dropped_local_idx]).tolist()
+            warnings.warn(
+                f"Odd number of variables ({N}) at this coarse-graining step; variable "
+                f"{dropped_local_idx} (original indices {dropped_lineage}) has no pair "
+                f"and has been dropped from this and all subsequent scales."
+            )
 
         return new_variables, return_matrix, newclu_idx
 
@@ -333,7 +359,40 @@ class CGVariables:
         clu_idx : list of ndarray of int
             Indices of the original variables composing each coarse-grained
             variable at every RG step.
+
+        Notes
+        -----
+        Rows containing NaN values (typically from z-score binarizing a
+        zero-variance continuous row upstream) and constant (zero-variance)
+        rows are both dropped before coarse graining begins, each with a
+        warning naming the affected original row indices. Dropped indices
+        never appear in `clu_idx`.
         """
+
+        # original_idx tracks, for every row still present in binary_array,
+        # its index in the array the caller originally passed in. It is
+        # refined below as rows get dropped, so lineage in CG_cluster_idx
+        # always points back to genuine original variables.
+        original_idx = np.arange(binary_array.shape[0])
+
+        # Identify and remove rows containing NaN before validating
+        # binarization, so a preprocessing artifact produces an actionable
+        # warning instead of an opaque "not binarized" error. This commonly
+        # happens when a continuous row with zero variance is z-score
+        # binarized upstream (division by a zero standard deviation).
+        row_has_nan = np.any(np.isnan(binary_array), axis=1)
+        if np.any(row_has_nan):
+            dropped = original_idx[row_has_nan]
+            warnings.warn(
+                f"Row(s) {dropped.tolist()} of binary_array contain NaN values and have "
+                f"been excluded from coarse graining; their original indices will not "
+                f"appear in CG_cluster_idx. This commonly happens when a continuous row "
+                f"with zero variance is z-score binarized (division by a zero standard "
+                f"deviation) upstream. Check your preprocessing/binarization if this is "
+                f"unexpected."
+            )
+            binary_array = binary_array[~row_has_nan]
+            original_idx = original_idx[~row_has_nan]
 
         # Validation checks
         if not self.is_binary_matrix(binary_array):
@@ -347,9 +406,8 @@ class CGVariables:
         # base-level indices, so filtered-out variables never appear in clu_idx
         # and can't be mistaken for surviving variables' lineage downstream.
         row_is_constant = np.all(binary_array == binary_array[:, [0]], axis=1)
-        original_idx = np.arange(len(row_is_constant))[~row_is_constant]
         if np.any(row_is_constant):
-            dropped = np.where(row_is_constant)[0]
+            dropped = original_idx[row_is_constant]
             warnings.warn(
                 f"Row(s) {dropped.tolist()} of binary_array are constant (all 0s or all 1s) "
                 f"across the time window and have zero variance. These variables have been "
@@ -357,6 +415,7 @@ class CGVariables:
                 f"CG_cluster_idx."
             )
             binary_array = binary_array[~row_is_constant]
+            original_idx = original_idx[~row_is_constant]
 
         total_steps = rg_steps + 1
         CG_var = [None] * total_steps
