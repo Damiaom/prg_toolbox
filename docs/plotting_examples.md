@@ -39,35 +39,48 @@ your own data -- a plain string is enough.
 
 ## The data used below
 
-The examples below use 64 randomly-sampled units from a real V4 cortex spike
-recording bundled as example data, alongside its ISI-shuffled surrogate (a
-null model that destroys temporal correlations while preserving each unit's
-firing rate):
+The examples below use 3 independent random 64-unit subsamples of a real V4
+cortex spike recording bundled as example data, averaged via `run_PRG`'s
+`nsamples` so the resulting observables carry a genuine spread across
+samples (that's what `fill_kwargs` renders), alongside the same pipeline run
+on an ISI-shuffled surrogate (a null model that destroys temporal
+correlations while preserving each unit's firing rate):
 
 ```python
 import prg_toolbox as prg
-from prg_toolbox.analysis_tools import binarize_data, pick_random_sample, shuffle_isi
+from prg_toolbox.analysis_tools import pick_random_sample, shuffle_isi
 
 path = prg.datasets.get_spike_data(files=["V4-5E"])
 
 params = prg.config.AnalysisParams()
 params.loading.data_format = "tabular"
+params.rg_steps = 5
+params.cluster_method = "pearson"
+params.subsampling.samplesize = 64
+params.subsampling.nsamples = 3
+params.observables = [prg.mean_variance, prg.activity_distribution]
+
 timestamps = prg.tools.load_data(path, user_params=params)
+surrogate_timestamps = shuffle_isi(timestamps, data_format="tabular", random_seed=7)
 
-subsample = pick_random_sample(timestamps, sample_size=64, data_format="tabular", random_seed=7)
-data_binary = binarize_data(subsample, data_format="tabular", binsize_ms=5.0)
-surrogate_binary = shuffle_isi(data_binary, data_format="timeseries", random_seed=7)
+data_result = prg.run_PRG(timestamps, user_params=params)
+surrogate_result = prg.run_PRG(surrogate_timestamps, user_params=params)
 
-cg_data = prg.CGVariables(data_binary, cluster_method="pearson", rg_steps=5)
-cg_surr = prg.CGVariables(surrogate_binary, cluster_method="pearson", rg_steps=5)
-
-mv_data, mv_surr = prg.mean_variance(cg_data), prg.mean_variance(cg_surr)
-ad_data, ad_surr = prg.activity_distribution(cg_data), prg.activity_distribution(cg_surr)
+mv_data, mv_surr = data_result["mean_variance"], surrogate_result["mean_variance"]
+ad_data, ad_surr = data_result["activity_distribution"], surrogate_result["activity_distribution"]
 ```
 
-The real data's mean-variance scaling (`α ≈ 1.67`) sits well above the
+!!! note
+    `shuffle_isi` scans the data once per unit, so shuffling a recording
+    with thousands of units can take minutes. The generation script behind
+    this page (`docs/generate_plot_examples.py`) first narrows down to a
+    500-unit pool with `pick_random_sample` -- still plenty for `run_PRG`'s
+    3 samples to differ -- before shuffling, which keeps this fast. See the
+    script for the full version.
+
+The real data's mean-variance scaling (`α ≈ 1.64`) sits well above the
 `α = 1` trivial/independent baseline, while its shuffled surrogate
-(`α ≈ 1.03`) collapses right back onto it -- exactly the kind of contrast
+(`α ≈ 1.02`) collapses right back onto it -- exactly the kind of contrast
 these plots are meant to reveal.
 
 ## Default style
@@ -120,7 +133,7 @@ prg.plot.plot_activity_distribution(
     plot_kwargs={"marker": "*", "markersize": 10, "linestyle": "-", "linewidth": 1.5},
     fill_kwargs={"alpha": 0.25},
     label_kwargs={"fontsize": 15, "fontweight": "bold"},
-    legend_kwargs={"fontsize": 11, "loc": "lower center", "frameon": False},
+    legend_kwargs={"fontsize": 11, "loc": "upper right", "frameon": False},
     tick_kwargs={"labelsize": 11, "direction": "in", "length": 6},
 )
 ```

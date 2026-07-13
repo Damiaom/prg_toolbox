@@ -12,9 +12,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 import prg_toolbox as prg
-from prg_toolbox import CGVariables, mean_variance, activity_distribution
 from prg_toolbox import plot
-from prg_toolbox.analysis_tools import binarize_data, pick_random_sample, shuffle_isi
+from prg_toolbox.analysis_tools import pick_random_sample, shuffle_isi
 
 DOCS_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(DOCS_DIR, "assets", "plotting_examples")
@@ -34,20 +33,38 @@ MAGMA_SURROGATE = "#feb77e"
 MAGMA_REFERENCE = "#3f3f3f"
 
 
-def build_data():
+def build_results():
     """
-    Real data ('data'): 64 randomly-sampled units from a V4 cortex spike
-    recording. 'surrogate' is its ISI-shuffled null model, which destroys
-    temporal correlations while preserving each unit's firing rate.
+    Real data ('data'): 3 independent random 64-unit subsamples of a V4
+    cortex spike recording, averaged via run_PRG (nsamples=3) so the
+    resulting observables carry a genuine std_across_windows spread --
+    that's what fill_kwargs renders. 'surrogate' is the same pipeline run
+    on the ISI-shuffled recording, a null model that destroys temporal
+    correlations while preserving each unit's firing rate.
+
+    The recording has ~9500 units, and shuffle_isi's per-unit scan is
+    O(units x total_spikes) -- shuffling the full recording takes minutes.
+    We only ever need 64 units per sample, so a 500-unit pool (picked once)
+    is plenty of room for run_PRG's own nsamples=3 draws to differ, while
+    keeping shuffle_isi (and everything downstream) fast.
     """
     params = prg.config.AnalysisParams()
     params.loading.data_format = "tabular"
-    timestamps = prg.tools.load_data(EXAMPLE_SPIKE_FILE, user_params=params)
+    params.time_slicing.binary_binsize_ms = 5.0
+    params.rg_steps = 5
+    params.cluster_method = "pearson"
+    params.subsampling.samplesize = 64
+    params.subsampling.nsamples = 3
+    params.subsampling.random_seed = 7
+    params.observables = [prg.mean_variance, prg.activity_distribution]
 
-    subsample = pick_random_sample(timestamps, sample_size=64, data_format="tabular", random_seed=7)
-    data_binary = binarize_data(subsample, data_format="tabular", binsize_ms=5.0)
-    surrogate_binary = shuffle_isi(data_binary, data_format="timeseries", random_seed=7)
-    return data_binary, surrogate_binary
+    timestamps = prg.tools.load_data(EXAMPLE_SPIKE_FILE, user_params=params)
+    pool = pick_random_sample(timestamps, sample_size=500, data_format="tabular", random_seed=7)
+    surrogate_pool = shuffle_isi(pool, data_format="tabular", random_seed=7)
+
+    data_result = prg.run_PRG(pool, user_params=params)
+    surrogate_result = prg.run_PRG(surrogate_pool, user_params=params)
+    return data_result, surrogate_result
 
 
 def save(fig, name):
@@ -58,15 +75,12 @@ def save(fig, name):
 
 
 def main():
-    data_binary, surrogate_binary = build_data()
+    data_result, surrogate_result = build_results()
 
-    cg_data = CGVariables(data_binary, cluster_method="pearson", rg_steps=5)
-    cg_surr = CGVariables(surrogate_binary, cluster_method="pearson", rg_steps=5)
-
-    mv_data = mean_variance(cg_data)
-    mv_surr = mean_variance(cg_surr)
-    ad_data = activity_distribution(cg_data)
-    ad_surr = activity_distribution(cg_surr)
+    mv_data = data_result["mean_variance"]
+    mv_surr = surrogate_result["mean_variance"]
+    ad_data = data_result["activity_distribution"]
+    ad_surr = surrogate_result["activity_distribution"]
 
     # --- mean_variance: default style ---------------------------------
     fig, ax = plt.subplots(figsize=FIGSIZE)
@@ -103,7 +117,7 @@ def main():
         plot_kwargs={"marker": "*", "markersize": 10, "linestyle": "-", "linewidth": 1.5},
         fill_kwargs={"alpha": 0.25},
         label_kwargs={"fontsize": 15, "fontweight": "bold"},
-        legend_kwargs={"fontsize": 11, "loc": "lower center", "frameon": False},
+        legend_kwargs={"fontsize": 11, "loc": "upper right", "frameon": False},
         tick_kwargs={"labelsize": 11, "direction": "in", "length": 6},
     )
     save(fig, "activity_distribution_custom.png")
