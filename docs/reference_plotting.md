@@ -2,6 +2,8 @@
 
 The visualization module provides an interface for plotting the statistical observables calculated during the Phenomenological Renormalization Group (PRG) analysis. The plotting functions (e.g., `plot_mean_variance`, `plot_covariance_spectrum`, `plot_activity_distribution`) share a common structure and accept essentially the same parameters. One exception is the color parameter `colors` for single line plots and `palette` for multiple curve plots.
 
+See [Styling your plots](plotting_examples.md) for worked, rendered examples of both.
+
 **Matplotlib Styling and Configurations**
 
 The functions accept Matplotlib keyword arguments to modify the layout, colors, and line styles (see list in the example below). Users can input these configurations using two methods:
@@ -58,7 +60,7 @@ def plot_observable_name(
         label_kwargs (dict or None)  : Axis label kwargs
         legend_kwargs (dict or None) : Legend kwargs
         tick_kwargs (dict or None)   : Tick styling kwargs
-        colors (list or None)        : Custom color scheme (for multi-curve plots, `palette`)
+        colors (str, dict, or None)  : Custom color scheme (for multi-curve plots, `palette`)
         legend (bool)                : Whether to display legend
 
         # Exclusive to plot_covariance_spectrum

@@ -204,6 +204,27 @@ class CGVariables:
         Calculated similarity matrices evaluated at the start of each coarse graining step.
     CG_cluster_idx : list of list of ndarray
         Trace indices mapping lineage back to individual constituent units from scale 0.
+
+    Examples
+    --------
+    4 short binary variables, coarse-grained by 1 step. Variables 0 and 1 are
+    identical (perfectly correlated) and get paired, as do 2 and 3; each
+    merged variable is simply the elementwise sum of its pair:
+
+    >>> import numpy as np
+    >>> from prg_toolbox import CGVariables
+    >>> binary = np.array([
+    ...     [1, 0, 1, 0, 1, 0],
+    ...     [1, 0, 1, 0, 0, 0],
+    ...     [0, 1, 0, 1, 0, 1],
+    ...     [0, 0, 0, 1, 0, 1],
+    ... ])
+    >>> cg = CGVariables(binary, cluster_method='pearson', rg_steps=1)
+    >>> cg.CG_cluster_idx[1]  # which original variables got paired together
+    [array([0, 1]), array([2, 3])]
+    >>> cg.CG_timeseries[1]  # each row is the elementwise sum of its pair
+    array([[2., 0., 2., 0., 1., 0.],
+           [0., 1., 0., 2., 0., 2.]])
     """
     _CLUSTER_METHODS = {
     "pearson": _compute_pearson,
@@ -377,9 +398,7 @@ class CGVariables:
 
         # Identify and remove rows containing NaN before validating
         # binarization, so a preprocessing artifact produces an actionable
-        # warning instead of an opaque "not binarized" error. This commonly
-        # happens when a continuous row with zero variance is z-score
-        # binarized upstream (division by a zero standard deviation).
+        # warning instead of an opaque "not binarized" error.
         row_has_nan = np.any(np.isnan(binary_array), axis=1)
         if np.any(row_has_nan):
             dropped = original_idx[row_has_nan]

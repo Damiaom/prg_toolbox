@@ -57,6 +57,18 @@ def get_scaling_exponent(CG_observable_values, spectrum = False, skip_first_valu
 
     exponent_r2 : float
         Coefficient of determination (R²) of the power-law fit.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from prg_toolbox.utils import get_scaling_exponent
+    >>> k = np.arange(5)
+    >>> values = 2.0 * (2.0 ** k) ** 1.5  # exact power law, true exponent = 1.5
+    >>> exponent, exponent_error, r2 = get_scaling_exponent(values)
+    >>> round(float(exponent), 2)
+    1.5
+    >>> round(float(r2), 2)
+    1.0
     """
 
     x = CG_observable_values

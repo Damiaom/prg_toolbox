@@ -21,7 +21,7 @@ The configuration parameters are grouped into the following specialized classes:
 """
 
 from dataclasses import dataclass, field
-from typing import List, Callable, Optional, Dict, Any
+from typing import List, Callable, Optional, Dict, Any, Union
 from . import observables as obs 
 
 @dataclass
@@ -37,10 +37,19 @@ class PlotStyleConfig:
     legend : bool, optional
         Flag dictating whether a legend box should be rendered on the figure canvas. 
         Default is True.
-    colors : dict of str to str, optional
-        A dictionary mapping explicit keys to standard matplotlib color codes. Default is None.
-    palette : dict of str to str, optional
-        A dictionary mapping explicit keys to standard matplotlib color codes. Default is None.
+    colors : str or dict of str to str, optional
+        Overrides line colors for the 'data', 'surrogate', and 'reference'
+        plot elements. A plain color string (e.g. "green") sets only the
+        'data' color; a dict may set any subset of the three keys, e.g.
+        ``{"data": "green"}`` -- keys left unspecified keep their default
+        color. Default is None (uses all defaults).
+    palette : str or dict of str to str, optional
+        Overrides the colormap(s) used to color successive RG-step curves
+        in function-valued observable plots (e.g. covariance_spectrum,
+        autocorrelation_function, activity_distribution). A plain colormap
+        name (e.g. "plasma") sets only the 'data' colormap; a dict may set
+        either or both of 'data' and 'surrogate' -- keys left unspecified
+        keep their default colormap. Default is None (uses all defaults).
     plot_kwargs : dict of str to Any, optional
         Keyword arguments passed directly to `matplotlib.pyplot.plot` calls 
         (e.g., ``linestyle``, ``linewidth``, ``marker``). Default is an empty factory dictionary.
@@ -61,8 +70,8 @@ class PlotStyleConfig:
     """
     # Global/shared layout flags
     show_legend: bool = True
-    colors: Optional[Dict[str, str]] = None
-    palette: Optional[Dict[str, str]] = None
+    colors: Optional[Union[str, Dict[str, str]]] = None
+    palette: Optional[Union[str, Dict[str, str]]] = None
     
     # Specific matplotlib styling overrides
     plot_kwargs: Dict[str, Any] = field(default_factory=dict)

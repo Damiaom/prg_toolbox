@@ -65,6 +65,19 @@ class mean_variance:
             Used to simplify handling of multi-trial data (average across trials)
         std_across_windows : ndarray
             Used to simplify handling of multi-trial data (standard deviation across trials)
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from prg_toolbox import CGVariables, mean_variance
+        >>> rng = np.random.default_rng(0)
+        >>> binary = (rng.random((64, 5000)) < 0.3).astype(int)
+        >>> cg = CGVariables(binary, cluster_method='pearson', rg_steps=4)
+        >>> result = mean_variance(cg)
+        >>> len(result.values) == cg.rg_steps + 1
+        True
+        >>> round(float(result.exponent), 1)  # independent units -> alpha ~ 1
+        1.0
         """
 
         if type(CG_variables) != CGVariables:
@@ -133,6 +146,19 @@ class log_silence_probability:
             Used to simplify handling of multi-trial data (average across trials)
         std_across_windows : ndarray
             Used to simplify handling of multi-trial data (standard deviation across trials)
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from prg_toolbox import CGVariables, log_silence_probability
+        >>> rng = np.random.default_rng(0)
+        >>> binary = (rng.random((64, 5000)) < 0.3).astype(int)
+        >>> cg = CGVariables(binary, cluster_method='pearson', rg_steps=4)
+        >>> result = log_silence_probability(cg)
+        >>> len(result.values) == cg.rg_steps + 1
+        True
+        >>> bool(np.all(result.values >= 0))
+        True
         """
 
         if type(CG_variables) != CGVariables:

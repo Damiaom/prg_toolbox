@@ -33,5 +33,6 @@ nav:
   - Statistical observables: reference_observables.md
   - Analysis tools: reference_analysis_tools.md
   - Plotting library: reference_plotting.md
+  - Styling your plots: plotting_examples.md
   - Configuration: reference_config.md
   - Pipelines: reference_pipelines.md

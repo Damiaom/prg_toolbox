@@ -98,7 +98,12 @@ def set_autocorrelation_function_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_
         label_kwargs (dict or None)  : Axis label kwargs
         legend_kwargs (dict or None) : Legend kwargs
         tick_kwargs (dict or None)   : Tick styling kwargs
-        palette (list, tuple or None): Color palettes
+        palette (str, dict, or None) : Overrides the colormap(s) coloring
+                                        successive RG-step curves. A plain
+                                        colormap name sets only the 'data'
+                                        colormap; a dict may set either or
+                                        both of 'data', 'surrogate' (unset
+                                        keys keep their defaults).
         legend (bool)                : Whether to display legend
 
     Returns
@@ -194,7 +199,12 @@ def plot_autocorrelation_function(
         label_kwargs (dict or None)  : Axis label kwargs
         legend_kwargs (dict or None) : Legend kwargs
         tick_kwargs (dict or None)   : Tick styling kwargs
-        palette (list, tuple or None): Color palettes
+        palette (str, dict, or None) : Overrides the colormap(s) coloring
+                                        successive RG-step curves. A plain
+                                        colormap name sets only the 'data'
+                                        colormap; a dict may set either or
+                                        both of 'data', 'surrogate' (unset
+                                        keys keep their defaults).
         legend (bool)                : Whether to display legend
 
     Returns

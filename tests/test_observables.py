@@ -44,6 +44,20 @@ class TestMeanVariance:
         np.testing.assert_allclose(ratios, 2.0, rtol=0.15)
         assert result.exponent == pytest.approx(1.0, abs=0.15)
 
+    def test_exponent_approaches_one_for_independent_data_with_pearson(self, rng):
+        # Same null-hypothesis baseline as above, but using the actual
+        # default cluster_method='pearson'. Sample correlations between
+        # independent units shrink as ~1/sqrt(T) (CLT), so with T long
+        # enough the "pick the most correlated pair" selection bias becomes
+        # negligible and alpha -> 1 here too -- a more convincing check
+        # since it exercises the real default configuration, not just an
+        # idealized unbiased pairing.
+        N, T, p = 64, 5000, 0.3
+        binary = (rng.random((N, T)) < p).astype(int)
+        cg = CGVariables(binary, cluster_method="pearson", rg_steps=4)
+        result = obs.mean_variance(cg)
+        assert result.exponent == pytest.approx(1.0, abs=0.1)
+
 
 class TestLogSilenceProbability:
     def test_warns_when_never_silent(self, rng):
@@ -59,6 +73,21 @@ class TestLogSilenceProbability:
     def test_positive_values_for_sparse_activity(self, cgvars):
         result = obs.log_silence_probability(cgvars)
         assert np.all(result.values >= 0)
+
+
+    def test_exponent_approaches_one_for_independent_data_with_pearson(self, rng, recwarn):
+        # Same rationale as mean_variance's pearson counterpart: with T long
+        # enough, pearson's "most correlated pair" selection bias on
+        # independent data becomes negligible, so beta -> 1 even under the
+        # real default cluster_method.
+        N, T, p = 64, 5000, 0.3
+        binary = (rng.random((N, T)) < p).astype(int)
+        cg = CGVariables(binary, cluster_method="pearson", rg_steps=4)
+        result = obs.log_silence_probability(cg)
+
+        messages = [str(w.message) for w in recwarn.list]
+        assert not any("no silence" in m for m in messages)
+        assert result.exponent == pytest.approx(1.0, abs=0.1)
 
 
 class TestMaxCovarianceEigenvalue:

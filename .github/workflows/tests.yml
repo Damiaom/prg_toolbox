@@ -27,3 +27,6 @@ jobs:
 
       - name: Run tests
         run: pytest --cov=prg_toolbox --cov-report=term-missing
+
+      - name: Run docstring examples
+        run: pytest --doctest-modules prg_toolbox/coarse_graining.py prg_toolbox/utils.py prg_toolbox/analysis_tools.py prg_toolbox/observables.py

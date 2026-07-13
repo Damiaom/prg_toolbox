@@ -87,7 +87,11 @@ def plot_max_covariance_eigenvalue(
         label_kwargs (dict or None)  : Axis label kwargs
         legend_kwargs (dict or None) : Legend kwargs
         tick_kwargs (dict or None)   : Tick styling kwargs
-        colors (list or None)        : Custom color scheme
+        colors (str, dict, or None)  : Overrides line colors. A plain color
+                                        string sets only the 'data' color; a
+                                        dict may set any of 'data',
+                                        'surrogate', 'reference' (unset keys
+                                        keep their defaults).
         legend (bool)                : Whether to display legend
 
     Returns

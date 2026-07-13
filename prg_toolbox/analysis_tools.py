@@ -368,6 +368,21 @@ def pick_random_sample(data, sample_size, data_format='timeseries', random_seed=
     -------
     numpy.ndarray
         The subsampled data in the exact same format as the input.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from prg_toolbox.analysis_tools import pick_random_sample
+    >>> data = np.arange(20).reshape(5, 4)  # 5 units, 4 timepoints
+    >>> data
+    array([[ 0,  1,  2,  3],
+           [ 4,  5,  6,  7],
+           [ 8,  9, 10, 11],
+           [12, 13, 14, 15],
+           [16, 17, 18, 19]])
+    >>> pick_random_sample(data, sample_size=2, data_format='timeseries', random_seed=0)
+    array([[12, 13, 14, 15],
+           [16, 17, 18, 19]])
     """
     if data_format == 'timeseries':
         return _pick_random_sample_from_timeseries(data, sample_size, random_seed)
@@ -836,6 +851,24 @@ def binarize_data(data, data_format='timeseries', binary_method=None,
     -------
     numpy.ndarray
         A dense 2D binary matrix of shape (N_neurons, T_bins).
+
+    Examples
+    --------
+    A row of mostly-baseline values, a large negative outlier, and a clear
+    positive outlier. The threshold is set to exactly the z-score of one of
+    the baseline points, to show that a value sitting precisely at the
+    threshold does *not* count as a spike (the comparison is strict ``>``):
+
+    >>> import numpy as np
+    >>> from scipy import stats
+    >>> from prg_toolbox.analysis_tools import binarize_data
+    >>> data = np.array([[0.0, 1.0, -20.0, 2.0, 0.0, 15.0]])
+    >>> z_scores = stats.zscore(data, axis=1)
+    >>> np.round(z_scores, 2)
+    array([[ 0.03,  0.13, -1.92,  0.23,  0.03,  1.5 ]])
+    >>> threshold = z_scores[0, 3]  # exactly the z-score of the value 2.0
+    >>> binarize_data(data, data_format='timeseries', binary_method='zscore_threshold', zscore_threshold=threshold)
+    array([[0, 0, 0, 0, 0, 1]])
     """
     if data_format !='timeseries':
         # Convert sparse events to dense binary matrix

@@ -4,13 +4,18 @@ import matplotlib.lines as mlines
 import dataclasses
 from ..utils import powerLaw_function
 
-def set_default_kwargs(colors = None):    
+def set_default_kwargs(colors = None):
     """
     Defines default plotting styles and colors.
 
     Parameters:
-        colors (list or None):  Optional color list to override defaults
-                                [data, surrogate, reference]
+        colors (str, dict, or None): Optional override for the 'data',
+                                'surrogate', and 'reference' line colors.
+                                A plain color string (e.g. "green") sets
+                                only the 'data' color; a dict may set any
+                                subset of the three keys, e.g. {'data': 'green'}
+                                -- keys left unspecified keep their default
+                                color. None uses all defaults.
 
     Returns
     ----------
@@ -44,19 +49,29 @@ def set_default_kwargs(colors = None):
         "loc": "best",
     }
 
-    if colors == None:
-        COLORS = {
-            "data": "tab:purple",
-            "surrogate": "tab:blue",
-            "reference": "0.7",
-        }
-    else:
-        COLORS = {
-            "data": colors['data'],
-            "surrogate": colors['surrogate'],
-            "reference": colors['reference'],
-        }
+    DEFAULT_COLORS = {
+        "data": "tab:purple",
+        "surrogate": "tab:blue",
+        "reference": "0.7",
+    }
 
+    if colors is None:
+        COLORS = dict(DEFAULT_COLORS)
+    elif isinstance(colors, str):
+        # Shorthand: a single color sets only 'data'; everything else
+        # keeps its default so the user doesn't need to know about
+        # 'surrogate'/'reference' just to recolor their own data.
+        COLORS = {**DEFAULT_COLORS, "data": colors}
+    elif isinstance(colors, dict):
+        # Partial overrides are allowed; unspecified keys fall back to
+        # their defaults instead of raising a KeyError.
+        COLORS = {**DEFAULT_COLORS, **colors}
+    else:
+        raise TypeError(
+            "colors must be None, a color string, or a dict with any of "
+            "the keys 'data', 'surrogate', 'reference' "
+            f"(got {type(colors).__name__})."
+        )
 
     return DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS, DEFAULT_LABEL_KWARGS, DEFAULT_LEGEND_KWARGS, COLORS
 
@@ -128,19 +143,36 @@ def set_colors_from_palette(number_of_colors, palette=None, data_or_surrogate='d
     Parameters
     ----------
         number_of_colors (int)       : Number of colors to generate
-        palette (tuple or None)      : (data_cmap, surrogate_cmap)
+        palette (str, dict, or None) : Optional override for the 'data' and
+                                'surrogate' colormaps. A plain colormap name
+                                (e.g. "plasma") sets only the 'data' colormap;
+                                a dict may set either or both of 'data' and
+                                'surrogate' -- keys left unspecified keep
+                                their default colormap. None uses all defaults.
         data_or_surrogate (str)      : Selects which palette to use
 
     Returns
     ----------
         colors (list): List of RGBA colors
     """
-    if palette is not None:
-        cmap = plt.get_cmap(palette['data']) if data_or_surrogate == 'data' else plt.get_cmap(palette['surrogate'])
-    elif data_or_surrogate == 'data':
-        cmap = plt.get_cmap('magma')
+    DEFAULT_PALETTE = {"data": "magma", "surrogate": "viridis"}
+
+    if palette is None:
+        palette_dict = DEFAULT_PALETTE
+    elif isinstance(palette, str):
+        # Shorthand: a single colormap name sets only 'data'.
+        palette_dict = {**DEFAULT_PALETTE, "data": palette}
+    elif isinstance(palette, dict):
+        # Partial overrides are allowed; unspecified keys fall back to
+        # their defaults instead of raising a KeyError.
+        palette_dict = {**DEFAULT_PALETTE, **palette}
     else:
-        cmap = plt.get_cmap('viridis')
+        raise TypeError(
+            "palette must be None, a colormap name string, or a dict with "
+            f"any of the keys 'data', 'surrogate' (got {type(palette).__name__})."
+        )
+
+    cmap = plt.get_cmap(palette_dict[data_or_surrogate])
     colorlist = np.linspace(0.1, 0.8, number_of_colors)
     colors = [cmap(c) for c in colorlist]
     

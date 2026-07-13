@@ -241,7 +241,12 @@ def set_covariance_spectrum_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_
         DEFAULT_FILL_KWARGS (dict)
         plot_kwargs (dict or None)
         fill_kwargs (dict or None)
-        palette (tuple or None)      : Color palettes
+        palette (str, dict, or None) : Overrides the colormap(s) coloring
+                                        successive RG-step curves. A plain
+                                        colormap name sets only the 'data'
+                                        colormap; a dict may set either or
+                                        both of 'data', 'surrogate' (unset
+                                        keys keep their defaults).
         data (object or dict)        : Input data
         data_or_surrogate (str)      : 'data' or 'surrogate'
 
@@ -336,7 +341,12 @@ def plot_covariance_spectrum(
         label_kwargs (dict or None)  : Axis label kwargs
         legend_kwargs (dict or None) : Legend kwargs
         tick_kwargs (dict or None)   : Tick styling kwargs
-        palette (list, tuple or None): Color palettes
+        palette (str, dict, or None) : Overrides the colormap(s) coloring
+                                        successive RG-step curves. A plain
+                                        colormap name sets only the 'data'
+                                        colormap; a dict may set either or
+                                        both of 'data', 'surrogate' (unset
+                                        keys keep their defaults).
         legend (bool)                : Whether to display legend
         add_marchenko_pastur_inset   : Whether to plot the Marchenko-Pastur fit as an inset (bool)
         inset_bounds (list)          : [left, bottom, width, height] of the inset
