@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-PRG Toolbox is a Python package that implements the Phenomenological Renormalization Group (PRG) coarse graining method introduced by Meshulam et al. (2019) [1,2]. It performs model-free analysis designed to study scale-invariant behavior and collective dynamics in high-dimensional multivariate time series, such as multi-neuron spike recordings or rs-fMRI data [3,4].
+PRG Toolbox is a Python package that implements the Phenomenological Renormalization Group (PRG) coarse graining method introduced by Meshulam et al. (2019) [1,2]. It performs model-free analysis designed to study scale-invariant behavior and collective dynamics in high-dimensional multivariate time series, such as multi-neuron spike recordings or fMRI data [3,4].
 
 ## Method Overview
 
