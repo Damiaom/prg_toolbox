@@ -15,11 +15,13 @@ Core Functions:
 """
 from concurrent.futures import ProcessPoolExecutor
 import os
+import time
 import numpy as np
 
 from .coarse_graining import CGVariables
 from .config import *
 from .analysis_tools import *
+from .verbosity import timed_step, print_if_full
 
 
 def run_PRG(data, user_params: AnalysisParams = None):
@@ -59,7 +61,8 @@ def run_PRG(data, user_params: AnalysisParams = None):
     observable_call_list = params.observables
     rg_steps = params.rg_steps
     cluster_method = params.cluster_method
-    
+    verbose = params.verbose
+
     # Data loading parameters
     data_format = params.loading.data_format
     binary_method = params.loading.binary_method
@@ -80,40 +83,55 @@ def run_PRG(data, user_params: AnalysisParams = None):
     # Initialize storage tracking metrics across all generated realizations
     observable_stacker = {obs.__name__: [] for obs in observable_call_list}
 
-    # Strip the transient period if specified, ensuring that only the steady-state dynamics are analyzed
-    data = discard_transient(data,data_format = data_format, timeseries_binsize_ms = binsize, transient_time_ms = discard_transient_time_ms) if discard_transient_time_ms > 0 else data
+    run_start = time.perf_counter() if verbose == "full" else None
 
-    time_windows_list = slice_by_time_window(data, 
-                                             data_format = data_format,
-                                             window_duration_ms=time_window_ms, 
-                                             timeseries_binsize_ms=binsize, 
-                                             overlap_fraction=slice_overlap, t_start=0.0) if time_window_ms is not None else [data]
+    # Strip the transient period if specified, ensuring that only the steady-state dynamics are analyzed
+    with timed_step("discard_transient", verbose):
+        data = discard_transient(data,data_format = data_format, timeseries_binsize_ms = binsize, transient_time_ms = discard_transient_time_ms) if discard_transient_time_ms > 0 else data
+
+    with timed_step("slice_by_time_window", verbose):
+        time_windows_list = slice_by_time_window(data,
+                                                 data_format = data_format,
+                                                 window_duration_ms=time_window_ms,
+                                                 timeseries_binsize_ms=binsize,
+                                                 overlap_fraction=slice_overlap, t_start=0.0,
+                                                 verbose=verbose) if time_window_ms is not None else [data]
+
+    n_slices = len(time_windows_list)
 
     # Evaluation Loop (Slices x Subsamples)
     for slice_idx, current_slice in enumerate(time_windows_list):
         for sample_idx in range(nsamples):
-            
+
+            print_if_full(f"time slice {slice_idx + 1}/{n_slices}, sample {sample_idx + 1}/{nsamples}:", verbose)
+
             # Unique deterministic seed mapping combining slice iteration and sample iteration
             combined_seed = random_seed * (slice_idx + 1) * (sample_idx + 1)
-            
+
             # Execute unit/spatial subsampling within the current temporal window
             if samplesize is not None:
-                subsample = pick_random_sample(current_slice, samplesize, data_format=data_format, random_seed=combined_seed)
+                with timed_step("pick_random_sample", verbose, indent="  "):
+                    subsample = pick_random_sample(current_slice, samplesize, data_format=data_format, random_seed=combined_seed)
             else:
                 subsample = current_slice
-            
+
             # Binarize time series and run coarse graining
-            binary_time_series = binarize_data(subsample,
-                                               data_format = data_format,
-                                               binary_method=binary_method,
-                                               binsize_ms=binsize,
-                                               zscore_threshold=zscore_threshold)
-            cgvar = CGVariables(binary_time_series, cluster_method=cluster_method, rg_steps=rg_steps)
+            with timed_step("binarize_data", verbose, indent="  "):
+                binary_time_series = binarize_data(subsample,
+                                                   data_format = data_format,
+                                                   binary_method=binary_method,
+                                                   binsize_ms=binsize,
+                                                   zscore_threshold=zscore_threshold)
+            with timed_step("coarse_graining", verbose, indent="  "):
+                cgvar = CGVariables(binary_time_series, cluster_method=cluster_method, rg_steps=rg_steps, verbose=verbose)
 
             # Evaluate observables on the current spatio-temporal realization
             for call in observable_call_list:
-                CG_observable = call(cgvar)
-                observable_stacker[call.__name__].append(CG_observable.avg_across_windows)
+                with timed_step(f"observable: {call.__name__}", verbose, indent="  "):
+                    CG_observable = call(cgvar)
+                    observable_stacker[call.__name__].append(CG_observable.avg_across_windows)
+                if hasattr(CG_observable, "exponent"):
+                    print_if_full(f"    {call.__name__}: exponent = {CG_observable.exponent:.4g}", verbose)
 
     # Structural Aggregation and Averaging
     result_dict = {}
@@ -121,14 +139,23 @@ def run_PRG(data, user_params: AnalysisParams = None):
         key = call.__name__
         if not is_function_observable(call):
             stacked_data = np.stack(observable_stacker[key], axis=0)
-            CG_observable = call(cgvar)  
+            CG_observable = call(cgvar)
             CG_observable = average_observable_sample_values(CG_observable, stacked_data)
         else:
             stacked_data = observable_stacker[key]
             CG_observable = call(cgvar)
             CG_observable = average_observable_sample_values_for_functions(CG_observable, stacked_data, rg_steps, binary_time_series)
 
+        if hasattr(CG_observable, "exponent"):
+            print_if_full(
+                f"{key}: exponent = {CG_observable.exponent:.4g} ± {CG_observable.exponent_error:.4g} (R²={CG_observable.exponent_r2:.3f})",
+                verbose,
+            )
+
         result_dict[key] = CG_observable
+
+    if verbose == "full":
+        print(f"[timing] run_PRG total: {time.perf_counter() - run_start:.3f}s")
 
     return result_dict
 
@@ -179,7 +206,7 @@ def run_PRG_in_directory(file_directory,
     else:
         prg_params = user_params
 
-    if not show_plots and not save_results and not save_plots:
+    if not show_plots and not save_results and not save_plots and prg_params.verbose != "silent":
         print("Warning: You are not showing or saving any results. Set show_plots or save_plots or save_results to True to see or keep your results.")
 
     all_files = [f for f in os.listdir(file_directory)]
@@ -192,10 +219,12 @@ def run_PRG_in_directory(file_directory,
         path = os.path.join(file_directory, path)
         # Optionally you can filter to skip unwanted files
         if i in skipped_files_list or file_key in skipped_files_list:
-            print(f"[{i}/{N}] {file_key} skipped.")
+            if prg_params.verbose != "silent":
+                print(f"[{i}/{N}] {file_key} skipped.")
             continue
 
-        print(f"[{i}/{N}] Processing file: {file_key}")
+        if prg_params.verbose != "silent":
+            print(f"[{i}/{N}] Processing file: {file_key}")
         data = load_data(path, user_params = prg_params)
 
         # Calculating observables and averaging across samples
@@ -223,13 +252,15 @@ def process_single_file(path, i, N,
                         results_path, plots_path):
     
     file_key = os.path.basename(path)
-    
+
     if i in skipped_files_list or file_key in skipped_files_list:
-        print(f"[{i}/{N}] {file_key} skipped.")
+        if prg_params.verbose != "silent":
+            print(f"[{i}/{N}] {file_key} skipped.")
         return
 
-    print(f"[{i}/{N}] Processing file: {file_key}")
-    
+    if prg_params.verbose != "silent":
+        print(f"[{i}/{N}] Processing file: {file_key}")
+
     data = load_data(path, load_params=prg_params)
 
     result_dict = run_PRG(
@@ -263,9 +294,9 @@ def run_PRG_in_directory_parallel(file_directory,
     else:
         prg_params = user_params
 
-    if not show_plots and not save_results and not save_plots:
+    if not show_plots and not save_results and not save_plots and prg_params.verbose != "silent":
         print("Warning: You are not showing or saving any results.")
-    
+
     gdf_files = [f for f in file_directory if f.endswith('.gdf')]
     N = len(gdf_files)
 

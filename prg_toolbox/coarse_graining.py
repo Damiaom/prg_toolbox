@@ -20,7 +20,8 @@ import numpy as np
 from sklearn.metrics import mutual_info_score
 from scipy.stats import spearmanr
 from scipy.spatial import distance
-import warnings
+
+from .verbosity import validate_verbosity, warn_if_verbose
 
 # =========================================================================
 # Similarity Metrics
@@ -189,7 +190,15 @@ class CGVariables:
         Number of renormalization group (coarse graining) steps to apply.
         The initial (uncoarse-grained) data corresponds to step k = 0.
         Default is 6 or clusters with up to 64 variables.
-  
+
+    verbose : str, optional
+        Controls console output during coarse graining. Options are
+        'silent' (no warnings), 'warnings' (default; emits warnings for
+        dropped variables, e.g. odd variable counts or NaN/zero-variance
+        rows), or 'full' (same warnings, for use with the higher-level
+        `AnalysisParams.verbose="full"` progress/timing output).
+        Default is "warnings".
+
     Attributes
     ----------
     cluster_method : str
@@ -235,11 +244,14 @@ class CGVariables:
     "random": _compute_random   
     }
 
-    def __init__(self, binary_array, cluster_method="pearson", rg_steps=6):
+    def __init__(self, binary_array, cluster_method="pearson", rg_steps=6, verbose="warnings"):
         self.cluster_method = cluster_method.lower()
         if self.cluster_method not in self._CLUSTER_METHODS:
             raise ValueError(f"Unknown cluster method. Choose from: {list(self._CLUSTER_METHODS.keys())}")
-            
+
+        validate_verbosity(verbose)
+        self.verbose = verbose
+
         self.rg_steps = rg_steps
         self.time_window = binary_array.shape[1]
 
@@ -337,10 +349,11 @@ class CGVariables:
         if N % 2 != 0:
             dropped_local_idx = int(np.flatnonzero(~used)[0])
             dropped_lineage = np.atleast_1d(oldclu_idx[dropped_local_idx]).tolist()
-            warnings.warn(
+            warn_if_verbose(
                 f"Odd number of variables ({N}) at this coarse-graining step; variable "
                 f"{dropped_local_idx} (original indices {dropped_lineage}) has no pair "
-                f"and has been dropped from this and all subsequent scales."
+                f"and has been dropped from this and all subsequent scales.",
+                self.verbose,
             )
 
         return new_variables, return_matrix, newclu_idx
@@ -402,13 +415,14 @@ class CGVariables:
         row_has_nan = np.any(np.isnan(binary_array), axis=1)
         if np.any(row_has_nan):
             dropped = original_idx[row_has_nan]
-            warnings.warn(
+            warn_if_verbose(
                 f"Row(s) {dropped.tolist()} of binary_array contain NaN values and have "
                 f"been excluded from coarse graining; their original indices will not "
                 f"appear in CG_cluster_idx. This commonly happens when a continuous row "
                 f"with zero variance is z-score binarized (division by a zero standard "
                 f"deviation) upstream. Check your preprocessing/binarization if this is "
-                f"unexpected."
+                f"unexpected.",
+                self.verbose,
             )
             binary_array = binary_array[~row_has_nan]
             original_idx = original_idx[~row_has_nan]
@@ -419,7 +433,10 @@ class CGVariables:
         if binary_array.shape[0] < 2**rg_steps:
             raise ValueError(f"Number of variables in data ({binary_array.shape[0]}) is less than required size ({2**self.rg_steps}).")
         if binary_array.shape[0] > binary_array.shape[1]:
-            warnings.warn("Number of variables is greater than number of samples. Correlation measurements may be unreliable.")
+            warn_if_verbose(
+                "Number of variables is greater than number of samples. Correlation measurements may be unreliable.",
+                self.verbose,
+            )
 
         # Identify and remove constant rows (zero variance) before assigning
         # base-level indices, so filtered-out variables never appear in clu_idx
@@ -427,11 +444,12 @@ class CGVariables:
         row_is_constant = np.all(binary_array == binary_array[:, [0]], axis=1)
         if np.any(row_is_constant):
             dropped = original_idx[row_is_constant]
-            warnings.warn(
+            warn_if_verbose(
                 f"Row(s) {dropped.tolist()} of binary_array are constant (all 0s or all 1s) "
                 f"across the time window and have zero variance. These variables have been "
                 f"excluded from coarse graining; their original indices will not appear in "
-                f"CG_cluster_idx."
+                f"CG_cluster_idx.",
+                self.verbose,
             )
             binary_array = binary_array[~row_is_constant]
             original_idx = original_idx[~row_is_constant]

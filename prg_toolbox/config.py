@@ -22,7 +22,8 @@ The configuration parameters are grouped into the following specialized classes:
 
 from dataclasses import dataclass, field
 from typing import List, Callable, Optional, Dict, Any, Union
-from . import observables as obs 
+from . import observables as obs
+from .verbosity import validate_verbosity
 
 @dataclass
 class PlotStyleConfig:
@@ -163,28 +164,35 @@ class AnalysisParams:
         Options include: 'pearson', 'spearman', 'mutual_information', 'cosine', 
         'hamming', and 'random'. Default is "pearson".
     data_format : str, optional
-        Settings for . Options are 'timeseries' for (N,T) arrays, 'tabular' for 
-        timestamps stored in csv/pandas dataframes and 'numpy_2col' for timestamps arrays. 
+        Settings for data ingestion. Options are 'timeseries' for (N,T) arrays, 'tabular' for
+        timestamps stored in csv/pandas dataframes and 'numpy_2col' for timestamps arrays.
         Default is 'timeseries'.
     subsampling : SubsamplingParams, optional
-        Configuration settings for spatial subsampling. Default is a standard 
+        Configuration settings for spatial subsampling. Default is a standard
         SubsamplingParams object which performs no subsampling.
     time_slicing : TimeWindowingParams, optional
-        Configuration settings for temporal windowing. Default is a standard 
+        Configuration settings for temporal windowing. Default is a standard
         TimeWindowingParams object which performs no temporal windowing.
     plot_style : PlotStyleConfig, optional
-        Look-and-feel style settings for generating figures. Default is a standard 
-        PlotStyleConfig object which trigger the default kwargs defined in 
+        Look-and-feel style settings for generating figures. Default is a standard
+        PlotStyleConfig object which trigger the default kwargs defined in
         set_default_kwargs() at plotting/plot_imports.py.
+    verbose : str, optional
+        Controls console output during the analysis. Options are:
+        'silent' (no prints, no warnings), 'warnings' (only warning-style
+        messages, e.g. dropped variables during coarse graining or
+        misconfiguration notices), or 'full' (warnings plus per-step timing
+        and per-observable exponents printed as the analysis progresses).
+        Default is 'warnings'.
     """
     observables: List[Callable] = field(default_factory=lambda: [
-        obs.mean_variance, 
-        obs.log_silence_probability, 
-        obs.max_covariance_eigenvalue, 
-        obs.covariance_spectrum, 
+        obs.mean_variance,
+        obs.log_silence_probability,
+        obs.max_covariance_eigenvalue,
+        obs.covariance_spectrum,
         obs.activity_distribution
-        # obs.autocorrelation_function, 
-        # obs.decay_time 
+        # obs.autocorrelation_function,
+        # obs.decay_time
     ])
     rg_steps: int = 7
     cluster_method: str = "pearson"  # Options: 'pearson', 'spearman', 'mutual_info', 'cosine', 'hamming', 'random'
@@ -193,4 +201,8 @@ class AnalysisParams:
     subsampling: SubsamplingParams = field(default_factory=SubsamplingParams)
     time_slicing: TimeWindowingParams = field(default_factory=TimeWindowingParams)
     plot_style: PlotStyleConfig = field(default_factory=PlotStyleConfig)
+    verbose: str = "warnings"  # Options: 'silent', 'warnings', 'full'
+
+    def __post_init__(self):
+        validate_verbosity(self.verbose)
 

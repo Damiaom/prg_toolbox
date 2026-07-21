@@ -23,14 +23,14 @@ Calculated observables include:
     * `activity_distribution`: Probability density profile across transformations.
 """
 import numpy as np
-import warnings
 from scipy.stats import moment
 from scipy.optimize import curve_fit
 # You mentioned these exist in a utils file elsewhere:
-from .utils import (covariance_evals_and_evectors, 
+from .utils import (covariance_evals_and_evectors,
                     get_scaling_exponent)
 # Import the class for type checking
 from .coarse_graining import CGVariables
+from .verbosity import warn_if_verbose
 
 class mean_variance:
     def __init__(self, CG_variables):
@@ -185,7 +185,10 @@ class log_silence_probability:
         clipped = np.any(np.isclose(values, -np.log(0.000001)))
 
         if clipped:
-            warnings.warn(f" Coarse-graining yielded variables with no silence. Consider changing preprocessing or PRG parameters.")
+            warn_if_verbose(
+                " Coarse-graining yielded variables with no silence. Consider changing preprocessing or PRG parameters.",
+                getattr(CG_variables, "verbose", "warnings"),
+            )
 
     def get_log_silence_probability(self, CG_timeseries, rg_steps):
         """
@@ -323,6 +326,7 @@ class covariance_spectrum:
         if type(CG_variables) != CGVariables:
             raise ValueError("Input must be of type CG_variables.\n Feed your data into the CG_variables method and use its output in this function.")
 
+        self.verbose = getattr(CG_variables, "verbose", "warnings")
         self.time_window = CG_variables.time_window
 
         rg_steps = len(CG_variables.CG_timeseries)
@@ -405,9 +409,12 @@ class covariance_spectrum:
             popt, _ = curve_fit(fit_func, bin_centers, counts, p0=initial_guess, bounds=(1e-5, np.inf), maxfev=5000)
             mp_sigma = popt[0]
         except RuntimeError as e:
-            print(f"Warning: MP fit failed to converge. Falling back to analytical mean estimate.")
+            warn_if_verbose(
+                "MP fit failed to converge. Falling back to analytical mean estimate.",
+                self.verbose,
+            )
             # Theoretical mean of MP is sigma_sq, so the mean of the bulk is an excellent proxy
-            mp_sigma = np.mean(bulk_eigenvalues) 
+            mp_sigma = np.mean(bulk_eigenvalues)
         
         # Store all calculated data as object attributes for the plotting script
         mp_lambda_plus = mp_sigma * (1 + np.sqrt(1/mp_Q))**2

@@ -18,7 +18,6 @@ from scipy.signal import find_peaks
 import scipy.io as sio
 import pandas as pd
 import dataclasses
-import warnings
 import matplotlib.pyplot as plt
 
 
@@ -26,6 +25,7 @@ from . import observables as obs
 from .utils import get_scaling_exponent
 from .config import *
 from . import plotting as plot
+from .verbosity import warn_if_verbose
 
 def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
@@ -392,7 +392,7 @@ def pick_random_sample(data, sample_size, data_format='timeseries', random_seed=
         raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy_2col'")
     
 
-def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_start=0):
+def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_start=0, verbose="warnings"):
     """
     Slice an ordered timestamp array into sequential windows of a fixed duration.
 
@@ -430,10 +430,11 @@ def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_st
     # If the total duration is shorter than a single window, no complete slice can be made.
     # Keep the data as a single window rather than silently discarding it.
     if total_duration < window_duration_ms:
-        warnings.warn(
+        warn_if_verbose(
             f"Requested window_duration_ms ({window_duration_ms}) is longer than the "
             f"available data duration ({total_duration}). Returning the full data as a "
-            f"single window instead of slicing."
+            f"single window instead of slicing.",
+            verbose,
         )
         return [timestamps]
 
@@ -468,7 +469,7 @@ def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_st
         
     return slices
 
-def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overlap_fraction=0.0):
+def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overlap_fraction=0.0, verbose="warnings"):
     """
     Slice an ordered matrix array into sequential windows of a fixed duration.
 
@@ -499,10 +500,11 @@ def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overl
     total_bins = data.shape[1]
 
     if total_bins < window_bins:
-        warnings.warn(
+        warn_if_verbose(
             f"Requested window_duration_ms ({window_duration_ms}) is longer than the "
             f"available data duration ({total_bins * timeseries_binsize_ms}). Returning the "
-            f"full data as a single window instead of slicing."
+            f"full data as a single window instead of slicing.",
+            verbose,
         )
         return [data]
 
@@ -524,8 +526,8 @@ def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overl
         
     return slices
 
-def slice_by_time_window(data, window_duration_ms, data_format='timeseries', 
-                    timeseries_binsize_ms=1.0, overlap_fraction=0.0, t_start=0.0):
+def slice_by_time_window(data, window_duration_ms, data_format='timeseries',
+                    timeseries_binsize_ms=1.0, overlap_fraction=0.0, t_start=0.0, verbose="warnings"):
     """
     Slices chronological data into sequential windows of a fixed duration.
     
@@ -550,28 +552,34 @@ def slice_by_time_window(data, window_duration_ms, data_format='timeseries',
         The fractional overlap ratio between consecutive window boundaries, bounded 
         between [0.0, 1.0). Default is 0.0 (no overlap).
     t_start : float, optional
-        The absolute initial time coordinate. Only relevant if data_format is 
+        The absolute initial time coordinate. Only relevant if data_format is
         'tabular' or 'numpy_2col'. Default is 0.0.
+    verbose : str, optional
+        Controls whether a warning is emitted when window_duration_ms exceeds
+        the available data duration. One of 'silent', 'warnings', 'full'.
+        Default is 'warnings'.
 
     Returns
     -------
     list of numpy.ndarray
-        A list of partitioned data arrays in the same format as the input. 
+        A list of partitioned data arrays in the same format as the input.
         For timestamps, the temporal baseline is shifted so each window begins at t=0.
     """
     if data_format == 'timeseries':
         return _slice_timeseries(
-            data, 
-            window_duration_ms, 
-            timeseries_binsize_ms, 
-            overlap_fraction
+            data,
+            window_duration_ms,
+            timeseries_binsize_ms,
+            overlap_fraction,
+            verbose
         )
     elif data_format == 'tabular' or data_format == 'numpy_2col':
         return _slice_timestamps(
-            data, 
-            window_duration_ms, 
-            overlap_fraction, 
-            t_start
+            data,
+            window_duration_ms,
+            overlap_fraction,
+            t_start,
+            verbose
         )
     else:
         raise ValueError("data_format must be either 'timeseries', 'tabular' or 'numpy_2col'")
@@ -1069,8 +1077,11 @@ def save_manifest(files, prg_params: AnalysisParams):
     clean_params = dataclasses.asdict(prg_params)
     # Convert objects to strings: [obs.mean_variance] -> ["mean_variance"]
     clean_params["observables"] = [obs.__name__ for obs in prg_params.observables]
+    # verbose only controls console output, not the analysis itself, so it's
+    # excluded from the hash to avoid changing the output directory name.
+    hash_params = {k: v for k, v in clean_params.items() if k != "verbose"}
     # sort_keys=True ensures the hash is identical even if you write the dict in a different order later
-    params_str = json.dumps(clean_params, sort_keys=True)
+    params_str = json.dumps(hash_params, sort_keys=True)
     full_hash = hashlib.sha256(params_str.encode('utf-8')).hexdigest()
     analysis_hash = full_hash[:40]  # Truncate to 40 chars to keep paths manageable
 
@@ -1150,6 +1161,7 @@ def save_result_dictionaries(result_dict, prg_params,file_key, analysis_save_pat
     with open(output_file, "wb") as f:
         pickle.dump(output_dict, f)
 
-    print(f"Saved → {output_file}")
+    if getattr(prg_params, "verbose", "warnings") != "silent":
+        print(f"Saved → {output_file}")
 
 
