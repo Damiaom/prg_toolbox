@@ -27,6 +27,17 @@ from .config import *
 from . import plotting as plot
 from .verbosity import warn_if_verbose
 
+def _load_npy_maybe_pickled(path):
+    """
+    Loads a .npy file, falling back to allow_pickle=True (cast to float) if
+    the array was saved with an object dtype and cannot be loaded as a 
+    plain numeric array otherwise.
+    """
+    try:
+        return np.load(path)
+    except ValueError:
+        return np.load(path, allow_pickle=True).astype(float)
+
 def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep=r"\s+", header=None, scale_factor=1.0):
     r"""
     Loads neuronal spike timestamps and unit IDs from various file formats 
@@ -82,7 +93,7 @@ def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep
         
     elif format == "numpy_2col":
         # Handles standard N x 2 numpy arrays
-        raw_array = np.load(file_or_path) if isinstance(file_or_path, str) else file_or_path
+        raw_array = _load_npy_maybe_pickled(file_or_path) if isinstance(file_or_path, str) else file_or_path
         times = raw_array[:, time_col] * scale_factor
         units = raw_array[:, unit_col]
         
@@ -122,7 +133,7 @@ def _load_timeseries(filepath, delimiter=None, mat_key=None):
     
     # 2. Branch based on file type
     if ext == '.npy':
-        data = np.load(filepath)
+        data = _load_npy_maybe_pickled(filepath)
         
     elif ext in ['.txt', '.csv', '.dat']:
         if delimiter is None and ext == '.csv':
