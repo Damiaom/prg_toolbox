@@ -1,5 +1,7 @@
 """Tests for prg_toolbox.analysis_tools: preprocessing, binarization, aggregation."""
 
+import os
+
 import numpy as np
 import pytest
 
@@ -16,7 +18,10 @@ from prg_toolbox.analysis_tools import (
     is_function_observable,
     average_observable_sample_values,
     average_across_windows_for_functions,
+    save_manifest,
+    save_result_dictionaries,
 )
+from prg_toolbox.config import AnalysisParams
 
 
 # ---------------------------------------------------------------------------
@@ -263,3 +268,71 @@ class TestAverageAcrossWindowsForFunctions:
         avg, std = average_across_windows_for_functions([trial_a, trial_b], rg_steps)
         assert len(avg[0]) == 2
         np.testing.assert_allclose(avg[0], [3.0, 4.0])
+
+
+class TestSaveManifest:
+    def _fake_input_file(self, tmp_path):
+        data_dir = tmp_path / "my_recordings"
+        data_dir.mkdir()
+        fake_file = data_dir / "f1.npy"
+        fake_file.touch()
+        return str(fake_file)
+
+    def test_defaults_to_results_under_cwd(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        fake_file = self._fake_input_file(tmp_path)
+        params = AnalysisParams()
+        results_path, plots_path = save_manifest([fake_file], params)
+        assert results_path.startswith(os.path.join(".", "results", "my_recordings"))
+
+    def test_custom_save_path_is_used_as_root(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        fake_file = self._fake_input_file(tmp_path)
+        custom_root = str(tmp_path / "custom_out")
+        params = AnalysisParams(save_path=custom_root)
+        results_path, plots_path = save_manifest([fake_file], params)
+        assert results_path.startswith(custom_root)
+        assert "my_recordings" in results_path
+
+    def test_hash_is_unaffected_by_save_path(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        fake_file = self._fake_input_file(tmp_path)
+
+        default_results, _ = save_manifest([fake_file], AnalysisParams())
+        custom_results, _ = save_manifest(
+            [fake_file], AnalysisParams(save_path=str(tmp_path / "elsewhere"))
+        )
+
+        default_hash = default_results.split("analysis_")[1].split(os.sep)[0]
+        custom_hash = custom_results.split("analysis_")[1].split(os.sep)[0]
+        assert default_hash == custom_hash
+
+    def test_accepts_skipped_files_list_without_error(self, tmp_path, monkeypatch):
+        # Regression test: run_PRG_in_directory_parallel calls save_manifest
+        # with a third positional argument that the function used to reject.
+        monkeypatch.chdir(tmp_path)
+        fake_file = self._fake_input_file(tmp_path)
+        params = AnalysisParams()
+        results_path, plots_path = save_manifest([fake_file], params, ["f1.npy"])
+        assert results_path is not None
+
+
+class TestSaveResultDictionaries:
+    @pytest.mark.parametrize(
+        "file_key,expected_name",
+        [
+            ("recording1.npy", "recording1.pkl"),
+            ("recording2.gdf", "recording2.pkl"),
+            ("recording3.csv", "recording3.pkl"),
+            ("recording.with.dots.mat", "recording.with.dots.pkl"),
+            ("no_extension", "no_extension.pkl"),
+        ],
+    )
+    def test_output_filename_replaces_any_extension(self, tmp_path, file_key, expected_name):
+        # Regression test: the output filename used to only strip a literal
+        # ".gdf" suffix, so non-.gdf inputs (e.g. .npy, .csv) were saved
+        # under their *original* extension while containing pickled data.
+        params = AnalysisParams()
+        params.observables = []
+        save_result_dictionaries({}, params, file_key, str(tmp_path))
+        assert os.path.exists(tmp_path / expected_name)

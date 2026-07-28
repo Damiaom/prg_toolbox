@@ -184,6 +184,14 @@ class AnalysisParams:
         misconfiguration notices), or 'full' (warnings plus per-step timing
         and per-observable exponents printed as the analysis progresses).
         Default is 'warnings'.
+    save_path : str, optional
+        Custom root directory for saved results (used by
+        `run_PRG_in_directory`/`run_PRG_in_directory_parallel` when
+        `save_results=True`). The usual
+        ``<save_path>/<input-folder-name>/analysis_<hash>/{results,plots}``
+        structure is still created beneath it. If None, defaults to
+        ``./results/`` relative to the current working directory.
+        Default is None.
     """
     observables: List[Callable] = field(default_factory=lambda: [
         obs.mean_variance,
@@ -202,6 +210,7 @@ class AnalysisParams:
     time_slicing: TimeWindowingParams = field(default_factory=TimeWindowingParams)
     plot_style: PlotStyleConfig = field(default_factory=PlotStyleConfig)
     verbose: str = "warnings"  # Options: 'silent', 'warnings', 'full'
+    save_path: Optional[str] = None  # Custom results root; defaults to './results/' when None
 
     def __post_init__(self):
         validate_verbosity(self.verbose)

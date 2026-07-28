@@ -1063,7 +1063,7 @@ def make_plots_for_observables(result_dict,
             plt.close()
 
     
-def save_manifest(files, prg_params: AnalysisParams):
+def save_manifest(files, prg_params: AnalysisParams, skipped_files_list=None):
     """
     Export runtime parameter details and generate unique directory validation hashes.
 
@@ -1073,6 +1073,12 @@ def save_manifest(files, prg_params: AnalysisParams):
         List of file paths used this runtime sequence.
     prg_params : AnalysisParams
         Active master configuration dataclass holding operational parameters.
+        If `prg_params.save_path` is set, it is used as the results root
+        instead of the default `./results/`.
+    skipped_files_list : list, optional
+        Accepted for interface parity with callers that track skipped files;
+        currently unused (the manifest lists every discovered file
+        regardless of skip status). Default is None.
 
     Returns
     -------
@@ -1082,15 +1088,17 @@ def save_manifest(files, prg_params: AnalysisParams):
     # create parent folder for analysis results
     data_dir = os.path.dirname(files[0])
     simulation_folder_name = os.path.basename(data_dir)
-    save_path = os.path.join('./results/', simulation_folder_name)
+    results_root = prg_params.save_path if prg_params.save_path is not None else './results/'
+    save_path = os.path.join(results_root, simulation_folder_name)
     os.makedirs(save_path, exist_ok=True)
 
     clean_params = dataclasses.asdict(prg_params)
     # Convert objects to strings: [obs.mean_variance] -> ["mean_variance"]
     clean_params["observables"] = [obs.__name__ for obs in prg_params.observables]
-    # verbose only controls console output, not the analysis itself, so it's
-    # excluded from the hash to avoid changing the output directory name.
-    hash_params = {k: v for k, v in clean_params.items() if k != "verbose"}
+    # verbose and save_path only control console output / where results are
+    # written, not the analysis itself, so both are excluded from the hash
+    # to avoid changing the output directory name.
+    hash_params = {k: v for k, v in clean_params.items() if k not in ("verbose", "save_path")}
     # sort_keys=True ensures the hash is identical even if you write the dict in a different order later
     params_str = json.dumps(hash_params, sort_keys=True)
     full_hash = hashlib.sha256(params_str.encode('utf-8')).hexdigest()
@@ -1136,7 +1144,8 @@ def save_result_dictionaries(result_dict, prg_params,file_key, analysis_save_pat
     """
     file_results = {}
 
-    output_file = os.path.join(analysis_save_path, file_key.replace('.gdf', '.pkl'))
+    output_filename = os.path.splitext(file_key)[0] + '.pkl'
+    output_file = os.path.join(analysis_save_path, output_filename)
     for observable in prg_params.observables:
         name = observable.__name__
         data_obj = result_dict[observable.__name__]

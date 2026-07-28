@@ -167,16 +167,17 @@ def run_PRG_in_directory(file_directory,
                         save_plots = False,
                         save_results = False):
     """
-    Run the PRG analysis pipeline sequentially across a directory of data files.
+    Run the PRG analysis pipeline sequentially across a collection of data files.
 
-    Loops through all specified file paths, extracts chronological event 
-    timestamps, runs the multi-scale coarse-graining analysis loop, and 
+    Loops through all specified file paths, extracts chronological event
+    timestamps, runs the multi-scale coarse-graining analysis loop, and
     optionally exports visualization plots and pickled result dictionaries.
 
     Parameters
     ----------
-    file_directory : list of str
-        Collection of absolute or relative file paths to analyze.
+    file_directory : str or list of str
+        Either a directory path (every file directly inside it is used), or
+        an explicit collection of absolute or relative file paths to analyze.
     skipped_files_list : list, optional
         File names or 1-based integer indices to exclude from processing. 
         Default is an empty list.
@@ -209,14 +210,17 @@ def run_PRG_in_directory(file_directory,
     if not show_plots and not save_results and not save_plots and prg_params.verbose != "silent":
         print("Warning: You are not showing or saving any results. Set show_plots or save_plots or save_results to True to see or keep your results.")
 
-    all_files = [f for f in os.listdir(file_directory)]
+    if isinstance(file_directory, (list, tuple)):
+        all_files = list(file_directory)
+    else:
+        all_files = [os.path.join(file_directory, f) for f in os.listdir(file_directory)]
+
     N = len(all_files)
     results_path, plots_path = save_manifest(all_files, prg_params) if save_results else (None, None)
 
     for i, path in enumerate(all_files, start=1):
 
         file_key = os.path.basename(path)
-        path = os.path.join(file_directory, path)
         # Optionally you can filter to skip unwanted files
         if i in skipped_files_list or file_key in skipped_files_list:
             if prg_params.verbose != "silent":
@@ -261,7 +265,7 @@ def process_single_file(path, i, N,
     if prg_params.verbose != "silent":
         print(f"[{i}/{N}] Processing file: {file_key}")
 
-    data = load_data(path, load_params=prg_params)
+    data = load_data(path, user_params=prg_params)
 
     result_dict = run_PRG(
             data = data,
@@ -269,7 +273,7 @@ def process_single_file(path, i, N,
         )
     
     if show_plots or save_plots:
-        make_plots_for_observables(result_dict, prg_params.observables, show_plots, save_plots, plots_path, file_key)
+        make_plots_for_observables(result_dict, prg_params, show_plots, save_plots, plots_path, file_key)
 
     if save_results:
         save_result_dictionaries(result_dict, prg_params, file_key, results_path)
@@ -281,6 +285,22 @@ def run_PRG_in_directory_parallel(file_directory,
                         save_plots = False,
                         save_results = False,
                         num_cores_to_use=None):
+    """
+    Run the PRG analysis pipeline across a collection of data files in
+    parallel, using a process pool.
+
+    Same file discovery, skipping, plotting, and saving behavior as
+    `run_PRG_in_directory`; see its docstring for details on
+    `file_directory`, `skipped_files_list`, `user_params`, `show_plots`,
+    `save_plots`, and `save_results`.
+
+    Parameters
+    ----------
+    num_cores_to_use : int, optional
+        Number of worker processes to use. If None, defaults to
+        `os.cpu_count() - 3` (minimum 1).
+    """
+
     if skipped_files_list is None:
         skipped_files_list = []
 
@@ -295,14 +315,16 @@ def run_PRG_in_directory_parallel(file_directory,
         prg_params = user_params
 
     if not show_plots and not save_results and not save_plots and prg_params.verbose != "silent":
-        print("Warning: You are not showing or saving any results.")
+        print("Warning: You are not showing or saving any results. Set show_plots or save_plots or save_results to True to see or keep your results.")
 
-    gdf_files = [f for f in file_directory if f.endswith('.gdf')]
-    N = len(gdf_files)
+    if isinstance(file_directory, (list, tuple)):
+        all_files = list(file_directory)
+    else:
+        all_files = [os.path.join(file_directory, f) for f in os.listdir(file_directory)]
 
-    results_path, plots_path = None, None
-    if save_results:
-        results_path, plots_path = save_manifest(file_directory, prg_params, skipped_files_list)
+    N = len(all_files)
+
+    results_path, plots_path = save_manifest(all_files, prg_params) if save_results else (None, None)
 
     # Launching the parallel pool
     if not num_cores_to_use:
@@ -314,7 +336,7 @@ def run_PRG_in_directory_parallel(file_directory,
                 path, i, N, skipped_files_list, prg_params, 
                 show_plots, save_plots, save_results, results_path, plots_path
             )
-            for i, path in enumerate(gdf_files, start=1)
+            for i, path in enumerate(all_files, start=1)
         ]
         
         # This loop forces Python to wait for all files and prints errors if any crash
