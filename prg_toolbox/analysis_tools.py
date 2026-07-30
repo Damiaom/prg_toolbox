@@ -85,7 +85,6 @@ def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep
         # Handles CSV, TSV, TXT, GDF
         df = pd.read_csv(file_or_path, sep=sep, header=header) if isinstance(file_or_path, str) else file_or_path
         
-        # Extract just the two columns we care about in the right order
         times = df.iloc[:, time_col].to_numpy() * scale_factor
         units = df.iloc[:, unit_col].to_numpy()
         
@@ -102,7 +101,6 @@ def _load_timestamps(file_or_path, format="tabular", time_col=1, unit_col=0, sep
     else:
         raise ValueError(f"Unsupported format for timestamps: {format}")
 
-    # Ensure chronological order
     timestamps = timestamps[timestamps[:, 0].argsort()]
     
     return timestamps
@@ -127,11 +125,9 @@ def _load_timeseries(filepath, delimiter=None, mat_key=None):
     data : numpy.ndarray
         A 2D dense array representing the timeseries.
     """
-    # 1. Extract the file extension to route the loading logic
     _, ext = os.path.splitext(filepath)
     ext = ext.lower()
     
-    # 2. Branch based on file type
     if ext == '.npy':
         data = _load_npy_maybe_pickled(filepath)
         
@@ -147,7 +143,6 @@ def _load_timeseries(filepath, delimiter=None, mat_key=None):
         if mat_key:
             data = mat_dict[mat_key]
         else:
-            # Filter out MATLAB's internal metadata keys (which start with '__')
             valid_keys = [k for k in mat_dict.keys() if not k.startswith('__')]
             if len(valid_keys) == 1:
                 data = mat_dict[valid_keys[0]]
@@ -159,7 +154,6 @@ def _load_timeseries(filepath, delimiter=None, mat_key=None):
     else:
         raise ValueError(f"Unsupported file format: '{ext}'. Please use .npy, .mat, .txt, .csv, or .dat.")
 
-    # 3. Validation: Ensure it's a 2D matrix
     if data.ndim != 2:
         raise ValueError(f"Expected a 2D matrix, but loaded array has shape {data.shape}. " 
                          "Timeseries data must be strictly 2D.")
@@ -183,13 +177,11 @@ def load_data(filepath, user_params: AnalysisParams = None):
     numpy.ndarray
         The loaded and formatted data array.
     """
-    # Standalone User Fallback: Instantiate default params if none are provided
     if user_params is None:
         params = DataLoadingParams()
     else:
         params = user_params.loading
 
-    # Explicit routing and unpacking
     if params.data_format == 'timeseries':
         return _load_timeseries(
             filepath,
@@ -231,14 +223,8 @@ def _discard_transient_from_timestamps(timestamps, transient_time_ms=0):
                                     the transient period, with times shifted so 
                                     that the first spike after the transient.
     """
-    # 1. Use binary search to find the index where spikes cross the threshold
-    # Since column 0 is already sorted, this is an O(log N) operation
     idx = np.searchsorted(timestamps[:, 0], transient_time_ms)
-    
-    # 2. Slice the matrix from that index onward (O(1) memory view allocation)
     filtered_timestamps = timestamps[idx:].copy()
-    
-    # 3. Shift remaining times to reset origin to t = 0
     filtered_timestamps[:, 0] -= transient_time_ms
     
     return filtered_timestamps
@@ -449,7 +435,6 @@ def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_st
         )
         return [timestamps]
 
-    # Calculate step size based on overlap
     step_size = window_duration_ms * (1.0 - overlap_fraction)
     
     # Determine the number of complete windows that can fit
@@ -465,14 +450,12 @@ def _slice_timestamps(timestamps, window_duration_ms, overlap_fraction=0.0, t_st
         w_start = t_start + i * step_size
         w_end = w_start + window_duration_ms
         
-        # Binary search for window boundaries
         idx_start = np.searchsorted(timestamps[:, 0], w_start)
         idx_end = np.searchsorted(timestamps[:, 0], w_end)
         
         window_slice = timestamps[idx_start:idx_end].copy()
         
         if len(window_slice) > 0:
-            # Cast explicitly to ensure clean floating-point subtraction
             window_slice = window_slice.astype(np.float64)
             window_slice[:, 0] -= w_start
             
@@ -532,7 +515,6 @@ def _slice_timeseries(data, window_duration_ms, timeseries_binsize_ms=1.0, overl
         start_bin = i * step_bins
         end_bin = start_bin + window_bins
         
-        # Fast column slicing (O(1) memory views)
         slices.append(data[:, start_bin:end_bin])
         
     return slices
@@ -627,19 +609,14 @@ def _shuffle_isi_timestamps(timestamps, random_seed=None):
     shuffled_units_data = []
     
     for unit in unique_units:
-        # 1. Isolate the spike times for this specific unit
         unit_mask = (timestamps[:, 1] == unit)
         unit_times = timestamps[unit_mask, 0]
         
         # If a neuron only spiked 0 or 1 time, it has no ISIs to shuffle
         if len(unit_times) <= 1:
-            # Keep the spike(s) exactly as they were
             shuffled_times = unit_times
         else:
-            # 2. Calculate the Inter-Spike Intervals (ISIs)
             isis = np.diff(unit_times)
-            
-            # 3. Randomly shuffle the order of the intervals
             rng.shuffle(isis)
             
             # Reconstruct the spike train using the cumulative sum.
@@ -654,8 +631,6 @@ def _shuffle_isi_timestamps(timestamps, random_seed=None):
         
     # Concatenate all reconstructed units back into a single matrix
     surrogate_timestamps = np.vstack(shuffled_units_data)
-    
-    # Re-sort chronologically by time
     surrogate_timestamps = surrogate_timestamps[surrogate_timestamps[:, 0].argsort()]
     
     return surrogate_timestamps
@@ -683,11 +658,8 @@ def _shuffle_isi_binary(binary_data, random_seed=None):
         A new N x T array with ISI-shuffled spikes.
     """
     rng = np.random.default_rng(random_seed)
-    
-    # Pre-allocate a clean matrix of zeros with the exact same shape
     surrogate_data = np.zeros_like(binary_data)
     
-    # Iterate through each row (neuron/voxel)
     for i in range(binary_data.shape[0]):
         # Find the exact bin indices where this unit is active (i.e., where data == 1)
         spike_idx = np.nonzero(binary_data[i, :])[0]
@@ -799,7 +771,6 @@ def binary_array_from_zscore(x, threshold):
     binary_array : numpy.ndarray
         Binarized array.
     """
-    # Vectorized calculation of z-scores across the time axis (columns)
     z_scores = stats.zscore(x, axis=1)
     
     # Generate the binary matrix using a boolean comparison
@@ -828,10 +799,8 @@ def binary_array_from_zscore_maxima(x, threshold):
     """
     N, T = x.shape
     
-    # Vectorized calculation of z-scores across the time axis (columns)
     z_scores = stats.zscore(x, axis=1)
     
-    # Initialize an empty binary matrix matching the shape of the input
     binary_array = np.zeros((N, T), dtype=int)
     
     # Extract peaks for each row from the precomputed z-score matrix
@@ -1073,8 +1042,9 @@ def save_manifest(files, prg_params: AnalysisParams, skipped_files_list=None):
         List of file paths used this runtime sequence.
     prg_params : AnalysisParams
         Active master configuration dataclass holding operational parameters.
-        If `prg_params.save_path` is set, it is used as the results root
-        instead of the default `./results/`.
+        If `prg_params.save_path` is set, it is used as the results
+        directory as-is. Otherwise results go under `./results/<name of the
+        folder files[0] lives in>/`.
     skipped_files_list : list, optional
         Accepted for interface parity with callers that track skipped files;
         currently unused (the manifest lists every discovered file
@@ -1086,10 +1056,12 @@ def save_manifest(files, prg_params: AnalysisParams, skipped_files_list=None):
         A unique MD5/SHA tracking hash representing this distinct configuration state.
     """
     # create parent folder for analysis results
-    data_dir = os.path.dirname(files[0])
-    simulation_folder_name = os.path.basename(data_dir)
-    results_root = prg_params.save_path if prg_params.save_path is not None else './results/'
-    save_path = os.path.join(results_root, simulation_folder_name)
+    if prg_params.save_path is not None:
+        save_path = prg_params.save_path
+    else:
+        data_dir = os.path.dirname(files[0])
+        simulation_folder_name = os.path.basename(data_dir)
+        save_path = os.path.join('./results/', simulation_folder_name)
     os.makedirs(save_path, exist_ok=True)
 
     clean_params = dataclasses.asdict(prg_params)
@@ -1105,7 +1077,7 @@ def save_manifest(files, prg_params: AnalysisParams, skipped_files_list=None):
     analysis_hash = full_hash[:40]  # Truncate to 40 chars to keep paths manageable
 
     # create analysis-specific save directory
-    analysis_save_path = os.path.join(save_path, f"analysis_{analysis_hash}")
+    analysis_save_path = os.path.join(save_path, f"prg_analysis_{analysis_hash}")
     os.makedirs(analysis_save_path, exist_ok=True)
 
     # save human-readable manifest JSON (only write if it doesn't exist to save I/O)

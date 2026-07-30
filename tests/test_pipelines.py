@@ -43,9 +43,9 @@ class TestRunPRG:
             pipelines.run_PRG(binary, user_params={"not": "a dataclass"})
 
     def test_nsamples_greater_than_one_does_not_crash(self, rng, params):
-        # Regression test: average_observable_sample_values used to pass an
+        # average_observable_sample_values used to pass an
         # invalid kwarg to get_scaling_exponent for eigenvalue observables
-        # whenever nsamples > 1 (fixed earlier this session).
+        # whenever nsamples > 1.
         binary = (rng.random((16, 300)) < 0.3).astype(int)
         params.subsampling.nsamples = 2
         result = pipelines.run_PRG(binary, user_params=params)

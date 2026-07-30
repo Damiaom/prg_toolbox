@@ -579,6 +579,15 @@ class autocorrelation_function:
         self.avg_across_windows = self.values
         self.std_across_windows = np.zeros_like(self.values)
 
+    def _fft_acf(self, x):
+        demeaned = x - x.mean()
+        n = len(demeaned)
+        size = 1 << (2 * n - 1).bit_length()  # next power of 2 for cheap zero-padded FFT
+        fx = np.fft.rfft(demeaned, n=size)
+        acov = np.fft.irfft(fx * np.conjugate(fx))[:n]
+        acov = acov/acov[0]
+        acov = np.hstack((np.flip(acov[1:]),acov))
+        return acov
 
     def get_autocorrelation_function(self, CG_timeseries, rg_steps):
         """
@@ -617,10 +626,11 @@ class autocorrelation_function:
             N = len(CG_timeseries[k][:,0])
             for j in range(N):
                 demeaned_data = CG_timeseries[k][j] - np.mean(CG_timeseries[k][j])
-                this_autocorrelation = np.correlate(demeaned_data, demeaned_data, mode='full')
+                # this_autocorrelation = np.correlate(demeaned_data, demeaned_data, mode='full')
+                this_autocorrelation = self._fft_acf(demeaned_data)
                 mean_autocorrelation[k] += this_autocorrelation
             mean_autocorrelation[k] = mean_autocorrelation[k]/N
-            mean_autocorrelation[k] = mean_autocorrelation[k]/mean_autocorrelation[k][np.argmax(mean_autocorrelation[k])]
+            # mean_autocorrelation[k] = mean_autocorrelation[k]/mean_autocorrelation[k][np.argmax(mean_autocorrelation[k])]
 
         return mean_autocorrelation
 
