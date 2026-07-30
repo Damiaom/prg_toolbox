@@ -349,7 +349,7 @@ class CGVariables:
         if N % 2 != 0:
             dropped_local_idx = int(np.flatnonzero(~used)[0])
             dropped_lineage = np.atleast_1d(oldclu_idx[dropped_local_idx]).tolist()
-            warn_if_verbose(
+            print_if_full(
                 f"Odd number of variables ({N}) at this coarse-graining step; variable "
                 f"{dropped_local_idx} (original indices {dropped_lineage}) has no pair "
                 f"and has been dropped from this and all subsequent scales.",
