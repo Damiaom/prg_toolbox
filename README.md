@@ -35,7 +35,7 @@ These multi-scale signatures can be used to analyze self-organized criticality, 
 To clone the repository and install the package locally, run:
 
 ```bash
-git clone [https://github.com/Damiaom/prg_toolbox.git](https://github.com/Damiaom/prg_toolbox.git)
+git clone https://github.com/Damiaom/prg_toolbox.git
 cd prg_toolbox
 pip install .
 ```
