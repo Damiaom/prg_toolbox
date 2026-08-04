@@ -224,7 +224,7 @@ class CGVariables:
     >>> from prg_toolbox import CGVariables
     >>> binary = np.array([
     ...     [1, 0, 1, 0, 1, 0],
-    ...     [1, 0, 1, 0, 0, 0],
+    ...     [1, 0, 1, 0, 1, 0],
     ...     [0, 1, 0, 1, 0, 1],
     ...     [0, 0, 0, 1, 0, 1],
     ... ])
@@ -232,7 +232,7 @@ class CGVariables:
     >>> cg.CG_cluster_idx[1]  # which original variables got paired together
     [array([0, 1]), array([2, 3])]
     >>> cg.CG_timeseries[1]  # each row is the elementwise sum of its pair
-    array([[2., 0., 2., 0., 1., 0.],
+    array([[2., 0., 2., 0., 2., 0.],
            [0., 1., 0., 2., 0., 2.]])
     """
     _CLUSTER_METHODS = {
