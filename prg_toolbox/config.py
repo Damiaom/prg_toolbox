@@ -187,11 +187,11 @@ class AnalysisParams:
     save_path : str, optional
         Custom root directory for saved results (used by
         `run_PRG_in_directory`/`run_PRG_in_directory_parallel` when
-        `save_results=True`). The usual
-        ``<save_path>/<input-folder-name>/analysis_<hash>/{results,plots}``
-        structure is still created beneath it. If None, defaults to
-        ``./results/`` relative to the current working directory.
-        Default is None.
+        `save_results=True`). Used literally as the results root -- a
+        ``<save_path>/prg_analysis_<hash>/{results,plots}`` structure is
+        created directly beneath it, with no extra subfolder. If None,
+        defaults to ``./results/<input-folder-name>/`` relative to the
+        current working directory. Default is None.
     """
     observables: List[Callable] = field(default_factory=lambda: [
         obs.mean_variance,

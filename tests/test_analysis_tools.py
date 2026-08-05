@@ -285,14 +285,20 @@ class TestSaveManifest:
         results_path, plots_path = save_manifest([fake_file], params)
         assert results_path.startswith(os.path.join(".", "results", "my_recordings"))
 
-    def test_custom_save_path_is_used_as_root(self, tmp_path, monkeypatch):
+    def test_custom_save_path_is_used_literally(self, tmp_path, monkeypatch):
+        # save_path, when set, is used as-is: no <input-folder-name>
+        # subfolder is appended (unlike the default ./results/ root, which
+        # does get one -- see test_defaults_to_results_under_cwd).
         monkeypatch.chdir(tmp_path)
         fake_file = self._fake_input_file(tmp_path)
         custom_root = str(tmp_path / "custom_out")
         params = AnalysisParams(save_path=custom_root)
         results_path, plots_path = save_manifest([fake_file], params)
         assert results_path.startswith(custom_root)
-        assert "my_recordings" in results_path
+        assert "my_recordings" not in results_path
+        # custom_root/prg_analysis_<hash>/results -- exactly one directory
+        # (the hashed analysis folder) between custom_root and "results".
+        assert os.path.dirname(os.path.dirname(results_path)) == custom_root
 
     def test_hash_is_unaffected_by_save_path(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)

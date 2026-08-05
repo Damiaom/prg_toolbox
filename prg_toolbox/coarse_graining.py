@@ -21,7 +21,7 @@ from sklearn.metrics import mutual_info_score
 from scipy.stats import spearmanr
 from scipy.spatial import distance
 
-from .verbosity import validate_verbosity, warn_if_verbose
+from .verbosity import validate_verbosity, warn_if_verbose, print_if_full
 
 # =========================================================================
 # Similarity Metrics
