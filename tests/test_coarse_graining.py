@@ -182,14 +182,17 @@ class TestNaNRowFiltering:
 # ---------------------------------------------------------------------------
 
 class TestOddNumberOfVariables:
-    def test_warns_and_drops_leftover_variable(self, odd_binary_array):
-        with pytest.warns(UserWarning, match="Odd number of variables"):
-            cg = CGVariables(odd_binary_array, rg_steps=1)
+    def test_prints_and_drops_leftover_variable(self, odd_binary_array, capsys):
+        # The odd-N notice is a print_if_full (verbose='full' only), not a
+        # real warnings.warn -- so it must be checked via captured stdout,
+        # with verbose explicitly set to 'full' to make it fire at all.
+        cg = CGVariables(odd_binary_array, rg_steps=1, verbose="full")
+        out = capsys.readouterr().out
+        assert "Odd number of variables" in out
         assert cg.CG_timeseries[1].shape[0] == 3  # 7 -> 3 pairs, 1 dropped
 
     def test_dropped_leftover_not_in_lineage(self, odd_binary_array):
-        with pytest.warns(UserWarning):
-            cg = CGVariables(odd_binary_array, rg_steps=1)
+        cg = CGVariables(odd_binary_array, rg_steps=1, verbose="full")
         lineage_step1 = set(np.concatenate([np.atleast_1d(x) for x in cg.CG_cluster_idx[1]]).tolist())
         assert len(lineage_step1) == 6  # one of the 7 original indices is missing
 
