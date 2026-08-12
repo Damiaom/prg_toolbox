@@ -45,7 +45,7 @@ pip install .
 
 * NumPy
 * Matplotlib
-* SciPy (for minor alternative analysis)
+* SciPy (for some alternative analysis)
 
 ## Quick Start
 
