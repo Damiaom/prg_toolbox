@@ -176,10 +176,11 @@ def run_PRG_in_directory(file_directory,
     Parameters
     ----------
     file_directory : str or list of str
-        Either a directory path (every file directly inside it is used), or
-        an explicit collection of absolute or relative file paths to analyze.
+        Either a directory path (every file directly inside it is used, in
+        sorted filename order), or an explicit collection of absolute or
+        relative file paths to analyze (used in the given order).
     skipped_files_list : list, optional
-        File names or 1-based integer indices to exclude from processing. 
+        File names or 1-based integer indices to exclude from processing.
         Default is an empty list.
     user_params : AnalysisParams, optional
         Configuration settings for the PRG pipeline. If None, default 
@@ -213,7 +214,11 @@ def run_PRG_in_directory(file_directory,
     if isinstance(file_directory, (list, tuple)):
         all_files = list(file_directory)
     else:
-        all_files = [os.path.join(file_directory, f) for f in os.listdir(file_directory)]
+        # sorted(): os.listdir() order is filesystem-dependent, not
+        # creation/alphabetical order, so leaving it unsorted made file
+        # order (and therefore index-based entries in skipped_files_list)
+        # nondeterministic across platforms.
+        all_files = [os.path.join(file_directory, f) for f in sorted(os.listdir(file_directory))]
 
     N = len(all_files)
     results_path, plots_path = save_manifest(all_files, prg_params) if save_results else (None, None)
@@ -320,7 +325,11 @@ def run_PRG_in_directory_parallel(file_directory,
     if isinstance(file_directory, (list, tuple)):
         all_files = list(file_directory)
     else:
-        all_files = [os.path.join(file_directory, f) for f in os.listdir(file_directory)]
+        # sorted(): os.listdir() order is filesystem-dependent, not
+        # creation/alphabetical order, so leaving it unsorted made file
+        # order (and therefore index-based entries in skipped_files_list)
+        # nondeterministic across platforms.
+        all_files = [os.path.join(file_directory, f) for f in sorted(os.listdir(file_directory))]
 
     N = len(all_files)
 
