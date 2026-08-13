@@ -9,6 +9,7 @@
 
 # 2b. Allow these specific root files
 !mkdocs.yml
+!.pre-commit-config.yaml
 
 # 3. Allow these directories and everything inside them recursively
 !/prg_toolbox/
@@ -24,4 +25,3 @@
 # EXCEPTION: Force Git to ignore all python bytecode caches anywhere
 **/__pycache__/
 *.pyc
-
