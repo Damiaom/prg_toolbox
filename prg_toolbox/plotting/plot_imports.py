@@ -1,4 +1,4 @@
-import dataclasses  # noqa: F401 -- re-exported: sibling plot_*.py modules use this via `from .plot_imports import *`
+import dataclasses  # noqa: F401 -- re-exported: plot_*.py modules use this via `from .plot_imports import *`
 
 import matplotlib.pyplot as plt
 import numpy as np
