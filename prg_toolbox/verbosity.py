@@ -11,6 +11,7 @@ Shared verbosity helpers for the PRG analysis workflow.
     * "full"     -- everything in "warnings", plus per-step timing and
         per-observable exponents printed as the analysis progresses.
 """
+
 import time
 import warnings
 from contextlib import contextmanager
@@ -27,7 +28,9 @@ def validate_verbosity(verbose):
 
 def warn_if_verbose(message, verbose):
     if verbose != "silent":
-        warnings.warn(message)
+        # stacklevel=2: point the warning at warn_if_verbose's caller, not
+        # at this wrapper itself.
+        warnings.warn(message, stacklevel=2)
 
 
 def print_if_full(message, verbose):

@@ -5,8 +5,7 @@ import os
 import numpy as np
 import pytest
 
-from prg_toolbox import pipelines
-from prg_toolbox import mean_variance
+from prg_toolbox import mean_variance, pipelines
 from prg_toolbox.config import AnalysisParams
 
 
@@ -54,23 +53,37 @@ class TestRunPRG:
 
 class TestRunPRGInDirectory:
     def test_accepts_directory_path(self, small_binary_dir, params):
-        pipelines.run_PRG_in_directory(str(small_binary_dir), user_params=params, save_results=False)
+        pipelines.run_PRG_in_directory(
+            str(small_binary_dir), user_params=params, save_results=False
+        )
 
     def test_accepts_explicit_file_list(self, small_binary_dir, params):
         files = [str(p) for p in sorted(small_binary_dir.iterdir())]
         pipelines.run_PRG_in_directory(files, user_params=params, save_results=False)
 
-    def test_save_results_writes_one_pkl_per_file(self, tmp_path, monkeypatch, small_binary_dir, params):
+    def test_save_results_writes_one_pkl_per_file(
+        self, tmp_path, monkeypatch, small_binary_dir, params
+    ):
         monkeypatch.chdir(tmp_path)
-        pipelines.run_PRG_in_directory(str(small_binary_dir), user_params=params, save_results=True)
+        pipelines.run_PRG_in_directory(
+            str(small_binary_dir), user_params=params, save_results=True
+        )
 
-        pkl_files = [f for _, _, files in os.walk(tmp_path / "results") for f in files if f.endswith(".pkl")]
+        pkl_files = [
+            f
+            for _, _, files in os.walk(tmp_path / "results")
+            for f in files
+            if f.endswith(".pkl")
+        ]
         assert sorted(pkl_files) == ["rec0.pkl", "rec1.pkl", "rec2.pkl"]
 
     def test_skips_files_by_index_and_name(self, small_binary_dir, params, capsys):
         params.verbose = "warnings"  # skip messages are suppressed under "silent"
         pipelines.run_PRG_in_directory(
-            str(small_binary_dir), skipped_files_list=[1, "rec2.npy"], user_params=params, save_results=False
+            str(small_binary_dir),
+            skipped_files_list=[1, "rec2.npy"],
+            user_params=params,
+            save_results=False,
         )
         out = capsys.readouterr().out
         assert "rec0.npy skipped" in out
@@ -84,15 +97,28 @@ class TestRunPRGInDirectoryParallel:
         # .gdf files (`file_directory.endswith('.gdf')`), silently dropping
         # every other format and rejecting a plain directory path.
         pipelines.run_PRG_in_directory_parallel(
-            str(small_binary_dir), user_params=params, save_results=False, num_cores_to_use=2
+            str(small_binary_dir),
+            user_params=params,
+            save_results=False,
+            num_cores_to_use=2,
         )
 
-    def test_processes_non_gdf_files(self, small_binary_dir, params, tmp_path, monkeypatch):
+    def test_processes_non_gdf_files(
+        self, small_binary_dir, params, tmp_path, monkeypatch
+    ):
         monkeypatch.chdir(tmp_path)
         pipelines.run_PRG_in_directory_parallel(
-            str(small_binary_dir), user_params=params, save_results=True, num_cores_to_use=2
+            str(small_binary_dir),
+            user_params=params,
+            save_results=True,
+            num_cores_to_use=2,
         )
-        pkl_files = [f for _, _, files in os.walk(tmp_path / "results") for f in files if f.endswith(".pkl")]
+        pkl_files = [
+            f
+            for _, _, files in os.walk(tmp_path / "results")
+            for f in files
+            if f.endswith(".pkl")
+        ]
         assert sorted(pkl_files) == ["rec0.pkl", "rec1.pkl", "rec2.pkl"]
 
     def test_load_data_call_does_not_crash(self, small_binary_dir, params):
@@ -105,7 +131,9 @@ class TestRunPRGInDirectoryParallel:
             files, user_params=params, save_results=False, num_cores_to_use=2
         )
 
-    def test_matches_sequential_results(self, small_binary_dir, params, tmp_path, monkeypatch):
+    def test_matches_sequential_results(
+        self, small_binary_dir, params, tmp_path, monkeypatch
+    ):
         monkeypatch.chdir(tmp_path)
         seq_dir = tmp_path / "seq"
         par_dir = tmp_path / "par"
@@ -113,12 +141,27 @@ class TestRunPRGInDirectoryParallel:
         par_dir.mkdir()
 
         monkeypatch.chdir(seq_dir)
-        pipelines.run_PRG_in_directory(str(small_binary_dir), user_params=params, save_results=True)
+        pipelines.run_PRG_in_directory(
+            str(small_binary_dir), user_params=params, save_results=True
+        )
         monkeypatch.chdir(par_dir)
         pipelines.run_PRG_in_directory_parallel(
-            str(small_binary_dir), user_params=params, save_results=True, num_cores_to_use=2
+            str(small_binary_dir),
+            user_params=params,
+            save_results=True,
+            num_cores_to_use=2,
         )
 
-        seq_pkls = sorted(f for _, _, files in os.walk(seq_dir / "results") for f in files if f.endswith(".pkl"))
-        par_pkls = sorted(f for _, _, files in os.walk(par_dir / "results") for f in files if f.endswith(".pkl"))
+        seq_pkls = sorted(
+            f
+            for _, _, files in os.walk(seq_dir / "results")
+            for f in files
+            if f.endswith(".pkl")
+        )
+        par_pkls = sorted(
+            f
+            for _, _, files in os.walk(par_dir / "results")
+            for f in files
+            if f.endswith(".pkl")
+        )
         assert seq_pkls == par_pkls

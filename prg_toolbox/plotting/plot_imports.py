@@ -1,10 +1,12 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-import dataclasses
-from ..utils import powerLaw_function
+import dataclasses  # noqa: F401 -- re-exported: sibling plot_*.py modules use this via `from .plot_imports import *`
 
-def set_default_kwargs(colors = None):
+import matplotlib.pyplot as plt
+import numpy as np
+
+from ..utils import powerLaw_function  # noqa: F401 -- re-exported, same as above
+
+
+def set_default_kwargs(colors=None):
     """
     Defines default plotting styles and colors.
 
@@ -73,18 +75,27 @@ def set_default_kwargs(colors = None):
             f"(got {type(colors).__name__})."
         )
 
-    return DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS, DEFAULT_LABEL_KWARGS, DEFAULT_LEGEND_KWARGS, COLORS
+    return (
+        DEFAULT_LINE_KWARGS,
+        DEFAULT_FILL_KWARGS,
+        DEFAULT_LABEL_KWARGS,
+        DEFAULT_LEGEND_KWARGS,
+        COLORS,
+    )
+
 
 def apply_log_axes(ax, base=2):
     ax.set_xscale("log", base=base)
     ax.set_yscale("log")
+
 
 def style_axes(ax, tick_kw):
     for spine in ax.spines.values():
         spine.set_linewidth(1.0)
     ax.tick_params(**tick_kw)
 
-def extract_data_from_object(data_object):    
+
+def extract_data_from_object(data_object):
     """
     Parameters
     ----------
@@ -95,8 +106,8 @@ def extract_data_from_object(data_object):
         data (dict): Dictionary with x, y, error bounds, and exponent info
     """
     y = data_object.avg_across_windows
-    y_low= y - data_object.std_across_windows
-    y_high= y + data_object.std_across_windows
+    y_low = y - data_object.std_across_windows
+    y_high = y + data_object.std_across_windows
     x = np.array([2**i for i in range(len(y))])
 
     data = {
@@ -110,6 +121,7 @@ def extract_data_from_object(data_object):
     }
     return data
 
+
 def extract_data_from_dictionary(data_dict):
     """
     Parameters
@@ -121,8 +133,8 @@ def extract_data_from_dictionary(data_dict):
         data (dict): Dictionary with x, y, error bounds, and exponent info
     """
     y = data_dict["avg_across_windows"]
-    y_low= y - data_dict["std_across_windows"]
-    y_high= y + data_dict["std_across_windows"]
+    y_low = y - data_dict["std_across_windows"]
+    y_high = y + data_dict["std_across_windows"]
     x = np.array([2**i for i in range(len(y))])
     data = {
         "y": y,
@@ -136,7 +148,8 @@ def extract_data_from_dictionary(data_dict):
 
     return data
 
-def set_colors_from_palette(number_of_colors, palette=None, data_or_surrogate='data'):
+
+def set_colors_from_palette(number_of_colors, palette=None, data_or_surrogate="data"):
     """
     Generates a list of colors from a colormap.
 
@@ -175,12 +188,19 @@ def set_colors_from_palette(number_of_colors, palette=None, data_or_surrogate='d
     cmap = plt.get_cmap(palette_dict[data_or_surrogate])
     colorlist = np.linspace(0.1, 0.8, number_of_colors)
     colors = [cmap(c) for c in colorlist]
-    
+
     return colors
 
-def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
-                          plot_kwargs, fill_kwargs, COLORS,
-                          data, data_or_surrogate = "data"):
+
+def set_values_and_kwargs(
+    DEFAULT_LINE_KWARGS,
+    DEFAULT_FILL_KWARGS,
+    plot_kwargs,
+    fill_kwargs,
+    COLORS,
+    data,
+    data_or_surrogate="data",
+):
     """
     Prepares plotting values and style kwargs.
 
@@ -200,20 +220,28 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
         plot_kw (dict) : Line plot kwargs
         fill_kw (dict) : Fill plot kwargs
     """
-    
-    plot_kw = {**DEFAULT_LINE_KWARGS, "color":COLORS[data_or_surrogate], **(plot_kwargs or {})}
-    fill_kw = {**DEFAULT_FILL_KWARGS, "color":COLORS[data_or_surrogate], **(fill_kwargs or {})}
+
+    plot_kw = {
+        **DEFAULT_LINE_KWARGS,
+        "color": COLORS[data_or_surrogate],
+        **(plot_kwargs or {}),
+    }
+    fill_kw = {
+        **DEFAULT_FILL_KWARGS,
+        "color": COLORS[data_or_surrogate],
+        **(fill_kwargs or {}),
+    }
 
     # Create a set of the string names of your PRG dataclasses/objects
     valid_observable_types = {
-        "mean_variance", 
-        "log_silence_probability", 
-        "max_covariance_eigenvalue", 
-        "_avalanche_covariance_eigenvalue", 
+        "mean_variance",
+        "log_silence_probability",
+        "max_covariance_eigenvalue",
+        "_avalanche_covariance_eigenvalue",
         "decay_time",
         "covariance_spectrum",
         "autocorrelation_function",
-        "activity_distribution"
+        "activity_distribution",
     }
 
     # Extract the actual name of the class as a string (e.g., "mean_variance")
@@ -224,7 +252,8 @@ def set_values_and_kwargs(DEFAULT_LINE_KWARGS, DEFAULT_FILL_KWARGS,
     elif isinstance(data, dict):
         values = extract_data_from_dictionary(data)
     else:
-        raise ValueError("Data must be either a valid object (mean_variance, log_silence_probability, max_covariance_eigenvalue, or decay_time) or a dictionary.")
-    
-    return values, plot_kw, fill_kw
+        raise ValueError(
+            "Data must be either a valid object (mean_variance, log_silence_probability, max_covariance_eigenvalue, or decay_time) or a dictionary."
+        )
 
+    return values, plot_kw, fill_kw

@@ -5,8 +5,8 @@ import pytest
 
 from prg_toolbox.utils import (
     covariance_evals_and_evectors,
-    powerLaw_function,
     get_scaling_exponent,
+    powerLaw_function,
 )
 
 
@@ -39,14 +39,16 @@ class TestPowerLawFunction:
         assert powerLaw_function(2.0, a=3.0, b=2.0) == pytest.approx(12.0)
 
     def test_exponent_zero_is_constant(self):
-        assert powerLaw_function(np.array([1.0, 5.0, 100.0]), a=7.0, b=0.0) == pytest.approx([7.0, 7.0, 7.0])
+        assert powerLaw_function(
+            np.array([1.0, 5.0, 100.0]), a=7.0, b=0.0
+        ) == pytest.approx([7.0, 7.0, 7.0])
 
 
 class TestGetScalingExponent:
     def test_recovers_exact_power_law_exponent(self):
         b_true, a_true = -1.5, 3.0
         k = np.arange(6)
-        x = 2 ** k
+        x = 2**k
         y = a_true * x.astype(float) ** b_true
 
         exponent, exponent_error, r2 = get_scaling_exponent(y)
@@ -61,8 +63,8 @@ class TestGetScalingExponent:
         # recovers the exact exponent against that shifted axis.
         b_true, a_true = 2.0, 0.5
         k = np.arange(1, 6)
-        x = 2.0 ** k
-        y = a_true * x ** b_true
+        x = 2.0**k
+        y = a_true * x**b_true
 
         exponent, _, r2 = get_scaling_exponent(y, skip_first_value=True)
 
@@ -82,8 +84,8 @@ class TestGetScalingExponent:
     def test_noisy_data_gives_imperfect_but_reasonable_fit(self, rng):
         b_true, a_true = 1.2, 1.0
         k = np.arange(8)
-        x = 2.0 ** k
-        y = a_true * x ** b_true
+        x = 2.0**k
+        y = a_true * x**b_true
         noisy_y = y * rng.lognormal(sigma=0.05, size=y.shape)
 
         exponent, _, r2 = get_scaling_exponent(noisy_y)

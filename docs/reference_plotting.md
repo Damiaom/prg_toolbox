@@ -86,5 +86,3 @@ def plot_observable_name(
         None
     """
 ```
-
-

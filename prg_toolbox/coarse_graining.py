@@ -3,29 +3,30 @@ Copyright (c) 2026 Daniel Miranda Castro. Licensed under the MIT License.
 
 Real-Space Phenomenological Renormalization Group (PRG) Coarse-Graining.
 
-This module provides the core algorithm that performs real-space coarse graining on 
-multivariate binary time series (e.g., neural spike-train grids), following the 
+This module provides the core algorithm that performs real-space coarse graining on
+multivariate binary time series (e.g., neural spike-train grids), following the
 framework described in Meshulam et al. (2019).
 
 The primary engine is the `CGVariables` wrapper class, which stores coarse grained
 variables across the recursive PRG steps, along with correlation matrices calculated
 and original raw variable indices.
 
-The coarse graining rule can be implemented with a handful of similarity metrics, 
-including standard correlation definitions as well as information-theoretic and discrete 
+The coarse graining rule can be implemented with a handful of similarity metrics,
+including standard correlation definitions as well as information-theoretic and discrete
 alignment measurements (see below).
 """
 
 import numpy as np
-from sklearn.metrics import mutual_info_score
-from scipy.stats import spearmanr
 from scipy.spatial import distance
+from scipy.stats import spearmanr
+from sklearn.metrics import mutual_info_score
 
-from .verbosity import validate_verbosity, warn_if_verbose, print_if_full
+from .verbosity import print_if_full, validate_verbosity, warn_if_verbose
 
 # =========================================================================
 # Similarity Metrics
 # =========================================================================
+
 
 def _compute_pearson(X):
     """
@@ -42,6 +43,7 @@ def _compute_pearson(X):
         Symmetric linear correlation coefficient matrix.
     """
     return np.corrcoef(X)
+
 
 def _compute_spearman(X):
     """
@@ -66,11 +68,12 @@ def _compute_spearman(X):
         return np.array([[1.0, rho], [rho, 1.0]])
     return spearmanr(X, axis=1)[0]
 
+
 def _compute_cosine(X):
     """
     Compute the pairwise cosine similarity matrix.
 
-    Measures the cosine of the angle between two multi-dimensional row vectors 
+    Measures the cosine of the angle between two multi-dimensional row vectors
     independent of their magnitude.
 
     Parameters
@@ -84,15 +87,16 @@ def _compute_cosine(X):
         Pairwise angular similarity matrix scaled bounded between [-1.0, 1.0].
     """
     # Vectorized cosine similarity: 1 - pairwise_cosine_distance
-    dist_vector = distance.pdist(X, metric='cosine')
+    dist_vector = distance.pdist(X, metric="cosine")
     dist_matrix = distance.squareform(dist_vector)
     return 1.0 - dist_matrix
+
 
 def _compute_hamming(X):
     """
     Compute pairwise matching bit counts using the Hamming metric.
 
-    Calculates the exact total number of synchronized sample points where 
+    Calculates the exact total number of synchronized sample points where
     two states match identically.
 
     Parameters
@@ -107,9 +111,10 @@ def _compute_hamming(X):
     """
     # Vectorized Hamming match count: total_timesteps - hamming_distance
     num_timesteps = X.shape[1]
-    dist_vector = distance.pdist(X, metric='hamming') * num_timesteps
+    dist_vector = distance.pdist(X, metric="hamming") * num_timesteps
     dist_matrix = distance.squareform(dist_vector)
     return num_timesteps - dist_matrix
+
 
 def _compute_mutual_information(X):
     """
@@ -136,7 +141,8 @@ def _compute_mutual_information(X):
             mi = mutual_info_score(X[i], X[j])
             matrix[i, j] = matrix[j, i] = mi
     return matrix
-    
+
+
 def _compute_random(X):
     """
     Generate a pseudo-random symmetric affinity surrogate matrix.
@@ -159,11 +165,10 @@ def _compute_random(X):
     return matrix
 
 
-
-
 # =========================================================================
 # CORE PRG COARSE GRAINING WRAPPER CLASS
 # =========================================================================
+
 
 class CGVariables:
     """
@@ -235,19 +240,24 @@ class CGVariables:
     array([[2., 0., 2., 0., 2., 0.],
            [0., 1., 0., 2., 0., 2.]])
     """
+
     _CLUSTER_METHODS = {
-    "pearson": _compute_pearson,
-    "spearman": _compute_spearman,
-    "mutual_information": _compute_mutual_information,
-    "cosine": _compute_cosine,
-    "hamming": _compute_hamming,
-    "random": _compute_random   
+        "pearson": _compute_pearson,
+        "spearman": _compute_spearman,
+        "mutual_information": _compute_mutual_information,
+        "cosine": _compute_cosine,
+        "hamming": _compute_hamming,
+        "random": _compute_random,
     }
 
-    def __init__(self, binary_array, cluster_method="pearson", rg_steps=6, verbose="warnings"):
+    def __init__(
+        self, binary_array, cluster_method="pearson", rg_steps=6, verbose="warnings"
+    ):
         self.cluster_method = cluster_method.lower()
         if self.cluster_method not in self._CLUSTER_METHODS:
-            raise ValueError(f"Unknown cluster method. Choose from: {list(self._CLUSTER_METHODS.keys())}")
+            raise ValueError(
+                f"Unknown cluster method. Choose from: {list(self._CLUSTER_METHODS.keys())}"
+            )
 
         validate_verbosity(verbose)
         self.verbose = verbose
@@ -256,7 +266,9 @@ class CGVariables:
         self.time_window = binary_array.shape[1]
 
         # Process and assign variables dynamically
-        CG_timeseries, CG_correlation_matrices, CG_cluster_idx = self.get_CG_variables(binary_array, self.cluster_method, self.rg_steps)
+        CG_timeseries, CG_correlation_matrices, CG_cluster_idx = self.get_CG_variables(
+            binary_array, self.cluster_method, self.rg_steps
+        )
         self.CG_timeseries = CG_timeseries
         self.CG_correlation_matrices = CG_correlation_matrices
         self.CG_cluster_idx = CG_cluster_idx
@@ -429,9 +441,13 @@ class CGVariables:
 
         # Validation checks
         if not self.is_binary_matrix(binary_array):
-            raise ValueError("Data time series should contain binarized values for real space PRG analysis.")
+            raise ValueError(
+                "Data time series should contain binarized values for real space PRG analysis."
+            )
         if binary_array.shape[0] < 2**rg_steps:
-            raise ValueError(f"Number of variables in data ({binary_array.shape[0]}) is less than required size ({2**self.rg_steps}).")
+            raise ValueError(
+                f"Number of variables in data ({binary_array.shape[0]}) is less than required size ({2**self.rg_steps})."
+            )
         if binary_array.shape[0] > binary_array.shape[1]:
             warn_if_verbose(
                 "Number of variables is greater than number of samples. Correlation measurements may be unreliable.",
@@ -466,6 +482,8 @@ class CGVariables:
 
         # Execute coarse-graining flow across scales
         for i in range(1, total_steps):
-            CG_var[i], corr_matrix[i], clu_idx[i] = self.coarse_grain(CG_var[i-1], clu_idx[i-1], cluster_method)
+            CG_var[i], corr_matrix[i], clu_idx[i] = self.coarse_grain(
+                CG_var[i - 1], clu_idx[i - 1], cluster_method
+            )
 
         return CG_var, corr_matrix, clu_idx

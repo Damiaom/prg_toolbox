@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.metrics import r2_score
 
+
 def covariance_evals_and_evectors(x):
     """
     Calculates the data covariance matrix and diagonalizes it
@@ -12,23 +13,25 @@ def covariance_evals_and_evectors(x):
 
     Returns
     ----------
-        evals : ndarray of floats 
+        evals : ndarray of floats
             Vector of eigenvalues in decreasing order
         evectors : ndarray of floats
             Matrix of eigenvectors in decreasing order
     """
-    x = x - np.mean(x,1,keepdims=True)
+    x = x - np.mean(x, 1, keepdims=True)
     cov_matrix = np.cov(x)
     evals, evectors = np.linalg.eigh(cov_matrix)
     index = np.flip(np.argsort(evals))
     evals = evals[index]
     evectors = evectors[:, index]
-    return evals,evectors
+    return evals, evectors
 
-def powerLaw_function(x,a,b):
-    return a*np.power(x,b)
 
-def get_scaling_exponent(CG_observable_values, spectrum = False, skip_first_value = False):
+def powerLaw_function(x, a, b):
+    return a * np.power(x, b)
+
+
+def get_scaling_exponent(CG_observable_values, spectrum=False, skip_first_value=False):
     """
     Estimate the scaling exponent of the PRG observables under coarse graining.
 
@@ -40,7 +43,7 @@ def get_scaling_exponent(CG_observable_values, spectrum = False, skip_first_valu
     spectrum : boolean
         When fitting the eigenvalue spectrum, the x-axis has 2**k elements (number of variables
         in a cluster) instead of k (number of rg_steps).
-        Default is False. 
+        Default is False.
 
     skip_first_value : boolean
         Ignores initial value of the observable when it is trivial
@@ -73,22 +76,21 @@ def get_scaling_exponent(CG_observable_values, spectrum = False, skip_first_valu
 
     x = CG_observable_values
     if skip_first_value:
-        t = np.array([2**(i+1) for i in range(len(x))])
+        t = np.array([2 ** (i + 1) for i in range(len(x))])
     elif not spectrum:
         t = np.array([2**i for i in range(len(x))])
     else:
-        t = np.arange(len(x))+1
+        t = np.arange(len(x)) + 1
 
     log_t = np.log(t)
     log_x = np.log(x)
 
     fit_param, fit_cov = np.polyfit(log_t, log_x, 1, cov=True)
 
-    exponent_error = np.sqrt(fit_cov[0,0])
+    exponent_error = np.sqrt(fit_cov[0, 0])
     exponent = fit_param[0]
     constant = fit_param[1]
     log_x_pred = exponent * log_t + constant
     exponent_r2 = r2_score(log_x, log_x_pred)
 
     return exponent, exponent_error, exponent_r2
-

@@ -5,9 +5,11 @@ or these example figures need to be regenerated:
 
     python docs/generate_plot_examples.py
 """
+
 import os
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -59,7 +61,9 @@ def build_results():
     params.observables = [prg.mean_variance, prg.activity_distribution]
 
     timestamps = prg.tools.load_data(EXAMPLE_SPIKE_FILE, user_params=params)
-    pool = pick_random_sample(timestamps, sample_size=500, data_format="tabular", random_seed=7)
+    pool = pick_random_sample(
+        timestamps, sample_size=500, data_format="tabular", random_seed=7
+    )
     surrogate_pool = shuffle_isi(pool, data_format="tabular", random_seed=7)
 
     data_result = prg.run_PRG(pool, user_params=params)
@@ -93,8 +97,17 @@ def main():
         mv_data,
         surrogate_data=mv_surr,
         ax=ax,
-        colors={"data": MAGMA_DATA, "surrogate": MAGMA_SURROGATE, "reference": MAGMA_REFERENCE},
-        plot_kwargs={"marker": "*", "markersize": 22, "markeredgewidth": 1.0, "markeredgecolor": "black"},
+        colors={
+            "data": MAGMA_DATA,
+            "surrogate": MAGMA_SURROGATE,
+            "reference": MAGMA_REFERENCE,
+        },
+        plot_kwargs={
+            "marker": "*",
+            "markersize": 22,
+            "markeredgewidth": 1.0,
+            "markeredgecolor": "black",
+        },
         fill_kwargs={"alpha": 0.3, "hatch": "//"},
         label_kwargs={"fontsize": 15, "fontweight": "bold"},
         legend_kwargs={"fontsize": 11, "loc": "upper left", "frameon": False},
@@ -114,7 +127,12 @@ def main():
         surrogate_data=ad_surr,
         ax=ax,
         palette={"data": "magma", "surrogate": "inferno"},
-        plot_kwargs={"marker": "*", "markersize": 10, "linestyle": "-", "linewidth": 1.5},
+        plot_kwargs={
+            "marker": "*",
+            "markersize": 10,
+            "linestyle": "-",
+            "linewidth": 1.5,
+        },
         fill_kwargs={"alpha": 0.25},
         label_kwargs={"fontsize": 15, "fontweight": "bold"},
         legend_kwargs={"fontsize": 11, "loc": "upper right", "frameon": False},

@@ -3,9 +3,8 @@
 import numpy as np
 import pytest
 
-from prg_toolbox.coarse_graining import CGVariables
 from prg_toolbox import observables as obs
-
+from prg_toolbox.coarse_graining import CGVariables
 
 ALL_OBSERVABLE_CLASSES = [
     obs.mean_variance,
@@ -74,8 +73,9 @@ class TestLogSilenceProbability:
         result = obs.log_silence_probability(cgvars)
         assert np.all(result.values >= 0)
 
-
-    def test_exponent_approaches_one_for_independent_data_with_pearson(self, rng, recwarn):
+    def test_exponent_approaches_one_for_independent_data_with_pearson(
+        self, rng, recwarn
+    ):
         # Same rationale as mean_variance's pearson counterpart: with T long
         # enough, pearson's "most correlated pair" selection bias on
         # independent data becomes negligible, so beta -> 1 even under the
@@ -104,7 +104,7 @@ class TestCovarianceSpectrum:
     def test_spectrum_length_matches_cluster_size_at_each_step(self, cgvars):
         result = obs.covariance_spectrum(cgvars)
         for k, spectrum in enumerate(result.values):
-            assert len(spectrum) == 2 ** k
+            assert len(spectrum) == 2**k
 
     def test_marchenko_pastur_fields_are_populated(self, cgvars):
         result = obs.covariance_spectrum(cgvars)
@@ -176,7 +176,7 @@ class TestActivityDistribution:
     def test_density_integrates_to_one(self, cgvars):
         result = obs.activity_distribution(cgvars)
         for k, density in enumerate(result.values):
-            dx = 1 / (2 ** k)
+            dx = 1 / (2**k)
             assert np.sum(density) * dx == pytest.approx(1.0)
 
 
@@ -195,7 +195,9 @@ class TestAvalancheCovarianceEigenvalue:
         def spy_init(self, binary_array, cluster_method="pearson", rg_steps=6):
             captured["cluster_method"] = cluster_method
             captured["rg_steps"] = rg_steps
-            return original_init(self, binary_array, cluster_method=cluster_method, rg_steps=rg_steps)
+            return original_init(
+                self, binary_array, cluster_method=cluster_method, rg_steps=rg_steps
+            )
 
         monkeypatch.setattr(CGVariables, "__init__", spy_init)
         obs._avalanche_covariance_eigenvalue(cgvars)

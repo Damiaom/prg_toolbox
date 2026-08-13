@@ -5,18 +5,18 @@ import pytest
 
 from prg_toolbox.coarse_graining import (
     CGVariables,
-    _compute_pearson,
-    _compute_spearman,
     _compute_cosine,
     _compute_hamming,
     _compute_mutual_information,
+    _compute_pearson,
     _compute_random,
+    _compute_spearman,
 )
-
 
 # ---------------------------------------------------------------------------
 # Similarity metrics
 # ---------------------------------------------------------------------------
+
 
 class TestSimilarityMetrics:
     def test_pearson_identical_rows_give_correlation_one(self):
@@ -40,7 +40,7 @@ class TestSimilarityMetrics:
 
     def test_spearman_monotonic_relationship_gives_one(self):
         x = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-        y = x ** 3  # any strictly increasing transform preserves rank
+        y = x**3  # any strictly increasing transform preserves rank
         X = np.vstack([x, y])
         corr = _compute_spearman(X)
         assert corr[0, 1] == pytest.approx(1.0)
@@ -96,6 +96,7 @@ class TestSimilarityMetrics:
 # CGVariables validation
 # ---------------------------------------------------------------------------
 
+
 class TestCGVariablesValidation:
     def test_rejects_non_binary_input(self, rng):
         continuous = rng.random((8, 100))
@@ -108,7 +109,9 @@ class TestCGVariablesValidation:
 
     def test_rejects_unknown_cluster_method(self, random_binary_array):
         with pytest.raises(ValueError, match="Unknown cluster method"):
-            CGVariables(random_binary_array, cluster_method="not_a_real_method", rg_steps=1)
+            CGVariables(
+                random_binary_array, cluster_method="not_a_real_method", rg_steps=1
+            )
 
     def test_warns_when_more_variables_than_samples(self, rng):
         wide = (rng.random((20, 10)) < 0.3).astype(int)
@@ -122,19 +125,26 @@ class TestCGVariablesValidation:
 # CGVariables zero-variance filtering (regression: commit ba4e8bf)
 # ---------------------------------------------------------------------------
 
+
 class TestZeroVarianceFiltering:
-    def test_constant_rows_are_dropped_and_warned(self, binary_array_with_constant_rows):
+    def test_constant_rows_are_dropped_and_warned(
+        self, binary_array_with_constant_rows
+    ):
         with pytest.warns(UserWarning, match="constant"):
             cg = CGVariables(binary_array_with_constant_rows, rg_steps=1)
         # 10 rows, 3 constant -> 7 survive
         assert cg.CG_timeseries[0].shape[0] == 7
 
-    def test_dropped_indices_never_appear_in_lineage(self, binary_array_with_constant_rows):
+    def test_dropped_indices_never_appear_in_lineage(
+        self, binary_array_with_constant_rows
+    ):
         with pytest.warns(UserWarning):
             cg = CGVariables(binary_array_with_constant_rows, rg_steps=2)
         dropped = {2, 5, 7}
         for step_idx in cg.CG_cluster_idx:
-            all_lineage = set(np.concatenate([np.atleast_1d(x) for x in step_idx]).tolist())
+            all_lineage = set(
+                np.concatenate([np.atleast_1d(x) for x in step_idx]).tolist()
+            )
             assert dropped.isdisjoint(all_lineage)
 
 
@@ -142,8 +152,11 @@ class TestZeroVarianceFiltering:
 # CGVariables NaN row filtering (e.g. z-score binarizing a zero-variance row)
 # ---------------------------------------------------------------------------
 
+
 class TestNaNRowFiltering:
-    def test_nan_rows_are_dropped_and_warned_with_source_explanation(self, binary_array_with_nan_row):
+    def test_nan_rows_are_dropped_and_warned_with_source_explanation(
+        self, binary_array_with_nan_row
+    ):
         with pytest.warns(UserWarning, match="NaN"):
             cg = CGVariables(binary_array_with_nan_row, rg_steps=1)
         # 10 rows, 1 all-NaN -> 9 survive
@@ -153,16 +166,24 @@ class TestNaNRowFiltering:
         with pytest.warns(UserWarning, match=r"Row\(s\) \[4\]"):
             CGVariables(binary_array_with_nan_row, rg_steps=1)
 
-    def test_dropped_nan_index_never_appears_in_lineage(self, binary_array_with_nan_row):
+    def test_dropped_nan_index_never_appears_in_lineage(
+        self, binary_array_with_nan_row
+    ):
         with pytest.warns(UserWarning):
             cg = CGVariables(binary_array_with_nan_row, rg_steps=2)
         for step_idx in cg.CG_cluster_idx:
-            all_lineage = set(np.concatenate([np.atleast_1d(x) for x in step_idx]).tolist())
+            all_lineage = set(
+                np.concatenate([np.atleast_1d(x) for x in step_idx]).tolist()
+            )
             assert 4 not in all_lineage
 
-    def test_remaining_data_is_still_processed_normally(self, binary_array_with_nan_row):
+    def test_remaining_data_is_still_processed_normally(
+        self, binary_array_with_nan_row
+    ):
         with pytest.warns(UserWarning):
-            cg = CGVariables(binary_array_with_nan_row, cluster_method="random", rg_steps=1)
+            cg = CGVariables(
+                binary_array_with_nan_row, cluster_method="random", rg_steps=1
+            )
         assert not np.any(np.isnan(cg.CG_timeseries[0]))
         assert not np.any(np.isnan(cg.CG_timeseries[1]))
 
@@ -181,6 +202,7 @@ class TestNaNRowFiltering:
 # CGVariables odd-N handling (regression: leftover unpaired variable)
 # ---------------------------------------------------------------------------
 
+
 class TestOddNumberOfVariables:
     def test_prints_and_drops_leftover_variable(self, odd_binary_array, capsys):
         # The odd-N notice is a print_if_full (verbose='full' only), not a
@@ -193,7 +215,9 @@ class TestOddNumberOfVariables:
 
     def test_dropped_leftover_not_in_lineage(self, odd_binary_array):
         cg = CGVariables(odd_binary_array, rg_steps=1, verbose="full")
-        lineage_step1 = set(np.concatenate([np.atleast_1d(x) for x in cg.CG_cluster_idx[1]]).tolist())
+        lineage_step1 = set(
+            np.concatenate([np.atleast_1d(x) for x in cg.CG_cluster_idx[1]]).tolist()
+        )
         assert len(lineage_step1) == 6  # one of the 7 original indices is missing
 
 
@@ -201,11 +225,12 @@ class TestOddNumberOfVariables:
 # CGVariables structural invariants
 # ---------------------------------------------------------------------------
 
+
 class TestCGVariablesInvariants:
     def test_shape_halves_at_each_step(self, cgvars, random_binary_array):
         N0 = random_binary_array.shape[0]
         for k, ts in enumerate(cgvars.CG_timeseries):
-            assert ts.shape == (N0 // (2 ** k), random_binary_array.shape[1])
+            assert ts.shape == (N0 // (2**k), random_binary_array.shape[1])
 
     def test_activity_is_conserved_across_scales(self, cgvars):
         # Coarse-graining only sums paired rows, so with even N and no drops,
@@ -215,7 +240,9 @@ class TestCGVariablesInvariants:
         for ts in cgvars.CG_timeseries[1:]:
             assert ts.sum() == pytest.approx(total_step0)
 
-    def test_lineage_partitions_surviving_variables_at_each_step(self, cgvars, random_binary_array):
+    def test_lineage_partitions_surviving_variables_at_each_step(
+        self, cgvars, random_binary_array
+    ):
         surviving = set(cgvars.CG_cluster_idx[0].tolist())
         for step_idx in cgvars.CG_cluster_idx:
             flat = np.concatenate([np.atleast_1d(x) for x in step_idx]).tolist()
@@ -224,10 +251,14 @@ class TestCGVariablesInvariants:
             # every lineage index traces back to a surviving original variable
             assert set(flat).issubset(surviving)
 
-    def test_duplicated_pairs_are_matched_by_pearson(self, duplicated_pairs_binary_array):
+    def test_duplicated_pairs_are_matched_by_pearson(
+        self, duplicated_pairs_binary_array
+    ):
         # 4 base rows each duplicated -> pearson correlation should pair each
         # row with its exact duplicate at the first coarse-graining step.
-        cg = CGVariables(duplicated_pairs_binary_array, cluster_method="pearson", rg_steps=1)
+        cg = CGVariables(
+            duplicated_pairs_binary_array, cluster_method="pearson", rg_steps=1
+        )
         step1 = cg.CG_timeseries[1]
         step0 = cg.CG_timeseries[0]
         for j, lineage in enumerate(cg.CG_cluster_idx[1]):
