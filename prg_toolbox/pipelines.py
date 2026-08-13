@@ -32,7 +32,7 @@ def run_PRG(data, user_params: AnalysisParams = None):
 
     This function isolates steady-state windows from chronological timestamps,
     subsamples spatial records, binarizes events, and computes the requested
-    observables across geometric renormalization scales.
+    observables across renormalization scales.
 
     Parameters
     ----------
