@@ -1,0 +1,630 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../reference_analysis_tools/">
+      
+      
+        <link rel="next" href="../plotting_examples/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Plotting library - PRG Toolbox</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="violet" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plotting-library-prg_toolboxplotting" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="PRG Toolbox" class="md-header__button md-logo" aria-label="PRG Toolbox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PRG Toolbox
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Plotting library
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="PRG Toolbox" class="md-nav__button md-logo" aria-label="PRG Toolbox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PRG Toolbox
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_coarse_graining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The coarse graining method
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_observables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statistical observables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_analysis_tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plotting_examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Styling your plots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_pipelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="plotting-library-prg_toolboxplotting">Plotting library (<code>prg_toolbox.plotting</code>)</h1>
+<p>The visualization module provides an interface for plotting the statistical observables calculated during the Phenomenological Renormalization Group (PRG) analysis. The plotting functions share a common structure and accept essentially the same parameters, with one deliberate split: <strong>single-curve plots</strong> take a <code>colors</code> argument, while <strong>function-valued plots</strong> (which draw one curve per coarse-graining step) take a <code>palette</code> argument instead. A function never has both.</p>
+<p>See <a href="../plotting_examples/">Styling your plots</a> for a worked walkthrough with rendered example figures.</p>
+<p><strong>Matplotlib Styling and Configurations</strong></p>
+<p>The functions accept Matplotlib keyword arguments to modify the layout, colors, and line styles (see list in the example below). Users can input these configurations using two methods:</p>
+<ul>
+<li><strong>Global Configuration:</strong> Passing the <code>AnalysisParams</code> dataclass (or any <code>AnalysisParams.plot_style</code> / <code>PlotStyleConfig</code> object directly) into the <code>style_config</code> parameter.</li>
+<li><strong>Explicit Overrides:</strong> Passing dictionaries to specific arguments, such as <code>plot_kwargs</code>, <code>fill_kwargs</code>, <code>label_kwargs</code>, <code>legend_kwargs</code>, or <code>tick_kwargs</code>. If a user provides both a global <code>style_config</code> and an explicit dictionary for the same parameter, the explicit dictionary takes precedence.</li>
+</ul>
+<p><strong>Coloring: <code>colors</code> vs. <code>palette</code></strong></p>
+<p>Both accept the same three shorthands, so you never need to specify keys you don't care about:</p>
+<ul>
+<li><code>None</code> — use all the built-in defaults.</li>
+<li>A plain string — recolors only <code>'data'</code> (a color name/hex for <code>colors</code>, a colormap name for <code>palette</code>); <code>'surrogate'</code> and <code>'reference'</code> keep their defaults.</li>
+<li>A dict with any subset of its keys — unspecified keys keep their defaults. <code>colors</code> accepts <code>'data'</code>, <code>'surrogate'</code>, <code>'reference'</code>; <code>palette</code> accepts <code>'data'</code>, <code>'surrogate'</code>.</li>
+</ul>
+<pre><code class="language-python">colors = &quot;seagreen&quot;                             # only 'data' changes
+colors = {&quot;reference&quot;: &quot;black&quot;}                 # only 'reference' changes
+palette = &quot;plasma&quot;                              # only the 'data' colormap changes
+</code></pre>
+<p><strong>Surrogate Data Comparisons</strong></p>
+<p>Every plotting function accepts an optional <code>surrogate_data</code> parameter. When a secondary dataset (such as the output of a shuffled null model) is passed to this argument alongside the primary <code>data</code>, the function renders both results on the same canvas. The module visually distinguishes the surrogate data to facilitate baseline comparisons.</p>
+<p><strong>Axes Management and Multi-Plotting</strong></p>
+<p>All functions accept an optional <code>ax</code> parameter, expecting a Matplotlib <code>Axes</code> object. If an existing <code>ax</code> is provided, the function renders the data directly onto that canvas. Users can plot multiple datasets on the same figure by passing the same <code>ax</code> variable to multiple plotting function calls.</p>
+<p><strong>Available Plotting Functions</strong></p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Coloring argument</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plot_mean_variance</code></td>
+<td><code>colors</code></td>
+</tr>
+<tr>
+<td><code>plot_log_silence_probability</code></td>
+<td><code>colors</code></td>
+</tr>
+<tr>
+<td><code>plot_max_covariance_eigenvalue</code></td>
+<td><code>colors</code></td>
+</tr>
+<tr>
+<td><code>plot_decay_time</code></td>
+<td><code>colors</code></td>
+</tr>
+<tr>
+<td><code>plot_avalanche_covariance_eigenvalue</code></td>
+<td><code>colors</code></td>
+</tr>
+<tr>
+<td><code>plot_covariance_spectrum</code></td>
+<td><code>palette</code></td>
+</tr>
+<tr>
+<td><code>plot_autocorrelation_function</code></td>
+<td><code>palette</code></td>
+</tr>
+<tr>
+<td><code>plot_activity_distribution</code></td>
+<td><code>palette</code></td>
+</tr>
+</tbody>
+</table>
+<p>Below is an example of the standard input arguments shared across <code>colors</code>-based plotting functions (<code>palette</code>-based functions are identical except <code>colors</code> is replaced by <code>palette</code>):</p>
+<pre><code class="language-python">def plot_observable_name(
+    data,
+    surrogate_data=None,
+    ax=None,
+    style_config=None,
+    plot_kwargs=None,
+    fill_kwargs=None,
+    label_kwargs=None,
+    legend_kwargs=None,
+    tick_kwargs=None,
+    colors=None,
+    legend=True
+):
+    &quot;&quot;&quot;
+    Plots mean-variance scaling with optional surrogate and reference.
+
+    Args:
+        data (object or dict)        : Main data (result object or dictionary)
+        surrogate_data (same type)   : Optional surrogate data
+        ax (matplotlib axis or None) : Axis to plot on
+        style_config (object or None): Global AnalysisParams or PlotStyleConfig dataclass
+        plot_kwargs (dict or None)   : Line plot kwargs
+        fill_kwargs (dict or None)   : Fill (std. error band) kwargs
+        label_kwargs (dict or None)  : Axis label kwargs
+        legend_kwargs (dict or None) : Legend kwargs
+        tick_kwargs (dict or None)   : Tick styling kwargs
+        colors (str, dict, or None)  : Overrides 'data'/'surrogate'/'reference' colors.
+                                        See &quot;Coloring&quot; above.
+        legend (bool)                : Whether to display legend
+
+        # Exclusive to plot_covariance_spectrum
+        add_marchenko_pastur_inset   : Whether to plot the Marchenko-Pastur fit as an inset (bool)
+        inset_bounds (list)          : [left, bottom, width, height] of the inset
+    Returns:
+        None
+    &quot;&quot;&quot;
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
