@@ -1,4 +1,4 @@
-import matplotlib.cm as cm
+import matplotlib as mpl
 from matplotlib.patches import ConnectionPatch
 
 from ..coarse_graining import CGVariables
@@ -68,7 +68,7 @@ def assign_colors(root, cmap_name="magma", low=0.25, high=0.70):
     """Each merging pair (two children of the same node) shares one color,
     sampled from the colormap. Root gets a fixed dark anchor color."""
     n_internal = max(count_internal_nodes(root), 1)
-    palette = cm.get_cmap(cmap_name)(np.linspace(low, high, n_internal))
+    palette = mpl.colormaps[cmap_name](np.linspace(low, high, n_internal))
     color_iter = iter(palette)
 
     def _assign(node, color):
@@ -78,7 +78,7 @@ def assign_colors(root, cmap_name="magma", low=0.25, high=0.70):
             for c in node.children:
                 _assign(c, pair_color)
 
-    _assign(root, cm.get_cmap(cmap_name)(0.92))  # root/final merged trace
+    _assign(root, mpl.colormaps[cmap_name](0.92))  # root/final merged trace
 
 
 def collect_by_level(root):
