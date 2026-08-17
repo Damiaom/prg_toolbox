@@ -294,8 +294,13 @@ class max_covariance_eigenvalue:
         original_timeseries = CG_timeseries[0]
         for i in range(1, rg_steps):
             for j in range(0, int(N / 2**i)):
+                # The searchsorted method ensures that the correct array positions
+                # are accessed even if the labels of cluster indices change due to
+                # inadequate variables being removed before coarse-graining begins.
                 one_cluster_max_eval = covariance_evals_and_evectors(
-                    original_timeseries[CG_cluster_idx[i][j]]
+                    original_timeseries[
+                        np.searchsorted(CG_cluster_idx[0], CG_cluster_idx[i][j])
+                    ]
                 )[0][0]
                 max_eval[i] += one_cluster_max_eval
             max_eval[i] *= 2**i / N
@@ -394,8 +399,13 @@ class covariance_spectrum:
         evals_k = [np.zeros((2**i)) for i in range(0, rg_steps)]
         for i in range(1, rg_steps):
             for j in range(0, int(N / 2**i)):
+                # The searchsorted method ensures that the correct array positions
+                # are accessed even if the labels of cluster indices change due to
+                # inadequate variables being removed before coarse-graining begins.
                 one_eval_set = covariance_evals_and_evectors(
-                    original_timeseries[CG_cluster_idx[i][j]]
+                    original_timeseries[
+                        np.searchsorted(CG_cluster_idx[0], CG_cluster_idx[i][j])
+                    ]
                 )[0]
                 evals_k[i] += one_eval_set
             evals_k[i] *= 2**i / N
@@ -989,8 +999,13 @@ class _avalanche_covariance_eigenvalue:
         original_timeseries = CG_timeseries[0]
         for i in range(1, rg_steps):
             for j in range(0, int(N / 2**i)):
+                # The searchsorted method ensures that the correct array positions
+                # are accessed even if the labels of cluster indices change due to
+                # inadequate variables being removed before coarse-graining begins.
                 one_cluster_max_eval = covariance_evals_and_evectors(
-                    original_timeseries[CG_cluster_idx[i][j]]
+                    original_timeseries[
+                        np.searchsorted(CG_cluster_idx[0], CG_cluster_idx[i][j])
+                    ]
                 )[0][0]
                 max_eval[i] += one_cluster_max_eval
             max_eval[i] *= 2**i / N

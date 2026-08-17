@@ -28,8 +28,7 @@ def validate_verbosity(verbose):
 
 def warn_if_verbose(message, verbose):
     if verbose != "silent":
-        # stacklevel=2: point the warning at warn_if_verbose's caller, not
-        # at this wrapper itself.
+        # stacklevel=2: point the warning at the caller, not this wrapper.
         warnings.warn(message, stacklevel=2)
 
 

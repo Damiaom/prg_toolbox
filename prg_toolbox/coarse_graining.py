@@ -337,27 +337,26 @@ class CGVariables:
 
         used = np.zeros(N, dtype=bool)
 
-        # 2. Pair most correlated units (Meshulam et al. 2019)
+        # 2. Pair most correlated units
         for i in range(halfN):
             idx = np.unravel_index(np.argmax(corr_matrix), corr_matrix.shape)
 
-            # Sum rows to generate the next scale's block variable
+            # Sum rows to get the next step's block variable
             new_variables[i, :] = old_variables[idx[0]] + old_variables[idx[1]]
 
-            # Track cluster tracking lineage indices
+            # Track cluster indices
             newclu_idx[i] = np.hstack((oldclu_idx[idx[0]], oldclu_idx[idx[1]]))
+            # Mark which variables were used, just to inform ocasional
+            # dropped variables if the verbose level is set to "full".
             used[idx[0]] = True
             used[idx[1]] = True
 
-            # Eliminate paired rows/columns from future lookup steps
+            # Remove paired rows/columns from future pairs
             corr_matrix[idx[0], :] = -np.inf
             corr_matrix[idx[1], :] = -np.inf
             corr_matrix[:, idx[0]] = -np.inf
             corr_matrix[:, idx[1]] = -np.inf
 
-        # With an odd number of variables, one is left without a pair. Warn and
-        # drop it (consistent with the zero-variance filtering warning above)
-        # rather than silently discarding its activity.
         if N % 2 != 0:
             dropped_local_idx = int(np.flatnonzero(~used)[0])
             dropped_lineage = np.atleast_1d(oldclu_idx[dropped_local_idx]).tolist()
@@ -417,13 +416,13 @@ class CGVariables:
 
         # original_idx tracks, for every row still present in binary_array,
         # its index in the array the caller originally passed in. It is
-        # refined below as rows get dropped, so lineage in CG_cluster_idx
-        # always points back to genuine original variables.
+        # refined below as rows get dropped, so indices in CG_cluster_idx
+        # always points back to original variables.
         original_idx = np.arange(binary_array.shape[0])
 
         # Identify and remove rows containing NaN before validating
-        # binarization, so a preprocessing artifact produces an actionable
-        # warning instead of an opaque "not binarized" error.
+        # binarization, so a preprocessing artifact produces a warning
+        # instead of a "not binarized" error.
         row_has_nan = np.any(np.isnan(binary_array), axis=1)
         if np.any(row_has_nan):
             dropped = original_idx[row_has_nan]
@@ -438,21 +437,6 @@ class CGVariables:
             )
             binary_array = binary_array[~row_has_nan]
             original_idx = original_idx[~row_has_nan]
-
-        # Validation checks
-        if not self.is_binary_matrix(binary_array):
-            raise ValueError(
-                "Data time series should contain binarized values for real space PRG analysis."
-            )
-        if binary_array.shape[0] < 2**rg_steps:
-            raise ValueError(
-                f"Number of variables in data ({binary_array.shape[0]}) is less than required size ({2**self.rg_steps})."
-            )
-        if binary_array.shape[0] > binary_array.shape[1]:
-            warn_if_verbose(
-                "Number of variables is greater than number of samples. Correlation measurements may be unreliable.",
-                self.verbose,
-            )
 
         # Identify and remove constant rows (zero variance) before assigning
         # base-level indices, so filtered-out variables never appear in clu_idx
@@ -469,6 +453,21 @@ class CGVariables:
             )
             binary_array = binary_array[~row_is_constant]
             original_idx = original_idx[~row_is_constant]
+
+        # Validation checks
+        if not self.is_binary_matrix(binary_array):
+            raise ValueError(
+                "Data time series should contain binarized values for real space PRG analysis."
+            )
+        if binary_array.shape[0] < 2**rg_steps:
+            raise ValueError(
+                f"Number of variables in data ({binary_array.shape[0]}) is less than required size ({2**self.rg_steps})."
+            )
+        if binary_array.shape[0] > binary_array.shape[1]:
+            warn_if_verbose(
+                "Number of variables is greater than number of samples. Correlation measurements may be unreliable.",
+                self.verbose,
+            )
 
         total_steps = rg_steps + 1
         CG_var = [None] * total_steps
