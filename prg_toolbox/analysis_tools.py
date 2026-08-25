@@ -1131,7 +1131,9 @@ def make_plots_for_observables(
         if show_plots:
             plt.show()
         elif save_plots and plots_path is not None:
-            plot_file = os.path.join(plots_path, f"{file_key}_{observable_name}.png")
+            plot_file = os.path.join(
+                plots_path, f"{os.path.splitext(file_key)[0]}_{observable_name}.png"
+            )
             plt.savefig(plot_file)
             plt.close()
 
