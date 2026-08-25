@@ -333,10 +333,15 @@ def _pick_random_sample_from_timestamps(timestamps, sample_size, random_seed=123
         filtered data
     """
     rng = np.random.default_rng(random_seed)
-    original_idx = np.unique(timestamps[:, 1])
-    selected_units = rng.choice(original_idx, size=sample_size, replace=False)
+    codes, uniques = pd.factorize(timestamps[:, 1], sort=True)
 
-    mask = np.isin(timestamps[:, 1], selected_units)
+    n_units = len(uniques)
+    selected_positions = rng.choice(n_units, size=sample_size, replace=False)
+
+    lookup = np.zeros(n_units, dtype=bool)
+    lookup[selected_positions] = True
+
+    mask = lookup[codes]
     stamps_sample = timestamps[mask]
     return stamps_sample
 
@@ -347,8 +352,8 @@ def _pick_random_sample_from_timeseries(data, sample_size, random_seed=123):
 
     Parameters
     ----------
-    timestamps : ndarray of floats
-        2D array with shape (n_spikes, 2)
+    data : ndarray of floats
+        2D array with shape (n_neurons, n_timepoints)
     sample_size : integer
         number of unique units to sample
     random_seed : integer
