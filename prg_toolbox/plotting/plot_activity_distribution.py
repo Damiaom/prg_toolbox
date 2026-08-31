@@ -191,13 +191,19 @@ def draw_plot_activity_distribution(values, ax, plot_kw=None, fill_kw=None):
 def draw_reference_gaussian(values, ax):
     x = values["x"][-1]
     y = values["y"][-1]
-    mu = x[np.argmax(y)]
-    sigma = np.sqrt(np.sum((x - mu) ** 2 * y / 2 ** len(values["y"])))
-    y_gaussian = (
-        1 / np.sqrt(2 * np.pi * sigma**2) * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
-    )
-    idx = np.argwhere(y_gaussian > 1e-6)
-    ax.plot(x[idx], y_gaussian[idx], linestyle="--", alpha=0.6, lw=3, color="grey")
+
+    a, b, c = np.polyfit(x, np.log(y), 2)
+    if a >= 0:
+        # log(y) is convex here, meaning
+        # the curve isn't Gaussian-shaped even near the origin.
+        return
+    sigma = np.sqrt(-1 / (2 * a))
+    mu = b * sigma**2
+    amplitude = np.exp(c + mu**2 / (2 * sigma**2))
+    gaussian = amplitude * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
+
+    idx = np.argwhere(gaussian > 1e-6)
+    ax.plot(x[idx], gaussian[idx], linestyle="--", alpha=0.6, lw=3, color="grey")
 
 
 def find_bottom(y_values):
