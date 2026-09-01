@@ -1,3 +1,4 @@
+from ..verbosity import print_if_full
 from .plot_imports import *
 
 
@@ -188,22 +189,30 @@ def draw_plot_activity_distribution(values, ax, plot_kw=None, fill_kw=None):
             )
 
 
-def draw_reference_gaussian(values, ax):
+def draw_reference_gaussian(values, ax, verbosity_level):
     x = values["x"][-1]
     y = values["y"][-1]
 
+    np.seterr(divide="ignore")
     a, b, c = np.polyfit(x, np.log(y), 2)
     if a >= 0:
         # log(y) is convex here, meaning
         # the curve isn't Gaussian-shaped even near the origin.
-        return
+        return False
+    np.seterr(divide="warn")
     sigma = np.sqrt(-1 / (2 * a))
     mu = b * sigma**2
     amplitude = np.exp(c + mu**2 / (2 * sigma**2))
     gaussian = amplitude * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
-
+    if not np.isfinite([mu, sigma, amplitude]).all():
+        print_if_full(
+            f"Reference Gaussian fit did not find suitable parameters: mu={mu:.3f}, sigma={sigma:.3f}, amplitude={amplitude:.3f}",
+            verbosity_level,
+        )
+        return False
     idx = np.argwhere(gaussian > 1e-6)
     ax.plot(x[idx], gaussian[idx], linestyle="--", alpha=0.6, lw=3, color="grey")
+    return True
 
 
 def find_bottom(y_values):
@@ -291,6 +300,7 @@ def plot_activity_distribution(
         data_or_surrogate="data",
     )
     draw_plot_activity_distribution(values, ax, plot_kw, fill_kw)
+    has_gaussian = False
 
     # ------------ Surrogate plot ---------------------------- (if present)
     if surrogate_data is not None and type(surrogate_data) == type(data):
@@ -306,7 +316,8 @@ def plot_activity_distribution(
             )
         )
         draw_plot_activity_distribution(values_surrogate, ax, plot_kw, fill_kw)
-        draw_reference_gaussian(values_surrogate, ax)
+        # If surrogate data is present, we draw the reference Gaussian based on it.
+        has_gaussian = draw_reference_gaussian(values_surrogate, ax, data.verbose)
 
     elif surrogate_data is not None:
         raise ValueError("Surrogate data must be of the same type as the result data.")
@@ -314,10 +325,14 @@ def plot_activity_distribution(
         values_surrogate = None
 
     # ------------ Reference plot ----------------------------
-    y_min = find_bottom(values["y"])
-    draw_reference_gaussian(values, ax)
+    has_gaussian = (
+        draw_reference_gaussian(values, ax, "silent")
+        if not has_gaussian
+        else has_gaussian
+    )
 
     # ----------- Axis scaling and styling -------------------
+    y_min = find_bottom(values["y"])
     ax.set_yscale("log")
     if tick_kwargs is not None:
         style_axes(ax, tick_kwargs)
@@ -327,7 +342,9 @@ def plot_activity_distribution(
     label_kw = {**DEFAULT_LABEL_KWARGS, **(label_kwargs or {})}
     legend_kw = {**DEFAULT_LEGEND_KWARGS, **(legend_kwargs or {})}
     all_labels = labels_activity_distribution(values, values_surrogate)
-
+    all_labels["legend"] = (
+        all_labels["legend"][:-1] if not has_gaussian else all_labels["legend"]
+    )
     ax.set_xlabel(all_labels["xlabel"], **label_kw)
     ax.set_ylabel(all_labels["ylabel"], **label_kw)
     if legend:
