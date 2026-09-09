@@ -71,10 +71,10 @@ timeseries = prg.tools.load_data(path_to_data, prg_params)
 results = prg.run_PRG(timeseries, user_params=prg_params)
 
 fig = plt.figure(figsize=(8,6))
-prg.plot.plot_mean_variance(results['mean_variance'], surrogate_data=results_trivial['mean_variance'], style_config=prg_params)
+prg.plot.plot_mean_variance(results['mean_variance'], style_config=prg_params)
 
 fig = plt.figure(figsize=(8,6))
-prg.plot.plot_activity_distribution(results['activity_distribution'], surrogate_data=results_trivial['activity_distribution'], style_config=prg_params)
+prg.plot.plot_activity_distribution(results['activity_distribution'], style_config=prg_params)
 
 
 ```
