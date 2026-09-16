@@ -93,7 +93,7 @@ def _load_timestamps(
     """
 
     if format == "tabular":
-        # Handles CSV, TSV, TXT, GDF
+        # Handles CSV, TXT, GDF
         df = (
             pd.read_csv(file_or_path, sep=sep, header=header)
             if isinstance(file_or_path, str)

@@ -7,7 +7,7 @@ from .plot_decay_time import plot_decay_time
 from .plot_log_silence_probability import plot_log_silence_probability
 from .plot_max_covariance_eigenvalue import plot_max_covariance_eigenvalue
 from .plot_mean_variance import plot_mean_variance
-from .plot_prg_cascade import plot_prg_cascade
+from .plot_prg_scheme import plot_prg_scheme
 
 # Optional: explicitly define what is available publicly in this submodule
 __all__ = [
@@ -21,4 +21,5 @@ __all__ = [
     "plot_avalanche_covariance_eigenvalue",
     "plot_constellation_steps",
     "plot_prg_cascade",
+    "plot_prg_scheme",
 ]
