@@ -1,0 +1,835 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../reference_plotting/">
+      
+      
+        <link rel="next" href="../reference_config/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Styling your plots - PRG Toolbox</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="violet" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#styling-your-plots" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="PRG Toolbox" class="md-header__button md-logo" aria-label="PRG Toolbox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PRG Toolbox
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Styling your plots
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="PRG Toolbox" class="md-nav__button md-logo" aria-label="PRG Toolbox" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PRG Toolbox
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_coarse_graining/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The coarse graining method
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_observables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statistical observables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_analysis_tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_plotting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotting library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Styling your plots
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Styling your plots
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-families-of-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two families of plots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-data-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The data used
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#default-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kwargs-cheatsheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kwargs cheatsheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference_pipelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#two-families-of-plots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two families of plots
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-data-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The data used
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#default-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kwargs-cheatsheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kwargs cheatsheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="styling-your-plots">Styling your plots</h1>
+<p>The plotting functions in <code>prg_toolbox.plot</code> work out of the box
+default settings, but visual details (colors, markers, fills, fonts, legend
+placement) can be overridden. This page walks through both, using
+example data so the difference is easy to see.</p>
+<h2 id="two-families-of-plots">Two families of plots</h2>
+<p>The plotting functions split into two families, and each is colored
+differently:</p>
+<ul>
+<li><strong>Single-curve plots</strong> -- <code>plot_mean_variance</code>, <code>plot_log_silence_probability</code>,
+  <code>plot_max_covariance_eigenvalue</code>, <code>plot_decay_time</code> -- draw one line per
+  dataset (data / surrogate / a trivial reference line), so they take a
+  <strong><code>colors</code></strong> argument: a dict with up to three keys, <code>'data'</code>, <code>'surrogate'</code>,
+  and <code>'reference'</code>.</li>
+<li><strong>Function-valued plots</strong> -- <code>plot_covariance_spectrum</code>,
+  <code>plot_autocorrelation_function</code>, <code>plot_activity_distribution</code> -- draw one
+  curve <em>per coarse-graining step</em>, so a single color isn't enough. They take
+  a <strong><code>palette</code></strong> argument instead: a colormap name (or dict with <code>'data'</code>
+  and <code>'surrogate'</code> keys) that colors successive curves along a gradient.</li>
+</ul>
+<p>Both arguments accept the same three shorthands:</p>
+<pre><code class="language-python">colors = None                                  # all defaults
+colors = &quot;seagreen&quot;                            # only 'data' changes
+colors = {&quot;reference&quot;: &quot;black&quot;}                # only 'reference' changes, rest stay default
+colors = {&quot;data&quot;: &quot;green&quot;, &quot;surrogate&quot;: &quot;grey&quot;} # any subset of keys
+
+palette = None                                 # all defaults
+palette = &quot;plasma&quot;                             # only 'data' colormap changes
+palette = {&quot;surrogate&quot;: &quot;cool&quot;}                # only 'surrogate' colormap changes
+</code></pre>
+<h2 id="the-data-used">The data used</h2>
+<p>The examples below use 3 independent random 64-unit subsamples of simulated data of the model from Schmidt et al. (2018), alongside the same pipeline run
+on an ISI-shuffled surrogate (a null model that destroys temporal
+correlations while preserving each unit's firing rate):</p>
+<pre><code class="language-python">import prg_toolbox as prg
+from prg_toolbox.analysis_tools import pick_random_sample, shuffle_isi
+
+path = prg.datasets.get_spike_data(files=[&quot;V4-5E&quot;])
+
+params = prg.config.AnalysisParams()
+params.loading.data_format = &quot;tabular&quot;
+params.rg_steps = 5
+params.cluster_method = &quot;pearson&quot;
+params.subsampling.samplesize = 64
+params.subsampling.nsamples = 3
+params.observables = [prg.mean_variance, prg.activity_distribution]
+
+timestamps = prg.tools.load_data(path, user_params=params)
+surrogate_timestamps = shuffle_isi(timestamps, data_format=&quot;tabular&quot;, random_seed=7)
+
+data_result = prg.run_PRG(timestamps, user_params=params)
+surrogate_result = prg.run_PRG(surrogate_timestamps, user_params=params)
+
+mv_data, mv_surr = data_result[&quot;mean_variance&quot;], surrogate_result[&quot;mean_variance&quot;]
+ad_data, ad_surr = data_result[&quot;activity_distribution&quot;], surrogate_result[&quot;activity_distribution&quot;]
+</code></pre>
+<h2 id="default-style">Default style</h2>
+<pre><code class="language-python">import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+prg.plot.plot_mean_variance(mv_data, surrogate_data=mv_surr, ax=ax)
+</code></pre>
+<p><img alt="Default mean_variance plot" src="../assets/plotting_examples/mean_variance_default.png" /></p>
+<pre><code class="language-python">fig, ax = plt.subplots()
+prg.plot.plot_activity_distribution(ad_data, surrogate_data=ad_surr, ax=ax)
+</code></pre>
+<p><img alt="Default activity_distribution plot" src="../assets/plotting_examples/activity_distribution_default.png" /></p>
+<h2 id="custom-style">Custom style</h2>
+<p>The examples below push a few kwargs hard on purpose -- star markers, exaggerated sizes, a hatch
+fill, bold labels -- just to make the visual effect of each one obvious.</p>
+<pre><code class="language-python">prg.plot.plot_mean_variance(
+    mv_data,
+    surrogate_data=mv_surr,
+    ax=ax,
+    colors={&quot;data&quot;: &quot;#782281&quot;, &quot;surrogate&quot;: &quot;#feb77e&quot;, &quot;reference&quot;: &quot;#3f3f3f&quot;},
+    plot_kwargs={&quot;marker&quot;: &quot;*&quot;, &quot;markersize&quot;: 22, &quot;markeredgewidth&quot;: 1.0, &quot;markeredgecolor&quot;: &quot;black&quot;},
+    fill_kwargs={&quot;alpha&quot;: 0.3, &quot;hatch&quot;: &quot;//&quot;},
+    label_kwargs={&quot;fontsize&quot;: 15, &quot;fontweight&quot;: &quot;bold&quot;},
+    legend_kwargs={&quot;fontsize&quot;: 11, &quot;loc&quot;: &quot;upper left&quot;, &quot;frameon&quot;: False},
+    tick_kwargs={&quot;labelsize&quot;: 11, &quot;direction&quot;: &quot;in&quot;, &quot;length&quot;: 6},
+)
+</code></pre>
+<p><img alt="Custom mean_variance plot" src="../assets/plotting_examples/mean_variance_custom.png" /></p>
+<pre><code class="language-python">prg.plot.plot_activity_distribution(
+    ad_data,
+    surrogate_data=ad_surr,
+    ax=ax,
+    palette={&quot;data&quot;: &quot;magma&quot;, &quot;surrogate&quot;: &quot;inferno&quot;},
+    plot_kwargs={&quot;marker&quot;: &quot;*&quot;, &quot;markersize&quot;: 10, &quot;linestyle&quot;: &quot;-&quot;, &quot;linewidth&quot;: 1.5},
+    fill_kwargs={&quot;alpha&quot;: 0.25},
+    label_kwargs={&quot;fontsize&quot;: 15, &quot;fontweight&quot;: &quot;bold&quot;},
+    legend_kwargs={&quot;fontsize&quot;: 11, &quot;loc&quot;: &quot;upper right&quot;, &quot;frameon&quot;: False},
+    tick_kwargs={&quot;labelsize&quot;: 11, &quot;direction&quot;: &quot;in&quot;, &quot;length&quot;: 6},
+)
+</code></pre>
+<p><img alt="Custom activity_distribution plot" src="../assets/plotting_examples/activity_distribution_custom.png" /></p>
+<!-- !!! warning "One gotcha"
+    `plot_kwargs` is shared by every line the function draws, including the
+    dashed reference/Gaussian guide line -- not just your data. Setting
+    `"linewidth": 0` there to suppress connecting lines between markers, for
+    instance, would also zero out the reference line's width and make it
+    (and its legend entry) disappear. The default `"linestyle": "None"`
+    already prevents markers from being connected, so you rarely need
+    `linewidth` at all for a markers-only look. -->
+
+<h2 id="kwargs-cheatsheet">Kwargs cheatsheet</h2>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Forwarded to</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>colors</code> / <code>palette</code></td>
+<td>line/colormap color</td>
+<td>which color(s) 'data', 'surrogate', 'reference' use</td>
+</tr>
+<tr>
+<td><code>plot_kwargs</code></td>
+<td><code>ax.plot</code></td>
+<td>marker, markersize, linewidth, linestyle, alpha, ...</td>
+</tr>
+<tr>
+<td><code>fill_kwargs</code></td>
+<td><code>ax.fill_between</code></td>
+<td>the std.-error band: alpha, hatch, ...</td>
+</tr>
+<tr>
+<td><code>label_kwargs</code></td>
+<td><code>ax.set_xlabel</code> / <code>ax.set_ylabel</code></td>
+<td>fontsize, fontweight, labelpad, ...</td>
+</tr>
+<tr>
+<td><code>legend_kwargs</code></td>
+<td><code>ax.legend</code></td>
+<td>loc, frameon, fontsize, ncol, ...</td>
+</tr>
+<tr>
+<td><code>tick_kwargs</code></td>
+<td><code>ax.tick_params</code></td>
+<td>labelsize, direction, length, ...</td>
+</tr>
+</tbody>
+</table>
+<p>Every one of these can also be set once via a shared <code>PlotStyleConfig</code> (or
+the <code>plot_style</code> field of <code>AnalysisParams</code>) and passed as <code>style_config=...</code>,
+instead of repeating them on every call -- see
+<a href="../reference_config/">Configuration</a>. An explicit keyword argument always
+wins over whatever the config object provides.</p>
+<!-- *(Figures on this page are static and generated by
+`docs/generate_plot_examples.py` -- rerun it after changing the plotting API
+to refresh them.)* -->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
