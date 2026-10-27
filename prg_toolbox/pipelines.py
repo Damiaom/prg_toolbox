@@ -59,10 +59,12 @@ def run_PRG(data, user_params: AnalysisParams = None):
     else:
         params = user_params
 
-    # Parameter extraction via attributes
+    # PRG and observable parameters
     observable_call_list = params.observables
     rg_steps = params.rg_steps
     cluster_method = params.cluster_method
+
+    # Verbosity parameters
     verbose = params.verbose
 
     # Data loading parameters
@@ -81,12 +83,14 @@ def run_PRG(data, user_params: AnalysisParams = None):
     slice_overlap = params.time_slicing.overlap_fraction
     discard_transient_time_ms = params.time_slicing.discard_transient_time_ms
 
-    # Initialize storage tracking metrics across all generated realizations
+    # Initialize storage for observables across slices and samples
     observable_stacker = {obs.__name__: [] for obs in observable_call_list}
+    # (exponent, exponent_error, exponent_r2) per slice/sample, same order as observable_stacker
+    exponent_stacker = {obs.__name__: [] for obs in observable_call_list}
 
     run_start = time.perf_counter() if verbose == "full" else None
 
-    # Strip the transient period if specified, ensuring that only the steady-state dynamics are analyzed
+    # Strip the transient period if specified
     with timed_step("discard_transient", verbose):
         data = (
             discard_transient(
@@ -99,6 +103,7 @@ def run_PRG(data, user_params: AnalysisParams = None):
             else data
         )
 
+    # Slice the data into temporal windows if specified, otherwise use the full dataset
     with timed_step("slice_by_time_window", verbose):
         time_windows_list = (
             slice_by_time_window(
@@ -116,7 +121,7 @@ def run_PRG(data, user_params: AnalysisParams = None):
 
     n_slices = len(time_windows_list)
 
-    # Evaluation Loop (Slices x Subsamples)
+    # Compute loop (Slices x Subsamples)
     for slice_idx, current_slice in enumerate(time_windows_list):
         for sample_idx in range(nsamples):
             print_if_full(
@@ -156,7 +161,7 @@ def run_PRG(data, user_params: AnalysisParams = None):
                     verbose=verbose,
                 )
 
-            # Evaluate observables on the current spatio-temporal realization
+            # Compute observables on the current time window and subsample
             for call in observable_call_list:
                 with timed_step(f"observable: {call.__name__}", verbose, indent="  "):
                     CG_observable = call(cgvar)
@@ -164,12 +169,19 @@ def run_PRG(data, user_params: AnalysisParams = None):
                         CG_observable.avg_across_windows
                     )
                 if hasattr(CG_observable, "exponent"):
+                    exponent_stacker[call.__name__].append(
+                        (
+                            CG_observable.exponent,
+                            CG_observable.exponent_error,
+                            CG_observable.exponent_r2,
+                        )
+                    )
                     print_if_full(
                         f"    {call.__name__}: exponent = {CG_observable.exponent:.4g}",
                         verbose,
                     )
 
-    # Structural Aggregation and Averaging
+    # Storing results in a dictionary for return
     result_dict = {}
     for call in observable_call_list:
         key = call.__name__
@@ -185,6 +197,10 @@ def run_PRG(data, user_params: AnalysisParams = None):
             CG_observable = average_observable_sample_values_for_functions(
                 CG_observable, stacked_data, rg_steps, binary_time_series
             )
+
+        if exponent_stacker[key]:
+            # columns: exponent, exponent_error, exponent_r2; rows match values
+            CG_observable.exponents_across_windows = np.array(exponent_stacker[key])
 
         if hasattr(CG_observable, "exponent"):
             print_if_full(

@@ -13,10 +13,30 @@ def get_fmri_data():
     # Download and route the file
     # pooch.retrieve downloads the file only if it isn't already there.
     zenodo_url = (
-        "https://zenodo.org/records/21133598/files/example_rs-fMRI_data.txt?download=1"
+        "https://zenodo.org/records/23687893/files/example_rs-fMRI_data.txt?download=1"
     )
     local_path = pooch.retrieve(
         url=zenodo_url, known_hash=None, path=".", fname="example_rs-fMRI_data.txt"
+    )
+    print(f"✔ Ready: {local_path}")
+    return local_path
+
+
+def get_long_recording():
+    """
+    Get the path to the example long recording file.
+
+    Returns:
+        str: Path to the example long recording file.
+    """
+    # Download and route the file
+    # pooch.retrieve downloads the file only if it isn't already there.
+    zenodo_url = "https://zenodo.org/records/23687893/files/long_recording_urethane_binary_50ms.npy?download=1"
+    local_path = pooch.retrieve(
+        url=zenodo_url,
+        known_hash=None,
+        path=".",
+        fname="long_recording_urethane_binary_50ms.npy",
     )
     print(f"✔ Ready: {local_path}")
     return local_path
@@ -32,7 +52,7 @@ def get_spike_data(files="all"):
     # Download and route the files
     folder = "./example_data_directory"
     os.makedirs(folder, exist_ok=True)
-    zenodo_base_url = "https://zenodo.org/records/21133598/files/"
+    zenodo_base_url = "https://zenodo.org/records/23687893/files/"
 
     gdf_files = [
         "spikes-V4-23E.gdf",

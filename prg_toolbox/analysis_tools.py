@@ -961,10 +961,36 @@ def is_function_observable(observable):
 
 
 def average_observable_sample_values(CG_observable, stacked_results):
+    """
+    Average a scalar observable across windows/trials, in place.
+
+    Takes a template CG_observable (typically built from just one
+    window, e.g. the last one processed in a run_PRG loop) and overwrites
+    it with results from across all windows/trials.
+
+    Parameters
+    ----------
+    CG_observable : observable instance
+    stacked_results : ndarray of shape (n_trials, rg_steps + 1)
+        Row i is trial/window i's own per-step array.
+
+    Returns
+    -------
+    CG_observable
+        The same instance, mutated in place:
+
+        - avg_across_windows / std_across_windows : mean/std of
+          stacked_results across trials, per step.
+        - values : full per-trial stack, shape
+          (n_trials, rg_steps + 1); values[i] is trial i's result values.
+        - exponent / exponent_error / exponent_r2 : fit from
+          the trial-averaged curve.
+    """
     if (
         type(CG_observable) != obs.max_covariance_eigenvalue
         and type(CG_observable) != obs._avalanche_covariance_eigenvalue
     ):
+        CG_observable.values = stacked_results
         CG_observable.avg_across_windows = np.mean(stacked_results, axis=0)
         CG_observable.std_across_windows = np.std(stacked_results, axis=0)
         (
@@ -974,6 +1000,7 @@ def average_observable_sample_values(CG_observable, stacked_results):
         ) = get_scaling_exponent(CG_observable.avg_across_windows)
     else:
         # for observables that are eigenvalues of clusters, the first point is not valid (eigenvalue of a single variable)
+        CG_observable.values = stacked_results
         CG_observable.avg_across_windows = np.mean(stacked_results, axis=0)
         CG_observable.std_across_windows = np.std(stacked_results, axis=0)
         (
@@ -986,9 +1013,9 @@ def average_observable_sample_values(CG_observable, stacked_results):
     return CG_observable
 
 
-def average_across_windows_for_functions(values, rg_steps):
+def average_samples_for_functions(values):
     """
-    Compute the mean and standard deviation across windows for
+    Compute the mean and standard deviation across trials for
     function-valued observables at each PRG iteration.
 
     This function is intended for observables whose outcome at each
@@ -1008,30 +1035,29 @@ def average_across_windows_for_functions(values, rg_steps):
         The outer list indexes windows (or trials), and the inner list
         indexes RG steps.
 
-        Specifically, ``values[i][k]`` is a 1D numpy array representing
+        Specifically, values[i][k] is a 1D numpy array representing
         the observable as a function at RG step k for window i.
         All windows are assumed to have the same number of RG steps and
         the same function length at each step.
 
-    rg_steps : int
-        Number of renormalization group (coarse-graining) steps.
-
     Returns
     -------
     avg_across_windows : list of numpy.ndarray
-        List of length ``rg_steps``. Entry k is a 1D array giving the
+        List of length rg_steps. Entry k is a 1D array giving the
         pointwise mean of the function-valued observable across windows
         at RG step k.
 
     std_across_windows : list of numpy.ndarray
-        List of length ``rg_steps``. Entry k is a 1D array giving the
+        List of length rg_steps. Entry k is a 1D array giving the
         pointwise standard deviation of the function-valued observable
         across windows at RG step k.
     """
     ntrials = len(values)
+    rg_steps = len(values[0])
 
-    avg_across_windows = [None] * rg_steps
-    std_across_windows = [None] * rg_steps
+    values_across_trials = [None] * rg_steps
+    avg_across_trials = [None] * rg_steps
+    std_across_trials = [None] * rg_steps
 
     for k in range(rg_steps):
         # find the minimum length across all trials
@@ -1042,18 +1068,21 @@ def average_across_windows_for_functions(values, rg_steps):
         for i in range(ntrials):
             values_per_step[i] = values[i][k][:min_len]
 
-        avg_across_windows[k] = np.mean(values_per_step, axis=0)
-        std_across_windows[k] = np.std(values_per_step, axis=0)
+        values_across_trials[k] = values_per_step
+        avg_across_trials[k] = np.mean(values_per_step, axis=0)
+        std_across_trials[k] = np.std(values_per_step, axis=0)
 
-    return avg_across_windows, std_across_windows
+    return avg_across_trials, std_across_trials, values_across_trials
 
 
 def average_observable_sample_values_for_functions(
     CG_observable, stacked_results, rg_steps, raw_timeseries
 ):
-    CG_observable.avg_across_windows, CG_observable.std_across_windows = (
-        average_across_windows_for_functions(stacked_results, rg_steps)
-    )
+    (
+        CG_observable.avg_across_windows,
+        CG_observable.std_across_windows,
+        CG_observable.values,
+    ) = average_samples_for_functions(stacked_results)
 
     if type(CG_observable) == obs.covariance_spectrum:
         (
@@ -1247,6 +1276,11 @@ def save_result_dictionaries(result_dict, prg_params, file_key, analysis_save_pa
             "std_across_windows": data_obj.std_across_windows
             if hasattr(data_obj, "std_across_windows")
             else None,
+            # per-trial results (one entry per time slice x subsample)
+            "values": getattr(data_obj, "values", None),
+            "exponents_across_windows": getattr(
+                data_obj, "exponents_across_windows", None
+            ),
         }
         if name == "covariance_spectrum":
             file_results[name]["mp_x_fit"] = getattr(data_obj, "mp_x_fit", None)
