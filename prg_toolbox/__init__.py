@@ -21,6 +21,7 @@ from .observables import (
     log_silence_probability,
     max_covariance_eigenvalue,
     mean_variance,
+    momentum_space_distribution,
 )
 from .pipelines import *  # uses observables, config and analysis_tools
 
@@ -38,6 +39,7 @@ __all__ = [
     "autocorrelation_function",
     "decay_time",
     "activity_distribution",
+    "momentum_space_distribution",
     "_avalanche_covariance_eigenvalue",
     "plot",
     "tools",
