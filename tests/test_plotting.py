@@ -144,3 +144,12 @@ class TestPlotMomentumSpaceDistribution:
         plot_momentum_space_distribution(result, ax=ax)
         visible_max = max(np.max(y) for y in result.values[1:])
         assert ax.get_ylim()[1] == pytest.approx(2 * visible_max)
+
+    def test_x_limits_follow_occupied_bins(self, random_binary_array, ax):
+        msvars = MSVariables(random_binary_array, rg_steps=4)
+        wide = momentum_space_distribution(msvars, bins=np.linspace(-50, 50, 1001))
+        plot_momentum_space_distribution(wide, ax=ax)
+        occupied = np.concatenate([wide.bin_centers[y > 0] for y in wide.values[1:]])
+        low, high = ax.get_xlim()
+        assert low < occupied.min() and high > occupied.max()
+        assert low > -50 and high < 50

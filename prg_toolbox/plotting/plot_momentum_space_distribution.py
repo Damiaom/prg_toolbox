@@ -352,9 +352,18 @@ def plot_momentum_space_distribution(
     # alpha ramp and, for binary data, is a few narrow spikes; leave it out
     # of the upper limit so it does not squash the visible curves.
     visible_curves = values["y"][1:] or values["y"]
+    visible_x = values["x"][1:] or values["x"]
     if values_surrogate is not None:
         visible_curves = list(visible_curves) + list(values_surrogate["y"][1:])
+        visible_x = list(visible_x) + list(values_surrogate["x"][1:])
     ax.set_ylim(top=2 * max(np.max(y) for y in visible_curves))
+    # Likewise, wide user-chosen bins can leave long empty stretches; limit
+    # the x axis to where the visible curves have mass.
+    occupied_x = np.concatenate(
+        [x[np.asarray(y) > 0] for x, y in zip(visible_x, visible_curves, strict=True)]
+    )
+    margin = 0.02 * (occupied_x.max() - occupied_x.min())
+    ax.set_xlim(occupied_x.min() - margin, occupied_x.max() + margin)
 
     # ----------- Labels and title ---------------------------
     label_kw = {**DEFAULT_LABEL_KWARGS, **(label_kwargs or {})}
