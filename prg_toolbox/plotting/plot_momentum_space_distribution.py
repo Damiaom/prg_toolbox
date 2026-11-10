@@ -340,13 +340,21 @@ def plot_momentum_space_distribution(
     draw_reference_standard_normal(values, ax)
 
     # ----------- Axis scaling and styling -------------------
-    y_min = find_bottom(values["y"])
+    all_curves = list(values["y"])
     if values_surrogate is not None:
-        y_min = min(y_min, find_bottom(values_surrogate["y"]))
+        all_curves += list(values_surrogate["y"])
+    y_min = find_bottom(all_curves)
     ax.set_yscale("log")
     if tick_kwargs is not None:
         style_axes(ax, tick_kwargs)
     ax.set_ylim(bottom=y_min)
+    # The K = N curve (z-scored raw data) is drawn fully transparent by the
+    # alpha ramp and, for binary data, is a few narrow spikes; leave it out
+    # of the upper limit so it does not squash the visible curves.
+    visible_curves = values["y"][1:] or values["y"]
+    if values_surrogate is not None:
+        visible_curves = list(visible_curves) + list(values_surrogate["y"][1:])
+    ax.set_ylim(top=2 * max(np.max(y) for y in visible_curves))
 
     # ----------- Labels and title ---------------------------
     label_kw = {**DEFAULT_LABEL_KWARGS, **(label_kwargs or {})}

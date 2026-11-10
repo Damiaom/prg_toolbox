@@ -139,3 +139,8 @@ class TestPlotMomentumSpaceDistribution:
     def test_rejects_unknown_data_type(self, ax):
         with pytest.raises(ValueError, match="momentum_space_distribution"):
             plot_momentum_space_distribution([1, 2, 3], ax=ax)
+
+    def test_upper_limit_ignores_transparent_first_curve(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        visible_max = max(np.max(y) for y in result.values[1:])
+        assert ax.get_ylim()[1] == pytest.approx(2 * visible_max)
