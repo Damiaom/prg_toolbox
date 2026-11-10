@@ -1,8 +1,16 @@
 """Tests for prg_toolbox.plotting.plot_imports: shared styling helpers."""
 
-import pytest
+import matplotlib
 
-from prg_toolbox.plotting.plot_imports import (
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+
+from prg_toolbox import MSVariables, momentum_space_distribution  # noqa: E402
+from prg_toolbox.plotting import plot_momentum_space_distribution  # noqa: E402
+from prg_toolbox.plotting.plot_imports import (  # noqa: E402
     set_colors_from_palette,
     set_default_kwargs,
 )
@@ -76,3 +84,58 @@ class TestSetColorsFromPalette:
     def test_invalid_type_raises_typeerror(self):
         with pytest.raises(TypeError, match="palette must be"):
             set_colors_from_palette(3, ("magma", "viridis"))
+
+
+class TestPlotMomentumSpaceDistribution:
+    @pytest.fixture
+    def result(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=4)
+        return momentum_space_distribution(msvars)
+
+    @pytest.fixture
+    def ax(self):
+        fig, ax = plt.subplots()
+        yield ax
+        plt.close(fig)
+
+    def test_one_curve_per_step_plus_gaussian(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        assert len(ax.get_lines()) == result.rg_steps + 2
+        assert ax.get_yscale() == "log"
+        assert [t.get_text() for t in ax.get_legend().get_texts()] == [
+            r"$(K = N/16)$",
+            "Gaussian",
+        ]
+
+    def test_gaussian_reference_is_standard_normal(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        gaussian = ax.get_lines()[-1]
+        x, y = gaussian.get_xdata(), gaussian.get_ydata()
+        np.testing.assert_allclose(y, np.exp(-(x**2) / 2) / np.sqrt(2 * np.pi))
+
+    def test_empty_bins_are_not_drawn(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        for line in ax.get_lines()[:-1]:
+            assert np.all(line.get_ydata() > 0)
+
+    def test_accepts_dictionary_input(self, result, ax):
+        data = {
+            "bin_centers": result.bin_centers,
+            "avg_across_windows": result.avg_across_windows,
+            "std_across_windows": result.std_across_windows,
+        }
+        plot_momentum_space_distribution(data, ax=ax)
+        assert len(ax.get_lines()) == result.rg_steps + 2
+
+    def test_surrogate_adds_curves_and_legend_entry(self, result, ax):
+        plot_momentum_space_distribution(result, surrogate_data=result, ax=ax)
+        assert len(ax.get_lines()) == 2 * (result.rg_steps + 1) + 1
+        assert "Surrogate" in [t.get_text() for t in ax.get_legend().get_texts()]
+
+    def test_rejects_mismatched_surrogate_type(self, result, ax):
+        with pytest.raises(ValueError, match="same type"):
+            plot_momentum_space_distribution(result, surrogate_data={}, ax=ax)
+
+    def test_rejects_unknown_data_type(self, ax):
+        with pytest.raises(ValueError, match="momentum_space_distribution"):
+            plot_momentum_space_distribution([1, 2, 3], ax=ax)
