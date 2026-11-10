@@ -5,6 +5,7 @@ import pytest
 
 from prg_toolbox.coarse_graining import (
     CGVariables,
+    MSVariables,
     _compute_cosine,
     _compute_hamming,
     _compute_mutual_information,
@@ -273,3 +274,118 @@ class TestCGVariablesInvariants:
         for j, lineage in enumerate(cgvars.CG_cluster_idx[1]):
             expected = step0[lineage].sum(axis=0)
             np.testing.assert_array_equal(step1[j], expected)
+
+
+# ---------------------------------------------------------------------------
+# Momentum-space coarse graining (MSVariables)
+# ---------------------------------------------------------------------------
+
+
+def _legacy_momentum_space_variables(data, rg_steps):
+    """
+    Reference implementation transcribed from the original (pre-toolbox)
+    momentum-space script: builds the projection matrix P_k entry by entry
+    and projects each variable row by row.
+    """
+    N = data.shape[0]
+    x = data - np.mean(data, 1, keepdims=True)
+    evals, evectors = np.linalg.eigh(np.cov(x))
+    evectors = evectors[:, np.flip(np.argsort(evals))]
+    result = []
+    for k in range(rg_steps + 1):
+        cutoff = int(N / (2**k))
+        P_k = np.zeros((N, N))
+        for i in range(N):
+            for j in range(N):
+                P_k[i, j] = np.dot(evectors[i, :cutoff], evectors[j, :cutoff])
+        phi = np.zeros_like(x)
+        for i in range(N):
+            phi[i] = np.sum(np.einsum("ij,i->ij", x, P_k[i, :]), axis=0)
+            phi[i] = phi[i] / np.std(phi[i])
+        result.append(phi)
+    return result
+
+
+class TestMSVariables:
+    def test_matches_legacy_implementation(self, random_binary_array):
+        rg_steps = 4
+        msvars = MSVariables(random_binary_array, rg_steps=rg_steps)
+        legacy = _legacy_momentum_space_variables(
+            random_binary_array.astype(float), rg_steps
+        )
+        for k in range(rg_steps + 1):
+            np.testing.assert_allclose(
+                msvars.get_MS_variables(k), legacy[k], atol=1e-10
+            )
+
+    def test_cutoffs_halve_at_each_step(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=5)
+        np.testing.assert_array_equal(msvars.cutoffs, [32, 16, 8, 4, 2, 1])
+
+    def test_step_zero_is_zscored_data(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=3)
+        x = random_binary_array.astype(float)
+        zscored = (x - x.mean(axis=1, keepdims=True)) / x.std(axis=1, keepdims=True)
+        np.testing.assert_allclose(msvars.get_MS_variables(0), zscored, atol=1e-10)
+
+    def test_every_step_has_zero_mean_and_unit_variance(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=5)
+        for k in range(msvars.rg_steps + 1):
+            phi = msvars.get_MS_variables(k)
+            assert phi.shape == random_binary_array.shape
+            np.testing.assert_allclose(phi.mean(axis=1), 0.0, atol=1e-10)
+            np.testing.assert_allclose(phi.std(axis=1), 1.0)
+
+    def test_single_mode_variables_are_perfectly_correlated(self, random_binary_array):
+        # With K = 1, every variable is a rescaled copy of the first principal
+        # component, so all pairwise correlations are +-1.
+        msvars = MSVariables(random_binary_array, rg_steps=5)
+        corr = np.corrcoef(msvars.get_MS_variables(5))
+        np.testing.assert_allclose(np.abs(corr), 1.0)
+
+    def test_accepts_continuous_data(self, rng):
+        continuous = rng.normal(size=(16, 300))
+        msvars = MSVariables(continuous, rg_steps=3)
+        assert np.all(np.isfinite(msvars.get_MS_variables(3)))
+
+    def test_eigenvalues_sorted_descending(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=3)
+        assert np.all(np.diff(msvars.eigenvalues) <= 0)
+
+    def test_raises_when_too_few_variables(self, random_binary_array):
+        with pytest.raises(ValueError, match="less than required size"):
+            MSVariables(random_binary_array, rg_steps=6)
+
+    def test_raises_on_out_of_range_step(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=3)
+        with pytest.raises(ValueError, match="between 0 and 3"):
+            msvars.get_MS_variables(4)
+
+    def test_constant_and_nan_rows_are_dropped(self, random_binary_array):
+        data = random_binary_array.astype(float)
+        data[3] = 0.0
+        data[7, 10] = np.nan
+        with pytest.warns(UserWarning) as record:
+            msvars = MSVariables(data, rg_steps=4)
+        messages = " ".join(str(w.message) for w in record)
+        assert "Row(s) [7]" in messages and "NaN" in messages
+        assert "Row(s) [3]" in messages and "constant" in messages
+        assert 3 not in msvars.original_idx and 7 not in msvars.original_idx
+        assert msvars.get_MS_variables(0).shape == (30, data.shape[1])
+
+    def test_rows_in_discarded_modes_become_nan(self, rng):
+        # Two independent groups: variables 0-3 share one strong common
+        # signal, variables 4-7 are pure, much weaker noise. Keeping only the
+        # leading mode leaves the noise variables (almost) unrepresented;
+        # the exactly-zero case is built by making the weak block orthogonal.
+        common = rng.normal(size=500)
+        strong = np.vstack([10 * common + rng.normal(size=500) for _ in range(4)])
+        weak = 0.01 * rng.normal(size=(4, 500))
+        msvars = MSVariables(np.vstack([strong, weak]), rg_steps=3)
+        # Force an exactly-zero projection by zeroing the weak variables'
+        # loading on the leading mode.
+        msvars.eigenvectors[4:, 0] = 0.0
+        with pytest.warns(UserWarning, match="zero variance after projection"):
+            phi = msvars.get_MS_variables(3)
+        assert np.all(np.isnan(phi[4:]))
+        assert np.all(np.isfinite(phi[:4]))

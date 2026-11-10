@@ -11,7 +11,7 @@ from . import analysis_tools as tools  # uses observables, utils, plot and confi
 from . import config as config  # uses observables
 from . import datasets as datasets  # uses pooch to download example data
 from . import plotting as plot  # uses utils with ..utils powerLaw_function
-from .coarse_graining import CGVariables
+from .coarse_graining import CGVariables, MSVariables
 from .observables import (
     _avalanche_covariance_eigenvalue,
     activity_distribution,
@@ -30,6 +30,7 @@ from .utils import get_scaling_exponent
 # Define what is accessible when someone does 'from prg_toolbox import *'
 __all__ = [
     "CGVariables",
+    "MSVariables",
     "mean_variance",
     "log_silence_probability",
     "max_covariance_eigenvalue",
