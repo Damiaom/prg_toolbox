@@ -9,6 +9,7 @@ import numpy as np  # noqa: E402
 import pytest  # noqa: E402
 
 from prg_toolbox import MSVariables, momentum_space_distribution  # noqa: E402
+from prg_toolbox.config import AnalysisParams  # noqa: E402
 from prg_toolbox.plotting import plot_momentum_space_distribution  # noqa: E402
 from prg_toolbox.plotting.plot_imports import (  # noqa: E402
     set_colors_from_palette,
@@ -153,3 +154,36 @@ class TestPlotMomentumSpaceDistribution:
         low, high = ax.get_xlim()
         assert low < occupied.min() and high > occupied.max()
         assert low > -50 and high < 50
+
+    def test_legend_false_wins_over_style_config(self, result, ax):
+        plot_momentum_space_distribution(
+            result, ax=ax, style_config=AnalysisParams(), legend=False
+        )
+        assert ax.get_legend() is None
+
+    def test_style_config_can_hide_legend(self, result, ax):
+        params = AnalysisParams()
+        params.plot_style.show_legend = False
+        plot_momentum_space_distribution(result, ax=ax, style_config=params)
+        assert ax.get_legend() is None
+
+    def test_legend_shown_by_default(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        assert ax.get_legend() is not None
+
+    def test_user_line_alpha_is_scaled_by_step(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax, plot_kwargs={"alpha": 0.5})
+        alphas = [line.get_alpha() for line in ax.lines[:5]]
+        np.testing.assert_allclose(alphas, [0.5 * k / 5 for k in range(4)] + [0.5])
+
+    def test_std_band_is_skipped_where_it_reaches_zero(self, result, ax):
+        # avg - std <= 0 has no position on the log axis; the band must not
+        # be drawn there (it used to be filled down to the bottom of the plot).
+        data = {
+            "bin_centers": result.bin_centers,
+            "avg_across_windows": result.values,
+            "std_across_windows": [2 * v for v in result.values],
+        }
+        plot_momentum_space_distribution(data, ax=ax)
+        for band in ax.collections:
+            assert all(len(path.vertices) == 0 for path in band.get_paths())

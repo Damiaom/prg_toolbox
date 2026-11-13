@@ -389,3 +389,106 @@ class TestMSVariables:
             phi = msvars.get_MS_variables(3)
         assert np.all(np.isnan(phi[4:]))
         assert np.all(np.isfinite(phi[:4]))
+
+
+class TestMSVariablesInputValidation:
+    @pytest.mark.parametrize("rg_steps", [-1, 2.0, "2"])
+    def test_rejects_invalid_rg_steps(self, random_binary_array, rg_steps):
+        with pytest.raises(ValueError, match="rg_steps must be a non-negative integer"):
+            MSVariables(random_binary_array, rg_steps=rg_steps)
+
+    def test_accepts_numpy_integer_rg_steps(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=np.int64(2))
+        assert msvars.cutoffs.tolist() == [32, 16, 8]
+
+    def test_accepts_nested_list(self, random_binary_array):
+        from_list = MSVariables(random_binary_array.tolist(), rg_steps=2)
+        from_array = MSVariables(random_binary_array, rg_steps=2)
+        np.testing.assert_allclose(
+            from_list.get_MS_variables(1), from_array.get_MS_variables(1)
+        )
+
+    def test_rejects_one_dimensional_input(self, random_binary_array):
+        with pytest.raises(ValueError, match="2D array"):
+            MSVariables(random_binary_array[0], rg_steps=1)
+
+    @pytest.mark.parametrize("k", [1.0, "1", 5, -1])
+    def test_rejects_invalid_step(self, random_binary_array, k):
+        msvars = MSVariables(random_binary_array, rg_steps=2)
+        with pytest.raises(ValueError, match="Step k must be an integer"):
+            msvars.get_MS_variables(k)
+
+
+def _excess_kurtosis(values):
+    values = np.ravel(values)
+    centered = values - values.mean()
+    return np.mean(centered**4) / np.mean(centered**2) ** 2 - 3
+
+
+class TestMSVariablesKnownAnswers:
+    """
+    Checks against cases whose result is known in advance, independently of
+    any reference implementation.
+    """
+
+    def test_gaussian_data_stays_gaussian(self, rng):
+        # Every phi is a linear combination of jointly Gaussian variables,
+        # hence exactly Gaussian at every step, whatever the correlations.
+        mixing = rng.standard_normal((32, 32))
+        data = mixing @ rng.standard_normal((32, 40000))
+        msvars = MSVariables(data, rg_steps=5)
+        for k in range(6):
+            assert abs(_excess_kurtosis(msvars.get_MS_variables(k))) < 0.05
+
+    @pytest.fixture(scope="class")
+    def shared_probability_model(self):
+        """
+        Conditionally independent binary units of Nicoletti et al. (2020),
+        Appendix B: at each time step every unit fires independently with
+        the same probability xi, drawn uniformly from [0, 1].
+        """
+        rng = np.random.default_rng(0)
+        N, T = 128, 40000
+        xi = rng.random(T)
+        data = (rng.random((N, T)) < xi).astype(float)
+        return xi, MSVariables(data, rg_steps=7)
+
+    def test_shared_probability_model_spectrum(self, shared_probability_model):
+        # Covariance is 1/4 on the diagonal and 1/12 elsewhere, so there is
+        # one eigenvalue 1/4 + (N - 1)/12 and N - 1 eigenvalues equal to 1/6.
+        _, msvars = shared_probability_model
+        N = msvars.cutoffs[0]
+        assert msvars.eigenvalues[0] == pytest.approx(1 / 4 + (N - 1) / 12, rel=0.02)
+        assert np.mean(msvars.eigenvalues[1:]) == pytest.approx(1 / 6, rel=0.01)
+
+    def test_shared_probability_model_kurtosis_at_every_step(
+        self, shared_probability_model
+    ):
+        # With r = K/N, phi_i = (xi - 1/2) + r * (own noise) + (Gaussian mix
+        # of the other units' noise), which gives, for many units,
+        #   <phi^2> = 1/12 + r/6
+        #   <phi^4> = 1/80 + r/20 + r^2/10 - r^3/15 - r^4/30.
+        # It runs from -2 (r = 1, z-scored fair coin) to -6/5 (r -> 0,
+        # uniform distribution) and never approaches the Gaussian value 0.
+        _, msvars = shared_probability_model
+        r = msvars.cutoffs / msvars.cutoffs[0]
+        fourth_moment = 1 / 80 + r / 20 + r**2 / 10 - r**3 / 15 - r**4 / 30
+        expected = fourth_moment / (1 / 12 + r / 6) ** 2 - 3
+        measured = [
+            _excess_kurtosis(msvars.get_MS_variables(k))
+            for k in range(msvars.rg_steps + 1)
+        ]
+        assert measured[0] == pytest.approx(-2, abs=1e-3)
+        np.testing.assert_allclose(measured, expected, atol=0.06)
+
+    def test_shared_probability_model_last_mode_recovers_latent_variable(
+        self, shared_probability_model
+    ):
+        # With one mode kept, every unit becomes the z-scored population
+        # rate, i.e. the hidden probability xi, which is uniform: bounded by
+        # +-sqrt(3) once it has unit variance.
+        xi, msvars = shared_probability_model
+        phi = msvars.get_MS_variables(msvars.rg_steps)
+        correlation = np.corrcoef(phi, xi)[-1, :-1]
+        assert np.all(np.abs(correlation) > 0.98)
+        assert np.max(np.abs(phi)) == pytest.approx(np.sqrt(3), rel=0.03)

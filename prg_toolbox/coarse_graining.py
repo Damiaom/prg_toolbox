@@ -554,7 +554,8 @@ class MSVariables:
     Wrapper class for performing momentum-space PRG coarse graining on time series data.
 
     This class applies the momentum-space coarse graining introduced by
-    Meshulam et al. (2019) and Nicoletti et al. (2020). Instead of merging
+    Meshulam et al. (2019) and analyzed by Nicoletti et al. (2020), who give
+    it in the form used here (their Eqs. 6-7). Instead of merging
     pairs of correlated variables, every variable is projected onto the K
     principal components of the covariance matrix with the largest
     eigenvalues, discarding the fine-grained (small-variance) modes:
@@ -581,7 +582,7 @@ class MSVariables:
     rg_steps : int, optional
         Number of coarse graining steps to apply. Step k keeps the
         K = N / 2^k leading principal components, so `rg_steps` must satisfy
-        2^rg_steps <= N. Default is 6.
+        2^rg_steps <= N. Must be a non-negative integer. Default is 6.
 
     verbose : str, optional
         Controls console output. Options are 'silent' (no warnings),
@@ -626,11 +627,21 @@ class MSVariables:
         validate_verbosity(verbose)
         self.verbose = verbose
 
+        if not isinstance(rg_steps, (int, np.integer)) or rg_steps < 0:
+            raise ValueError(
+                f"rg_steps must be a non-negative integer, got {rg_steps!r}."
+            )
         self.rg_steps = rg_steps
+
+        data_array = np.asarray(data_array, dtype=np.float64)
+        if data_array.ndim != 2:
+            raise ValueError(
+                f"data_array must be a 2D array of shape (N, t), got {data_array.ndim}D."
+            )
         self.time_window = data_array.shape[1]
 
         data_array, self.original_idx = _drop_invalid_rows(
-            np.asarray(data_array, dtype=np.float64),
+            data_array,
             self.verbose,
             array_name="data_array",
             index_attribute="original_idx",
@@ -675,8 +686,10 @@ class MSVariables:
         The projection matrix P = U_K U_K^T is never built explicitly:
         U_K (U_K^T x) costs O(N K t) instead of O(N^2 t).
         """
-        if not 0 <= k <= self.rg_steps:
-            raise ValueError(f"Step k must be between 0 and {self.rg_steps}, got {k}.")
+        if not isinstance(k, (int, np.integer)) or not 0 <= k <= self.rg_steps:
+            raise ValueError(
+                f"Step k must be an integer between 0 and {self.rg_steps}, got {k!r}."
+            )
 
         leading_modes = self.eigenvectors[:, : self.cutoffs[k]]
         projected = leading_modes @ (leading_modes.T @ self._centered_data)

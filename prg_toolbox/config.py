@@ -169,6 +169,11 @@ class AnalysisParams:
     rg_steps : int, optional
         Number of iterative coarse-graining reduction loops to apply. Default is 7
         (stores the raw variables' statistics).
+    momentum_space_bins : array_like of float, optional
+        Bin edges passed to `momentum_space_distribution` when it is listed in
+        `observables`. If None, the observable's default edges are used
+        (201 edges evenly spaced over [-10, 10]). Spiking data usually needs
+        a wider range, e.g. ``np.linspace(-10, 45, 551)``. Default is None.
     cluster_method : str, optional
         The metric used to pair similar variables during coarse graining.
         Options include: 'pearson', 'spearman', 'mutual_information', 'cosine',
@@ -216,6 +221,7 @@ class AnalysisParams:
         ]
     )
     rg_steps: int = 7
+    momentum_space_bins: Optional[Any] = None  # bin edges; None -> observable default
     cluster_method: str = "pearson"  # Options: 'pearson', 'spearman', 'mutual_info', 'cosine', 'hamming', 'random'
 
     loading: DataLoadingParams = field(default_factory=DataLoadingParams)

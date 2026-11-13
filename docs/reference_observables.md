@@ -11,6 +11,6 @@ The module implements several measurements that can be used as signatures of sca
 - **Autocorrelation Function:** Computes the temporal autocorrelatoin of coarse grained variables across PRG iterations.
 - **Decay Time:** Measures dynamical scaling by extracting the characteristic temporal decay from the autocorrelation function for progressively larger macroscopic clusters.
 - **Activity Distribution:** Constructs probability distributions of the summed activity of coarse-grained variables. This allows the pipeline to determine whether the collective dynamics are converging toward a (trivial) Gaussian distribution or a non-Gaussian fixed point, also a signature of scale-invariant behavior.
-- **Momentum-Space Distribution:** Probability distribution of the momentum-space coarse-grained variables (computed from an `MSVariables` object rather than `CGVariables`), compared against the standard normal distribution as modes are removed.
+- **Momentum-Space Distribution:** Constructs probability distributions of the momentum-space coarse-grained variables (from an `MSVariables` object instead of `CGVariables`), to check whether they converge toward a Gaussian or a non-Gaussian fixed form as fine-grained modes are removed.
 
 ::: prg_toolbox.observables

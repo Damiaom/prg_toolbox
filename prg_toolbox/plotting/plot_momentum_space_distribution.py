@@ -153,16 +153,12 @@ def set_momentum_space_distribution_values_and_kwargs(
         {**DEFAULT_FILL_KWARGS, "color": colors_by_iteration[k], **(fill_kwargs or {})}
         for k in range(len(values["y"]))
     ]
-    for k in range(len(values["y"]) - 1):
-        if "alpha" in plot_kw[k]:
-            plot_kw[k]["alpha"] = fill_kw[k]["alpha"] * k / (len(values["y"]))
-        else:
-            plot_kw[k]["alpha"] = k / (len(values["y"]))
-
-        if "alpha" in fill_kw[k]:
-            fill_kw[k]["alpha"] = fill_kw[k]["alpha"] * k / (len(values["y"]))
-        else:
-            fill_kw[k]["alpha"] = k / (len(values["y"]))
+    # Fade the curves with many modes: each curve's own alpha (1 if unset)
+    # is scaled by k / n_curves, leaving the last curve untouched.
+    n_curves = len(values["y"])
+    for k in range(n_curves - 1):
+        plot_kw[k]["alpha"] = plot_kw[k].get("alpha", 1.0) * k / n_curves
+        fill_kw[k]["alpha"] = fill_kw[k].get("alpha", 1.0) * k / n_curves
 
     return values, plot_kw, fill_kw
 
@@ -200,12 +196,15 @@ def draw_plot_momentum_space_distribution(values, ax, plot_kw=None, fill_kw=None
         else:
             ax.plot(values["x"][k][nonzero], y[nonzero], **plot_kw[k])
 
-        # Std error bar
+        # Std error band, only where its lower edge is positive: a band
+        # reaching zero has no lower end on the logarithmic y axis.
         if values["y_low"][k] is not None and values["y_high"][k] is not None:
+            y_low = np.asarray(values["y_low"][k], dtype=float)
             ax.fill_between(
-                values["x"][k][nonzero],
-                np.asarray(values["y_low"][k])[nonzero],
-                np.asarray(values["y_high"][k])[nonzero],
+                values["x"][k],
+                y_low,
+                np.asarray(values["y_high"][k], dtype=float),
+                where=nonzero & (y_low > 0),
                 label="_nolegend_",
                 **fill_kw[k],
             )
@@ -241,7 +240,7 @@ def plot_momentum_space_distribution(
     legend_kwargs=None,
     tick_kwargs=None,
     palette=None,
-    legend=True,
+    legend=None,
 ):
     """
     Plots momentum-space distributions with multiple curves and optional surrogate.
@@ -270,7 +269,10 @@ def plot_momentum_space_distribution(
                                         colormap; a dict may set either or
                                         both of 'data', 'surrogate' (unset
                                         keys keep their defaults).
-        legend (bool)                : Whether to display legend
+        legend (bool or None)        : Whether to display legend. If None
+                                        (default), follows `show_legend`
+                                        of style_config when one is given,
+                                        and is shown otherwise.
 
     Returns
     ----------
@@ -292,7 +294,12 @@ def plot_momentum_space_distribution(
         legend_kwargs = legend_kwargs or config_dict.get("legend_kwargs")
         tick_kwargs = tick_kwargs or config_dict.get("tick_kwargs")
         palette = palette or config_dict.get("palette")
-        legend = legend or config_dict.get("show_legend")
+        # An explicit legend argument wins over the configuration object
+        if legend is None:
+            legend = config_dict.get("show_legend")
+
+    if legend is None:
+        legend = True
 
     # ----------- Set up labels and colors -------------------
     ax = ax or plt.gca()

@@ -16,7 +16,7 @@ The toolbox also implements the complementary momentum-space coarse graining (`M
 
 $\phi_i^{(K)} = z_i \sum_{j} \sum_{\mu=1}^{K} u_{i\mu}\, u_{j\mu}\, (x_j - \langle x_j \rangle) \quad ,$
 
-with $K = N/2^{k}$ at step $k$. The number of variables stays $N$ at every step, so the variables of each step are computed on demand with `get_MS_variables(k)`. The distribution of $\phi$ across steps is computed by the `momentum_space_distribution` observable; a non-Gaussian distribution that persists as modes are removed is, as in real space, a signature of a non-trivial fixed point. See the notebook `example_momentum_space.ipynb` for a walkthrough.
+with $K = N/2^{k}$ at step $k$. The number of variables stays $N$ at every step, so the variables of each step are computed on demand with `get_MS_variables(k)`. The distribution of $\phi$ across steps is computed by the `momentum_space_distribution` observable. As in real space, the signature of a non-trivial fixed point is the convergence of this distribution to a fixed non-Gaussian form as modes are removed. See the notebook `example_momentum_space.ipynb` for a walkthrough.
 
 -------------------------------
 

@@ -237,6 +237,44 @@ class TestMomentumSpaceDistribution:
         assert np.all(np.diff(kurtosis) < 0)
         assert abs(kurtosis[-1]) < 0.5
 
+    def test_rejects_number_of_bins(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=2)
+        with pytest.raises(ValueError, match="number of bins is not accepted"):
+            obs.momentum_space_distribution(msvars, bins=50)
+
+    def test_gaussian_data_gives_standard_normal_density(self, rng):
+        # Known answer: Gaussian data stays exactly Gaussian, and phi has
+        # zero mean and unit variance, so the density is N(0, 1) at all steps.
+        mixing = rng.standard_normal((32, 32))
+        data = mixing @ rng.standard_normal((32, 40000))
+        result = obs.momentum_space_distribution(
+            MSVariables(data, rg_steps=5, verbose="silent"),
+            bins=np.linspace(-4, 4, 41),
+        )
+        standard_normal = np.exp(-(result.bin_centers**2) / 2) / np.sqrt(2 * np.pi)
+        core = np.abs(result.bin_centers) < 2.5
+        for density in result.values:
+            np.testing.assert_allclose(density[core], standard_normal[core], rtol=0.05)
+
+    def test_shared_probability_model_gives_uniform_density(self):
+        # Known answer (Nicoletti et al. 2020, Appendix B): units firing
+        # independently with a shared probability xi ~ U(0, 1). With one mode
+        # kept, phi is the z-scored xi: uniform on [-sqrt(3), sqrt(3)], with
+        # density 1 / (2 sqrt(3)), far from the Gaussian. (Wide bins, since
+        # with 128 units the population rate only takes 129 distinct values.)
+        rng = np.random.default_rng(0)
+        xi = rng.random(40000)
+        data = (rng.random((128, 40000)) < xi).astype(float)
+        result = obs.momentum_space_distribution(
+            MSVariables(data, rg_steps=7, verbose="silent"),
+            bins=np.linspace(-3, 3, 11),
+        )
+        density = result.values[-1]
+        inside = np.abs(result.bin_centers) < 1.0
+        outside = np.abs(result.bin_centers) > 2.0
+        np.testing.assert_allclose(density[inside], 1 / (2 * np.sqrt(3)), rtol=0.06)
+        assert np.all(density[outside] == 0)
+
 
 class TestAvalancheCovarianceEigenvalue:
     """Regression tests for the fixed CGVariables-instance-as-constructor bug."""

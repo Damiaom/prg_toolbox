@@ -32,7 +32,7 @@ The toolbox is structured around configurations, core renormalization routines, 
 Contains the dataclasses used to set parameters for the analysis. This includes time windowing settings (`TimeWindowingParams`), spatial subsampling choices (`SubsamplingParams`), and matplotlib figure layout arguments (`PlotStyleConfig`).
 
 ### 🔍 Coarse-Graining (`coarse_graining.py`)
-Implements the `CGVariables` class, which handles the real-space Renormalization Group transformation. It executes the clustering loops, applies similarity matching to pair variables step-by-step, and maps the constituent unit lineages across scales.
+Implements the `CGVariables` class, which handles the real-space Renormalization Group transformation. It executes the clustering loops, applies similarity matching to pair variables step-by-step, and maps the constituent unit lineages across scales. It also implements the `MSVariables` class, for the complementary momentum-space coarse graining.
 
 ### 📈 Statistical Metrics (`observables.py`)
 Implements the distinct diagnostic classes used to calculate network scaling variables at each coarse-graining step. Each class (such as variance scaling, silence probability, eigenvalue spectrum, or temporal decay) accepts a `CGVariables` object and evaluates specific scaling behaviors and exponents.

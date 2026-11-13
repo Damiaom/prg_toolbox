@@ -923,8 +923,11 @@ class momentum_space_distribution:
         components kept) and estimates their probability density on a fixed
         set of bins. Since every phi^(K) has zero mean and unit variance by
         construction, the trivial (Gaussian) reference is the standard normal
-        distribution; a distribution that stays non-Gaussian as K decreases
-        signals a non-trivial fixed point.
+        distribution. Convergence to a fixed non-Gaussian form as K decreases
+        is the signature of a non-trivial fixed point; a non-Gaussian shape
+        alone is not, since it also arises, for example, from independent
+        units driven by a shared latent variable (Nicoletti et al., 2020,
+        Appendix B).
 
         Parameters
         ----------
@@ -932,7 +935,8 @@ class momentum_space_distribution:
             coarse graining procedure.
 
         bins : array_like of float, optional
-            Bin edges shared by all steps. Using the same edges for every
+            Bin edges shared by all steps (not a number of bins, which
+            would make the edges depend on the data). Using the same edges for every
             step, window or dataset keeps their densities directly
             comparable (and stackable). Values outside the edges are not
             counted, but still enter the normalization, so the density
@@ -987,8 +991,16 @@ class momentum_space_distribution:
         if bins is None:
             bins = np.linspace(-10, 10, 201)
         self.bin_edges = np.asarray(bins, dtype=np.float64)
-        if self.bin_edges.ndim != 1 or np.any(np.diff(self.bin_edges) <= 0):
-            raise ValueError("bins must be a 1D array of increasing bin edges.")
+        if (
+            self.bin_edges.ndim != 1
+            or self.bin_edges.size < 2
+            or np.any(np.diff(self.bin_edges) <= 0)
+        ):
+            raise ValueError(
+                "bins must be a 1D array of at least two increasing bin edges, "
+                "e.g. np.linspace(-10, 10, 201). A number of bins is not accepted, "
+                "so that the edges stay the same for every step and dataset."
+            )
         self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:]) / 2
 
         values = self.get_momentum_space_distribution(MS_variables, self.bin_edges)
