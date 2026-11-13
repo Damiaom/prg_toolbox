@@ -16,7 +16,7 @@ including standard correlation definitions as well as information-theoretic and 
 alignment measurements (see below).
 
 The `MSVariables` class implements the alternative momentum-space coarse graining
-(Meshulam et al., 2019; Nicoletti et al., 2020), which projects each variable onto
+(Meshulam et al., 2018, arXiv:1812.11904; Nicoletti et al., 2020), which projects each variable onto
 a decreasing number of leading principal components of the covariance matrix.
 """
 
@@ -554,8 +554,8 @@ class MSVariables:
     Wrapper class for performing momentum-space PRG coarse graining on time series data.
 
     This class applies the momentum-space coarse graining introduced by
-    Meshulam et al. (2019) and analyzed by Nicoletti et al. (2020), who give
-    it in the form used here (their Eqs. 6-7). Instead of merging
+    Meshulam et al. (2018, arXiv:1812.11904) and analyzed by Nicoletti et al.
+    (2020), who give it in the form used here (their Eqs. 6-7). Instead of merging
     pairs of correlated variables, every variable is projected onto the K
     principal components of the covariance matrix with the largest
     eigenvalues, discarding the fine-grained (small-variance) modes:

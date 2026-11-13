@@ -12,7 +12,7 @@ This step then repeated recursively, clustering the $N/2^{k}$ previously formed 
 
 ### Momentum-space coarse graining
 
-The toolbox also implements the complementary momentum-space coarse graining (`MSVariables`), introduced by Meshulam et al. (2019) and analyzed by Nicoletti et al. (2020). Instead of merging pairs of units, it removes the fine-grained modes of the population activity: each unit is projected onto the $K$ leading principal components of the covariance matrix (eigenvectors $u_\mu$ ordered by decreasing eigenvalue) and rescaled to unit variance,
+The toolbox also implements the complementary momentum-space coarse graining (`MSVariables`), introduced by Meshulam et al. (2018, [arXiv:1812.11904](https://arxiv.org/abs/1812.11904)) and analyzed by Nicoletti et al. (2020). Instead of merging pairs of units, it removes the fine-grained modes of the population activity: each unit is projected onto the $K$ leading principal components of the covariance matrix (eigenvectors $u_\mu$ ordered by decreasing eigenvalue) and rescaled to unit variance,
 
 $\phi_i^{(K)} = z_i \sum_{j} \sum_{\mu=1}^{K} u_{i\mu}\, u_{j\mu}\, (x_j - \langle x_j \rangle) \quad ,$
 
