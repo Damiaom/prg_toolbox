@@ -1,8 +1,17 @@
 """Tests for prg_toolbox.plotting.plot_imports: shared styling helpers."""
 
-import pytest
+import matplotlib
 
-from prg_toolbox.plotting.plot_imports import (
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+
+from prg_toolbox import MSVariables, momentum_space_distribution  # noqa: E402
+from prg_toolbox.config import AnalysisParams  # noqa: E402
+from prg_toolbox.plotting import plot_momentum_space_distribution  # noqa: E402
+from prg_toolbox.plotting.plot_imports import (  # noqa: E402
     set_colors_from_palette,
     set_default_kwargs,
 )
@@ -76,3 +85,105 @@ class TestSetColorsFromPalette:
     def test_invalid_type_raises_typeerror(self):
         with pytest.raises(TypeError, match="palette must be"):
             set_colors_from_palette(3, ("magma", "viridis"))
+
+
+class TestPlotMomentumSpaceDistribution:
+    @pytest.fixture
+    def result(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=4)
+        return momentum_space_distribution(msvars)
+
+    @pytest.fixture
+    def ax(self):
+        fig, ax = plt.subplots()
+        yield ax
+        plt.close(fig)
+
+    def test_one_curve_per_step_plus_gaussian(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        assert len(ax.get_lines()) == result.rg_steps + 2
+        assert ax.get_yscale() == "log"
+        assert [t.get_text() for t in ax.get_legend().get_texts()] == [
+            r"$(K = N/16)$",
+            "Gaussian",
+        ]
+
+    def test_gaussian_reference_is_standard_normal(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        gaussian = ax.get_lines()[-1]
+        x, y = gaussian.get_xdata(), gaussian.get_ydata()
+        np.testing.assert_allclose(y, np.exp(-(x**2) / 2) / np.sqrt(2 * np.pi))
+
+    def test_empty_bins_are_not_drawn(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        for line in ax.get_lines()[:-1]:
+            assert np.all(line.get_ydata() > 0)
+
+    def test_accepts_dictionary_input(self, result, ax):
+        data = {
+            "bin_centers": result.bin_centers,
+            "avg_across_windows": result.avg_across_windows,
+            "std_across_windows": result.std_across_windows,
+        }
+        plot_momentum_space_distribution(data, ax=ax)
+        assert len(ax.get_lines()) == result.rg_steps + 2
+
+    def test_surrogate_adds_curves_and_legend_entry(self, result, ax):
+        plot_momentum_space_distribution(result, surrogate_data=result, ax=ax)
+        assert len(ax.get_lines()) == 2 * (result.rg_steps + 1) + 1
+        assert "Surrogate" in [t.get_text() for t in ax.get_legend().get_texts()]
+
+    def test_rejects_mismatched_surrogate_type(self, result, ax):
+        with pytest.raises(ValueError, match="same type"):
+            plot_momentum_space_distribution(result, surrogate_data={}, ax=ax)
+
+    def test_rejects_unknown_data_type(self, ax):
+        with pytest.raises(ValueError, match="momentum_space_distribution"):
+            plot_momentum_space_distribution([1, 2, 3], ax=ax)
+
+    def test_upper_limit_ignores_transparent_first_curve(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        visible_max = max(np.max(y) for y in result.values[1:])
+        assert ax.get_ylim()[1] == pytest.approx(2 * visible_max)
+
+    def test_x_limits_follow_occupied_bins(self, random_binary_array, ax):
+        msvars = MSVariables(random_binary_array, rg_steps=4)
+        wide = momentum_space_distribution(msvars, bins=np.linspace(-50, 50, 1001))
+        plot_momentum_space_distribution(wide, ax=ax)
+        occupied = np.concatenate([wide.bin_centers[y > 0] for y in wide.values[1:]])
+        low, high = ax.get_xlim()
+        assert low < occupied.min() and high > occupied.max()
+        assert low > -50 and high < 50
+
+    def test_legend_false_wins_over_style_config(self, result, ax):
+        plot_momentum_space_distribution(
+            result, ax=ax, style_config=AnalysisParams(), legend=False
+        )
+        assert ax.get_legend() is None
+
+    def test_style_config_can_hide_legend(self, result, ax):
+        params = AnalysisParams()
+        params.plot_style.show_legend = False
+        plot_momentum_space_distribution(result, ax=ax, style_config=params)
+        assert ax.get_legend() is None
+
+    def test_legend_shown_by_default(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax)
+        assert ax.get_legend() is not None
+
+    def test_user_line_alpha_is_scaled_by_step(self, result, ax):
+        plot_momentum_space_distribution(result, ax=ax, plot_kwargs={"alpha": 0.5})
+        alphas = [line.get_alpha() for line in ax.lines[:5]]
+        np.testing.assert_allclose(alphas, [0.5 * k / 5 for k in range(4)] + [0.5])
+
+    def test_std_band_is_skipped_where_it_reaches_zero(self, result, ax):
+        # avg - std <= 0 has no position on the log axis; the band must not
+        # be drawn there (it used to be filled down to the bottom of the plot).
+        data = {
+            "bin_centers": result.bin_centers,
+            "avg_across_windows": result.values,
+            "std_across_windows": [2 * v for v in result.values],
+        }
+        plot_momentum_space_distribution(data, ax=ax)
+        for band in ax.collections:
+            assert all(len(path.vertices) == 0 for path in band.get_paths())

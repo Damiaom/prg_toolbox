@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from prg_toolbox import observables as obs
-from prg_toolbox.coarse_graining import CGVariables
+from prg_toolbox.coarse_graining import CGVariables, MSVariables
 
 ALL_OBSERVABLE_CLASSES = [
     obs.mean_variance,
@@ -178,6 +178,102 @@ class TestActivityDistribution:
         for k, density in enumerate(result.values):
             dx = 1 / (2**k)
             assert np.sum(density) * dx == pytest.approx(1.0)
+
+
+class TestMomentumSpaceDistribution:
+    @pytest.fixture
+    def msvars(self, random_binary_array):
+        return MSVariables(random_binary_array, rg_steps=5)
+
+    def test_one_density_per_step(self, msvars):
+        result = obs.momentum_space_distribution(msvars)
+        assert len(result.values) == msvars.rg_steps + 1
+        np.testing.assert_array_equal(result.cutoffs, msvars.cutoffs)
+        for density in result.values:
+            assert density.shape == result.bin_centers.shape
+
+    def test_density_integrates_to_one(self, msvars):
+        result = obs.momentum_space_distribution(msvars)
+        dx = np.diff(result.bin_edges)
+        for density in result.values:
+            assert np.sum(density * dx) == pytest.approx(1.0)
+
+    def test_custom_bins_are_used(self, msvars):
+        edges = np.linspace(-8, 8, 33)
+        result = obs.momentum_space_distribution(msvars, bins=edges)
+        np.testing.assert_array_equal(result.bin_edges, edges)
+        np.testing.assert_allclose(result.bin_centers, (edges[:-1] + edges[1:]) / 2)
+
+    def test_values_outside_bins_warn_and_lower_the_mass(self, msvars):
+        edges = np.linspace(-1, 1, 21)
+        with pytest.warns(UserWarning, match="outside the bin range"):
+            result = obs.momentum_space_distribution(msvars, bins=edges)
+        dx = np.diff(edges)
+        assert all(np.sum(density * dx) < 1.0 for density in result.values)
+
+    def test_invalid_bins_raise(self, msvars):
+        with pytest.raises(ValueError, match="increasing bin edges"):
+            obs.momentum_space_distribution(msvars, bins=[0.0, 1.0, 0.5])
+
+    def test_rejects_real_space_variables(self, cgvars):
+        with pytest.raises(ValueError, match="MSVariables"):
+            obs.momentum_space_distribution(cgvars)
+
+    def test_independent_units_become_gaussian(self, rng):
+        # Sparse independent binary units: at step 0 the z-scored values are
+        # two-valued and heavy-tailed (excess kurtosis ~5 for p = 0.1). Each
+        # phi_i mixes more independent units as K decreases (its own weight
+        # P_ii is ~K/N), so the distribution approaches a Gaussian (CLT).
+        data = (rng.random((64, 5000)) < 0.1).astype(float)
+        msvars = MSVariables(data, rg_steps=3)
+        result = obs.momentum_space_distribution(msvars)
+        x, dx = result.bin_centers, np.diff(result.bin_edges)
+
+        def excess_kurtosis(density):
+            return np.sum(x**4 * density * dx) / np.sum(x**2 * density * dx) ** 2 - 3
+
+        kurtosis = [excess_kurtosis(density) for density in result.values]
+        assert kurtosis[0] > 3
+        assert np.all(np.diff(kurtosis) < 0)
+        assert abs(kurtosis[-1]) < 0.5
+
+    def test_rejects_number_of_bins(self, random_binary_array):
+        msvars = MSVariables(random_binary_array, rg_steps=2)
+        with pytest.raises(ValueError, match="number of bins is not accepted"):
+            obs.momentum_space_distribution(msvars, bins=50)
+
+    def test_gaussian_data_gives_standard_normal_density(self, rng):
+        # Known answer: Gaussian data stays exactly Gaussian, and phi has
+        # zero mean and unit variance, so the density is N(0, 1) at all steps.
+        mixing = rng.standard_normal((32, 32))
+        data = mixing @ rng.standard_normal((32, 40000))
+        result = obs.momentum_space_distribution(
+            MSVariables(data, rg_steps=5, verbose="silent"),
+            bins=np.linspace(-4, 4, 41),
+        )
+        standard_normal = np.exp(-(result.bin_centers**2) / 2) / np.sqrt(2 * np.pi)
+        core = np.abs(result.bin_centers) < 2.5
+        for density in result.values:
+            np.testing.assert_allclose(density[core], standard_normal[core], rtol=0.05)
+
+    def test_shared_probability_model_gives_uniform_density(self):
+        # Known answer (Nicoletti et al. 2020, Appendix B): units firing
+        # independently with a shared probability xi ~ U(0, 1). With one mode
+        # kept, phi is the z-scored xi: uniform on [-sqrt(3), sqrt(3)], with
+        # density 1 / (2 sqrt(3)), far from the Gaussian. (Wide bins, since
+        # with 128 units the population rate only takes 129 distinct values.)
+        rng = np.random.default_rng(0)
+        xi = rng.random(40000)
+        data = (rng.random((128, 40000)) < xi).astype(float)
+        result = obs.momentum_space_distribution(
+            MSVariables(data, rg_steps=7, verbose="silent"),
+            bins=np.linspace(-3, 3, 11),
+        )
+        density = result.values[-1]
+        inside = np.abs(result.bin_centers) < 1.0
+        outside = np.abs(result.bin_centers) > 2.0
+        np.testing.assert_allclose(density[inside], 1 / (2 * np.sqrt(3)), rtol=0.06)
+        assert np.all(density[outside] == 0)
 
 
 class TestAvalancheCovarianceEigenvalue:

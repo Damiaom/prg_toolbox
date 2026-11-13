@@ -45,6 +45,7 @@ All functions accept an optional `ax` parameter, expecting a Matplotlib `Axes` o
 | `plot_covariance_spectrum` | `palette` |
 | `plot_autocorrelation_function` | `palette` |
 | `plot_activity_distribution` | `palette` |
+| `plot_momentum_space_distribution` | `palette` |
 
 Below is an example of the standard input arguments shared across `colors`-based plotting functions (`palette`-based functions are identical except `colors` is replaced by `palette`):
 

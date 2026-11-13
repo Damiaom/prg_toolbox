@@ -14,6 +14,10 @@ and original raw variable indices.
 The coarse graining rule can be implemented with a handful of similarity metrics,
 including standard correlation definitions as well as information-theoretic and discrete
 alignment measurements (see below).
+
+The `MSVariables` class implements the alternative momentum-space coarse graining
+(Meshulam et al., 2018, arXiv:1812.11904; Nicoletti et al., 2020), which projects each variable onto
+a decreasing number of leading principal components of the covariance matrix.
 """
 
 import numpy as np
@@ -21,6 +25,7 @@ from scipy.spatial import distance
 from scipy.stats import spearmanr
 from sklearn.metrics import mutual_info_score
 
+from .utils import covariance_evals_and_evectors
 from .verbosity import print_if_full, validate_verbosity, warn_if_verbose
 
 # =========================================================================
@@ -163,6 +168,87 @@ def _compute_random(X):
     matrix = np.random.rand(num_vars, num_vars)
     matrix = (matrix + matrix.T) / 2.0
     return matrix
+
+
+# =========================================================================
+# Input Validation
+# =========================================================================
+
+
+def _drop_invalid_rows(
+    data_array,
+    verbose,
+    array_name="binary_array",
+    index_attribute="CG_cluster_idx",
+    constant_description="constant",
+):
+    """
+    Remove rows containing NaN values and constant (zero-variance) rows.
+
+    Both kinds of rows break the coarse graining (NaN propagates through
+    sums and correlations; constant rows have undefined correlations and
+    cannot be normalized to unit variance), so they are dropped with a
+    warning naming their original row indices.
+
+    Parameters
+    ----------
+    data_array : ndarray of shape (N, t)
+        Time series array where rows are variables and columns are time steps.
+    verbose : str
+        Verbosity level ('silent', 'warnings' or 'full').
+    array_name : str, optional
+        Name of the input array, used in the warning messages.
+    index_attribute : str, optional
+        Name of the attribute that stores the surviving original indices,
+        used in the warning messages.
+    constant_description : str, optional
+        How constant rows are described in the warning message.
+
+    Returns
+    -------
+    data_array : ndarray of shape (N_valid, t)
+        Input array with the invalid rows removed.
+    original_idx : ndarray of int, shape (N_valid,)
+        Index of every surviving row in the array the caller passed in.
+    """
+    # original_idx tracks, for every row still present in data_array,
+    # its index in the array the caller originally passed in. It is
+    # refined below as rows get dropped, so stored indices always point
+    # back to original variables.
+    original_idx = np.arange(data_array.shape[0])
+
+    row_has_nan = np.any(np.isnan(data_array), axis=1)
+    if np.any(row_has_nan):
+        dropped = original_idx[row_has_nan]
+        warn_if_verbose(
+            f"Row(s) {dropped.tolist()} of {array_name} contain NaN values and have "
+            f"been excluded from coarse graining; their original indices will not "
+            f"appear in {index_attribute}. This commonly happens when a continuous row "
+            f"with zero variance is z-score binarized (division by a zero standard "
+            f"deviation) upstream. Check your preprocessing/binarization if this is "
+            f"unexpected.",
+            verbose,
+        )
+        data_array = data_array[~row_has_nan]
+        original_idx = original_idx[~row_has_nan]
+
+    # Identify and remove constant rows (zero variance) before assigning
+    # base-level indices, so filtered-out variables never appear in the
+    # stored indices and can't be mistaken for surviving variables downstream.
+    row_is_constant = np.all(data_array == data_array[:, [0]], axis=1)
+    if np.any(row_is_constant):
+        dropped = original_idx[row_is_constant]
+        warn_if_verbose(
+            f"Row(s) {dropped.tolist()} of {array_name} are {constant_description} "
+            f"across the time window and have zero variance. These variables have been "
+            f"excluded from coarse graining; their original indices will not appear in "
+            f"{index_attribute}.",
+            verbose,
+        )
+        data_array = data_array[~row_is_constant]
+        original_idx = original_idx[~row_is_constant]
+
+    return data_array, original_idx
 
 
 # =========================================================================
@@ -414,45 +500,15 @@ class CGVariables:
         never appear in `clu_idx`.
         """
 
-        # original_idx tracks, for every row still present in binary_array,
-        # its index in the array the caller originally passed in. It is
-        # refined below as rows get dropped, so indices in CG_cluster_idx
-        # always points back to original variables.
-        original_idx = np.arange(binary_array.shape[0])
-
-        # Identify and remove rows containing NaN before validating
-        # binarization, so a preprocessing artifact produces a warning
-        # instead of a "not binarized" error.
-        row_has_nan = np.any(np.isnan(binary_array), axis=1)
-        if np.any(row_has_nan):
-            dropped = original_idx[row_has_nan]
-            warn_if_verbose(
-                f"Row(s) {dropped.tolist()} of binary_array contain NaN values and have "
-                f"been excluded from coarse graining; their original indices will not "
-                f"appear in CG_cluster_idx. This commonly happens when a continuous row "
-                f"with zero variance is z-score binarized (division by a zero standard "
-                f"deviation) upstream. Check your preprocessing/binarization if this is "
-                f"unexpected.",
-                self.verbose,
-            )
-            binary_array = binary_array[~row_has_nan]
-            original_idx = original_idx[~row_has_nan]
-
-        # Identify and remove constant rows (zero variance) before assigning
-        # base-level indices, so filtered-out variables never appear in clu_idx
-        # and can't be mistaken for surviving variables' lineage downstream.
-        row_is_constant = np.all(binary_array == binary_array[:, [0]], axis=1)
-        if np.any(row_is_constant):
-            dropped = original_idx[row_is_constant]
-            warn_if_verbose(
-                f"Row(s) {dropped.tolist()} of binary_array are constant (all 0s or all 1s) "
-                f"across the time window and have zero variance. These variables have been "
-                f"excluded from coarse graining; their original indices will not appear in "
-                f"CG_cluster_idx.",
-                self.verbose,
-            )
-            binary_array = binary_array[~row_is_constant]
-            original_idx = original_idx[~row_is_constant]
+        # Drop NaN rows before validating binarization, so a preprocessing
+        # artifact produces a warning instead of a "not binarized" error.
+        binary_array, original_idx = _drop_invalid_rows(
+            binary_array,
+            self.verbose,
+            array_name="binary_array",
+            index_attribute="CG_cluster_idx",
+            constant_description="constant (all 0s or all 1s)",
+        )
 
         # Validation checks
         if not self.is_binary_matrix(binary_array):
@@ -486,3 +542,169 @@ class CGVariables:
             )
 
         return CG_var, corr_matrix, clu_idx
+
+
+# =========================================================================
+# MOMENTUM-SPACE PRG COARSE GRAINING WRAPPER CLASS
+# =========================================================================
+
+
+class MSVariables:
+    """
+    Wrapper class for performing momentum-space PRG coarse graining on time series data.
+
+    This class applies the momentum-space coarse graining introduced by
+    Meshulam et al. (2018, arXiv:1812.11904) and analyzed by Nicoletti et al.
+    (2020), who give it in the form used here (their Eqs. 6-7). Instead of merging
+    pairs of correlated variables, every variable is projected onto the K
+    principal components of the covariance matrix with the largest
+    eigenvalues, discarding the fine-grained (small-variance) modes:
+
+        phi_i^(K) = z_i * sum_j sum_{mu <= K} u_{i mu} u_{j mu} (x_j - <x_j>),
+
+    where u_mu are the covariance eigenvectors ordered by decreasing
+    eigenvalue and z_i is chosen so that each phi_i^(K) has unit variance.
+    At coarse-graining step k the cutoff is K = N / 2^k, so that step 0
+    (K = N, all modes kept) gives the z-scored original variables.
+
+    Unlike real-space coarse graining, the number of variables does not
+    shrink with k: every step returns N variables. To keep memory usage at
+    a single copy of the data, the coarse-grained variables are computed on
+    demand by `get_MS_variables` rather than stored for every step.
+
+    Parameters
+    ----------
+    data_array : numpy array of float
+        Time series data of shape (N, t), where N is the number of variables
+        and t is the number of time samples. Binary or continuous values are
+        accepted.
+
+    rg_steps : int, optional
+        Number of coarse graining steps to apply. Step k keeps the
+        K = N / 2^k leading principal components, so `rg_steps` must satisfy
+        2^rg_steps <= N. Must be a non-negative integer. Default is 6.
+
+    verbose : str, optional
+        Controls console output. Options are 'silent' (no warnings),
+        'warnings' (default; emits warnings for dropped NaN or constant rows)
+        or 'full'. Default is "warnings".
+
+    Attributes
+    ----------
+    rg_steps : int
+        Number of coarse graining steps.
+    time_window : int
+        Total length of temporal observation slices (t).
+    cutoffs : ndarray of int, shape (rg_steps + 1,)
+        Number of principal components K = N / 2^k kept at each step k.
+    eigenvalues : ndarray of float, shape (N,)
+        Covariance eigenvalues in decreasing order.
+    eigenvectors : ndarray of float, shape (N, N)
+        Covariance eigenvectors (one per column), ordered as `eigenvalues`.
+    original_idx : ndarray of int, shape (N,)
+        Index, in the array passed by the caller, of each variable kept
+        after dropping NaN and constant rows.
+
+    Examples
+    --------
+    Step 0 keeps all modes and returns the z-scored data; later steps keep
+    only the leading modes but still return one variable per original unit:
+
+    >>> import numpy as np
+    >>> from prg_toolbox import MSVariables
+    >>> rng = np.random.default_rng(0)
+    >>> binary = (rng.random((16, 200)) < 0.3).astype(int)
+    >>> ms = MSVariables(binary, rg_steps=3)
+    >>> ms.cutoffs
+    array([16,  8,  4,  2])
+    >>> ms.get_MS_variables(2).shape  # 16 variables built from 4 modes
+    (16, 200)
+    >>> bool(np.allclose(ms.get_MS_variables(2).std(axis=1), 1.0))
+    True
+    """
+
+    def __init__(self, data_array, rg_steps=6, verbose="warnings"):
+        validate_verbosity(verbose)
+        self.verbose = verbose
+
+        if not isinstance(rg_steps, (int, np.integer)) or rg_steps < 0:
+            raise ValueError(
+                f"rg_steps must be a non-negative integer, got {rg_steps!r}."
+            )
+        self.rg_steps = rg_steps
+
+        data_array = np.asarray(data_array, dtype=np.float64)
+        if data_array.ndim != 2:
+            raise ValueError(
+                f"data_array must be a 2D array of shape (N, t), got {data_array.ndim}D."
+            )
+        self.time_window = data_array.shape[1]
+
+        data_array, self.original_idx = _drop_invalid_rows(
+            data_array,
+            self.verbose,
+            array_name="data_array",
+            index_attribute="original_idx",
+        )
+
+        N = data_array.shape[0]
+        if N < 2**rg_steps:
+            raise ValueError(
+                f"Number of variables in data ({N}) is less than required size ({2**rg_steps})."
+            )
+        if N > data_array.shape[1]:
+            warn_if_verbose(
+                "Number of variables is greater than number of samples. Covariance eigenvectors may be unreliable.",
+                self.verbose,
+            )
+
+        self.cutoffs = np.array([N // 2**k for k in range(rg_steps + 1)])
+        self.eigenvalues, self.eigenvectors = covariance_evals_and_evectors(data_array)
+        self._centered_data = data_array - np.mean(data_array, axis=1, keepdims=True)
+
+    def get_MS_variables(self, k):
+        """
+        Compute the momentum-space coarse-grained variables at step k.
+
+        Projects the mean-subtracted data onto the K = N / 2^k leading
+        covariance eigenvectors and rescales every variable to unit variance.
+
+        Parameters
+        ----------
+        k : int
+            Coarse graining step, between 0 and `rg_steps`.
+
+        Returns
+        -------
+        ndarray of float, shape (N, t)
+            Coarse-grained variables phi^(K). Rows whose projection has zero
+            variance (they lie entirely in the discarded modes) cannot be
+            normalized and are returned as NaN, with a warning.
+
+        Notes
+        -----
+        The projection matrix P = U_K U_K^T is never built explicitly:
+        U_K (U_K^T x) costs O(N K t) instead of O(N^2 t).
+        """
+        if not isinstance(k, (int, np.integer)) or not 0 <= k <= self.rg_steps:
+            raise ValueError(
+                f"Step k must be an integer between 0 and {self.rg_steps}, got {k!r}."
+            )
+
+        leading_modes = self.eigenvectors[:, : self.cutoffs[k]]
+        projected = leading_modes @ (leading_modes.T @ self._centered_data)
+
+        std = np.std(projected, axis=1, keepdims=True)
+        # Tolerance relative to the data scale, since round-off leaves a
+        # tiny nonzero std for rows that lie entirely in discarded modes.
+        zero_variance = std[:, 0] <= 1e-10 * np.max(std)
+        if np.any(zero_variance):
+            warn_if_verbose(
+                f"At step {k} (K = {self.cutoffs[k]}), variable(s) "
+                f"{self.original_idx[zero_variance].tolist()} have zero variance after "
+                f"projection onto the leading modes and are returned as NaN.",
+                self.verbose,
+            )
+            std[zero_variance] = np.nan
+
+        return projected / std

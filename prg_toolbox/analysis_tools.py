@@ -953,8 +953,20 @@ def is_function_observable(observable):
         obs.covariance_spectrum,
         obs.autocorrelation_function,
         obs.activity_distribution,
+        obs.momentum_space_distribution,
     ]
     if observable in function_list:
+        return True
+    else:
+        return False
+
+
+def is_momentum_space_observable(observable):
+    # Observables computed from MSVariables instead of CGVariables
+    momentum_space_list = [
+        obs.momentum_space_distribution,
+    ]
+    if observable in momentum_space_list:
         return True
     else:
         return False
@@ -1151,6 +1163,7 @@ def make_plots_for_observables(
         "avalanche_covariance_eigenvalue": plot.plot_avalanche_covariance_eigenvalue,
         "covariance_spectrum": plot.plot_covariance_spectrum,
         "activity_distribution": plot.plot_activity_distribution,
+        "momentum_space_distribution": plot.plot_momentum_space_distribution,
         "autocorrelation_function": plot.plot_autocorrelation_function,
         "decay_time": plot.plot_decay_time,
     }
@@ -1207,6 +1220,15 @@ def save_manifest(files, prg_params: AnalysisParams, skipped_files_list=None):
     clean_params = dataclasses.asdict(prg_params)
     # Convert objects to strings: [obs.mean_variance] -> ["mean_variance"]
     clean_params["observables"] = [obs.__name__ for obs in prg_params.observables]
+    # Bin edges may be a numpy array, which json cannot serialize. When unset,
+    # the key is dropped so that analyses that do not use it keep the same
+    # hash (and output directory) as before the option existed.
+    if clean_params.get("momentum_space_bins") is None:
+        clean_params.pop("momentum_space_bins", None)
+    else:
+        clean_params["momentum_space_bins"] = np.asarray(
+            clean_params["momentum_space_bins"], dtype=float
+        ).tolist()
     # verbose and save_path only control console output / where results are
     # written, not the analysis itself, so both are excluded from the hash
     # to avoid changing the output directory name.
@@ -1282,6 +1304,11 @@ def save_result_dictionaries(result_dict, prg_params, file_key, analysis_save_pa
                 data_obj, "exponents_across_windows", None
             ),
         }
+        if name == "momentum_space_distribution":
+            # x axis and cutoffs, needed to plot the saved dictionary
+            file_results[name]["bin_edges"] = getattr(data_obj, "bin_edges", None)
+            file_results[name]["bin_centers"] = getattr(data_obj, "bin_centers", None)
+            file_results[name]["cutoffs"] = getattr(data_obj, "cutoffs", None)
         if name == "covariance_spectrum":
             file_results[name]["mp_x_fit"] = getattr(data_obj, "mp_x_fit", None)
             file_results[name]["mp_y_fit"] = getattr(data_obj, "mp_y_fit", None)

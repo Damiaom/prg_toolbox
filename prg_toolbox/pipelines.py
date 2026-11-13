@@ -21,7 +21,7 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 
 from .analysis_tools import *
-from .coarse_graining import CGVariables
+from .coarse_graining import CGVariables, MSVariables
 from .config import *
 from .verbosity import print_if_full, timed_step
 
@@ -63,6 +63,15 @@ def run_PRG(data, user_params: AnalysisParams = None):
     observable_call_list = params.observables
     rg_steps = params.rg_steps
     cluster_method = params.cluster_method
+    momentum_space_bins = params.momentum_space_bins
+
+    # Each coarse graining is only run if some requested observable needs it
+    needs_momentum_space = any(
+        is_momentum_space_observable(call) for call in observable_call_list
+    )
+    needs_real_space = any(
+        not is_momentum_space_observable(call) for call in observable_call_list
+    )
 
     # Verbosity parameters
     verbose = params.verbose
@@ -153,18 +162,27 @@ def run_PRG(data, user_params: AnalysisParams = None):
                     binsize_ms=binsize,
                     zscore_threshold=zscore_threshold,
                 )
-            with timed_step("coarse_graining", verbose, indent="  "):
-                cgvar = CGVariables(
-                    binary_time_series,
-                    cluster_method=cluster_method,
-                    rg_steps=rg_steps,
-                    verbose=verbose,
-                )
+            if needs_real_space:
+                with timed_step("coarse_graining", verbose, indent="  "):
+                    cgvar = CGVariables(
+                        binary_time_series,
+                        cluster_method=cluster_method,
+                        rg_steps=rg_steps,
+                        verbose=verbose,
+                    )
+            if needs_momentum_space:
+                with timed_step("momentum_space_coarse_graining", verbose, indent="  "):
+                    msvar = MSVariables(
+                        binary_time_series, rg_steps=rg_steps, verbose=verbose
+                    )
 
             # Compute observables on the current time window and subsample
             for call in observable_call_list:
                 with timed_step(f"observable: {call.__name__}", verbose, indent="  "):
-                    CG_observable = call(cgvar)
+                    if is_momentum_space_observable(call):
+                        CG_observable = call(msvar, bins=momentum_space_bins)
+                    else:
+                        CG_observable = call(cgvar)
                     observable_stacker[call.__name__].append(
                         CG_observable.avg_across_windows
                     )
@@ -193,7 +211,10 @@ def run_PRG(data, user_params: AnalysisParams = None):
             )
         else:
             stacked_data = observable_stacker[key]
-            CG_observable = call(cgvar)
+            if is_momentum_space_observable(call):
+                CG_observable = call(msvar, bins=momentum_space_bins)
+            else:
+                CG_observable = call(cgvar)
             CG_observable = average_observable_sample_values_for_functions(
                 CG_observable, stacked_data, rg_steps, binary_time_series
             )

@@ -10,6 +10,14 @@ where $x_i^{(k)}$ and $x_{j*i}^{(k)}$ represent the time series activity of two 
 
 This step then repeated recursively, clustering the $N/2^{k}$ previously formed blocks into progressively larger blocks at each subsequent scale. As this recursive process continues, different statistical observables can be measured across scales. Their behavior can be used to infer scale-invariant dynamics, mainly through power law statistics and shape collapse of some observables and the convergence of the probability distributions to a fixed non-Gaussian form. In Renormalization Group terminology, the RG transformation delineates a flow through the space of possible probability distributions, which, in the presence of scale invariance, trends toward a non-trivial fixed point in this space.
 
+### Momentum-space coarse graining
+
+The toolbox also implements the complementary momentum-space coarse graining (`MSVariables`), introduced by Meshulam et al. (2018, [arXiv:1812.11904](https://arxiv.org/abs/1812.11904)) and analyzed by Nicoletti et al. (2020). Instead of merging pairs of units, it removes the fine-grained modes of the population activity: each unit is projected onto the $K$ leading principal components of the covariance matrix (eigenvectors $u_\mu$ ordered by decreasing eigenvalue) and rescaled to unit variance,
+
+$\phi_i^{(K)} = z_i \sum_{j} \sum_{\mu=1}^{K} u_{i\mu}\, u_{j\mu}\, (x_j - \langle x_j \rangle) \quad ,$
+
+with $K = N/2^{k}$ at step $k$. The number of variables stays $N$ at every step, so the variables of each step are computed on demand with `get_MS_variables(k)`. The distribution of $\phi$ across steps is computed by the `momentum_space_distribution` observable. As in real space, the signature of a non-trivial fixed point is the convergence of this distribution to a fixed non-Gaussian form as modes are removed. See the notebook `example_momentum_space.ipynb` for a walkthrough.
+
 -------------------------------
 
 ::: prg_toolbox.coarse_graining

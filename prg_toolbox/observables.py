@@ -21,6 +21,8 @@ Calculated observables include:
     * `autocorrelation_function` & `decay_time`: Scaling of autocorrelation decay
         (critical slowing down).
     * `activity_distribution`: Probability density profile across transformations.
+    * `momentum_space_distribution`: Probability density of momentum-space
+        coarse-grained variables (takes an `MSVariables` object instead).
 """
 
 import numpy as np
@@ -28,7 +30,7 @@ from scipy.optimize import curve_fit
 from scipy.stats import moment
 
 # Import the class for type checking
-from .coarse_graining import CGVariables
+from .coarse_graining import CGVariables, MSVariables
 
 # You mentioned these exist in a utils file elsewhere:
 from .utils import covariance_evals_and_evectors, get_scaling_exponent
@@ -907,6 +909,148 @@ class activity_distribution:
             probability_density[i] = np.mean(counter, axis=0)
             dx = 1 / (2**i)
             probability_density[i] /= np.sum(probability_density[i]) * dx
+
+        return probability_density
+
+
+class momentum_space_distribution:
+    def __init__(self, MS_variables, bins=None):
+        """
+        Compute the distribution of momentum-space coarse-grained variables.
+
+        For each coarse-graining step k, pools the values of all
+        momentum-space variables phi^(K) (K = N / 2^k leading principal
+        components kept) and estimates their probability density on a fixed
+        set of bins. Since every phi^(K) has zero mean and unit variance by
+        construction, the trivial (Gaussian) reference is the standard normal
+        distribution. Convergence to a fixed non-Gaussian form as K decreases
+        is the signature of a non-trivial fixed point; a non-Gaussian shape
+        alone is not, since it also arises, for example, from independent
+        units driven by a shared latent variable (Nicoletti et al., 2020,
+        Appendix B).
+
+        Parameters
+        ----------
+        MS_variables : MSVariables output object from the momentum-space
+            coarse graining procedure.
+
+        bins : array_like of float, optional
+            Bin edges shared by all steps (not a number of bins, which
+            would make the edges depend on the data). Using the same edges for every
+            step, window or dataset keeps their densities directly
+            comparable (and stackable). Values outside the edges are not
+            counted, but still enter the normalization, so the density
+            integrates to the fraction of values inside the range.
+            Default is 201 edges evenly spaced over [-10, 10].
+
+        Attributes
+        ----------
+        time_window : int
+            Temporal lengths parsed directly from the data wrapper.
+        rg_steps : int
+            Number of coarse graining iterations.
+        cutoffs : ndarray of int
+            Number of principal components K kept at each step.
+        bin_edges : ndarray of float
+            Histogram bin edges.
+        bin_centers : ndarray of float
+            Histogram bin centers (x axis for plotting).
+        values : list of ndarray
+            Probability density over `bin_centers` for each step k.
+
+        avg_across_windows : list of ndarray
+            Used to simplify handling of multi-trial data (average across trials)
+        std_across_windows : list of ndarray
+            Used to simplify handling of multi-trial data (standard deviation across trials)
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from prg_toolbox import MSVariables, momentum_space_distribution
+        >>> rng = np.random.default_rng(0)
+        >>> binary = (rng.random((16, 200)) < 0.3).astype(int)
+        >>> ms = MSVariables(binary, rg_steps=3)
+        >>> result = momentum_space_distribution(ms)
+        >>> len(result.values)  # one density per step, k = 0..3
+        4
+        >>> dx = np.diff(result.bin_edges)
+        >>> round(float(np.sum(result.values[2] * dx)), 6)  # integrates to one
+        1.0
+        """
+
+        if type(MS_variables) != MSVariables:
+            raise ValueError(
+                "Input must be of type MSVariables.\n Feed your data into the MSVariables method and use its output in this function."
+            )
+
+        self.time_window = MS_variables.time_window
+        self.rg_steps = MS_variables.rg_steps
+        self.cutoffs = MS_variables.cutoffs
+        self.verbose = getattr(MS_variables, "verbose", "warnings")
+
+        if bins is None:
+            bins = np.linspace(-10, 10, 201)
+        self.bin_edges = np.asarray(bins, dtype=np.float64)
+        if (
+            self.bin_edges.ndim != 1
+            or self.bin_edges.size < 2
+            or np.any(np.diff(self.bin_edges) <= 0)
+        ):
+            raise ValueError(
+                "bins must be a 1D array of at least two increasing bin edges, "
+                "e.g. np.linspace(-10, 10, 201). A number of bins is not accepted, "
+                "so that the edges stay the same for every step and dataset."
+            )
+        self.bin_centers = (self.bin_edges[:-1] + self.bin_edges[1:]) / 2
+
+        values = self.get_momentum_space_distribution(MS_variables, self.bin_edges)
+        self.values = values
+
+        # to simplify plotting script
+        self.avg_across_windows = self.values
+        self.std_across_windows = [
+            np.zeros_like(self.values[k]) for k in range(len(self.values))
+        ]
+
+    def get_momentum_space_distribution(self, MS_variables, bin_edges):
+        """
+        Compute the probability density of the momentum-space variables at
+        each PRG iteration.
+
+        Parameters
+        ----------
+        MS_variables : MSVariables
+            Momentum-space coarse-graining object; the variables of each
+            step are computed on demand.
+
+        bin_edges : ndarray of float
+            Histogram bin edges shared by all steps.
+
+        Returns
+        -------
+        probability_density : list of numpy.ndarray
+            List of length ``rg_steps + 1``. Entry k is a 1D ndarray of
+            length ``len(bin_edges) - 1`` with the density of the pooled
+            values of all variables at step k.
+        """
+        bin_widths = np.diff(bin_edges)
+        probability_density = []
+        for k in range(MS_variables.rg_steps + 1):
+            values = MS_variables.get_MS_variables(k)
+            values = values[np.isfinite(values)]
+            counts, _ = np.histogram(values, bins=bin_edges)
+
+            outside_fraction = 1 - np.sum(counts) / values.size
+            if outside_fraction > 0:
+                warn_if_verbose(
+                    f"At step {k} (K = {MS_variables.cutoffs[k]}), "
+                    f"{100 * outside_fraction:.3g}% of the values fall outside the "
+                    f"bin range [{bin_edges[0]}, {bin_edges[-1]}] and are not counted "
+                    f"in the density. Widen `bins` to include them.",
+                    self.verbose,
+                )
+
+            probability_density.append(counts / (values.size * bin_widths))
 
         return probability_density
 
